@@ -1,0 +1,24 @@
+﻿
+/* Consulta de controles completados/entregados */
+.control-card-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.control-heading{display:flex;align-items:center;gap:10px;min-width:0}
+.control-heading h2{margin:0}
+.control-document-action{flex:none}
+.control-delivered-summary{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border:1px solid #b7eadf;border-radius:9px;background:#f0fdf9}
+.control-delivered-summary strong{color:#0f766e}
+.control-delivered-summary span,.control-delivered-note{color:var(--muted);font-size:13px}
+.control-delivered-note{margin:10px 0 0}
+.control-verified-details{margin-top:14px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.control-verified-details summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;cursor:pointer;font-weight:700;list-style:none}
+.control-verified-details summary::-webkit-details-marker{display:none}
+.control-verified-details summary::before{content:"›";margin-right:8px;font-size:20px;line-height:12px;transition:transform .15s ease}
+.control-verified-details[open] summary::before{transform:rotate(90deg)}
+.control-verified-details summary span{margin-left:auto;padding:2px 7px;border-radius:999px;background:#eef2f6;color:#52606d;font-size:12px}
+.control-verified-groups{display:grid;gap:14px;padding:0 13px 13px}
+.control-verified-groups section{display:grid;gap:7px}
+.control-verified-groups h3{display:flex;align-items:baseline;justify-content:space-between;margin:0;color:#52606d;font-size:12px;text-transform:uppercase}
+.control-verified-groups h3 small{font-weight:400;text-transform:none}
+.control-labor.readonly label{border-color:#d8e0e8;background:#fff}
+.control-labor.readonly label:has(input:checked){border-color:#d8e0e8;background:#fff}
+.control-labor.readonly input{accent-color:#0f9c86}
+@media(max-width:600px){.control-card-header{align-items:stretch;flex-direction:column}.control-heading{justify-content:space-between}.control-document-action{width:100%}.control-delivered-summary{align-items:flex-start;flex-direction:column;gap:3px}}

@@ -1,0 +1,8 @@
+CREATE TABLE order_operational_data (
+  order_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+  phone_override VARCHAR(20) NULL,
+  email_override VARCHAR(150) NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  CONSTRAINT fk_order_operational_data_order FOREIGN KEY (order_id) REFERENCES service_orders(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,0 +1,35 @@
+{
+  "name": "@parautos/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed:demo": "tsx src/db/seed-demo.ts",
+    "seed:reports": "tsx src/db/seed-report-analytics.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@parautos/shared": "file:../shared",
+    "argon2": "^0.41.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.0.0",
+    "mariadb": "^3.4.0",
+    "multer": "^2.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.4",
+    "@types/multer": "^1.4.12",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.4"
+  }
+}
