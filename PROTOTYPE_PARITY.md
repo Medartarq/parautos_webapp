@@ -49,8 +49,10 @@ be recorded. No placeholder screen qualifies as parity.
   remote revision on focus and every 30 seconds. This uses Express/MariaDB and
   browser APIs only; it does not require Redis, WebSocket, or a persistent
   worker.
-- Evidence files are deliberately excluded from this first offline draft phase:
-  only files confirmed by the server are part of the final order.
+- Selected evidence and handwritten-evaluation image files are retained in
+  IndexedDB on the originating device, so an app reload after camera/gallery
+  selection can restore them. They are uploaded only when the order is created;
+  they are not yet transferred to another device or uploaded resumably.
 - Manual verification still required: begin with the same Advisor on mobile and
   continue on desktop; disconnect before a field change and reconnect; then
   save competing changes from two sessions and confirm the `409` conflict notice
@@ -109,6 +111,8 @@ Reference: `documentos/prototipo/panel.html`, `styles.css`.
 - [x] Desktop and mobile shell parity manually validated on 2026-10-17:
   navigation, mobile menu, sidebar modes, notification center, session reminder,
   plate identifiers and role-based route visibility were accepted.
+- [x] Mobile navigation re-checked and accepted: it reappears when scrolling
+  upward and when changing a route, without covering operational content.
 
 Status: **Verified**
 
@@ -177,6 +181,11 @@ Reference: `documentos/prototipo/app.js` `wizard()`, `considerStep()`,
 - [x] Local authenticated image storage supports JPEG, PNG, and WEBP up to 10 MB.
 - [x] Wizard supports camera/gallery, preview, individual removal, and maximum 15 images.
 - [x] Evidence is attached during the final order creation flow.
+- [x] Mobile presents separate **Tomar foto** and **Elegir del dispositivo**
+  actions. **Tomar foto** uses the browser camera stream within the application
+  (requires HTTPS), avoiding the native-camera navigation that can reload a
+  mobile page. Selected images and the handwritten evaluation are retained
+  locally across a reload before final order creation.
 
 ### Step 6 - Diagnosis
 
@@ -206,11 +215,12 @@ Reference: `documentos/prototipo/app.js` `wizard()`, `considerStep()`,
   a conflict and the UI offers the current persisted version for reload.
 - [x] Structured data is retained locally in IndexedDB while offline and is
   retried when browser connectivity returns.
-- [ ] Manual mobile→desktop, desktop→mobile, offline recovery, and concurrent
-  edit/conflict validation is pending. Evidence and diagnosis image files are
-  explicitly outside this first offline-draft scope.
+- [x] Product-owner validation confirmed mobile→desktop and desktop→mobile
+  continuity, offline recovery, reconnection, and concurrent-edit conflict
+  handling. Evidence and diagnosis image files remain device-local before final
+  order creation, by design.
 
-Status: **Complete for prototype parity; synchronization enhancement implemented, manual verification pending**
+Status: **Verified**
 
 ## R-05: Order Detail
 
@@ -227,6 +237,11 @@ Reference: `documentos/prototipo/app.js` `detail()` and detail tabs.
 - [x] Reception detail can reopen the approved A4 checklist renderer from persisted data; it uses the registered body type code rather than inferring the body from damage marks.
 - [x] Tabs for quote, parts, final control, and history; final control is an operational persisted workflow.
 - [x] The order inbox uses stable plate badges and explicit column headers instead of vehicle emojis, including a responsive compact layout.
+- [x] The narrow mobile layout now uses full-width filters and reserves space for
+  the fixed navigation bar so selectors do not overflow and final cases are not
+  obscured.
+- [x] Orders inbox re-checked and accepted on a narrow mobile viewport: filters
+  remain visible and the navigation does not obscure cases or actions.
 - [x] Manual end-to-end validation on 2026-10-17 confirmed detail tabs,
   operational correction with reason and audit history, reception A4 reprint,
   reload/logout/login persistence, and desktop/mobile presentation using
@@ -255,10 +270,13 @@ Reference: `documentos/prototipo/app.js` quote routes and version actions.
 - [x] Navigation-level Cotizaciones inbox lists cases in `COTIZACION_PENDIENTE`
   and `ESPERA_APROBACION`, filters by stage, modality, aging, date and text,
   and opens the matching order quotation tab. Desktop visual reticle, plate
-  identifiers and action alignment were accepted on 2026-10-17; mobile and
-  end-to-end quote workflow validation remain in checklist 2.4.
+  identifiers and action alignment were accepted on 2026-10-17. The mobile
+  inbox and complete quote workflow were manually accepted on 2026-10-17.
+- [x] Manual end-to-end validation confirmed draft save/reload, separate version
+  creation, version adjustment reason, send/approval, history, PDF/XLSX export,
+  Cotizaciones access, and desktop/mobile presentation.
 
-Status: **Implemented**
+Status: **Verified**
 
 ## R-07: Parts and Suppliers
 
@@ -276,8 +294,10 @@ Reference: `documentos/prototipo/app.js` parts view and `provider-catalog.js`.
 - [x] Per-order desktop management redesign accepted on 2026-10-17: fast order
   registration, binary arrival control, supplier suggestions and direct contact
   card, compact details panel, and dedicated save-action bar.
+- [x] Global workbench, mobile filters, cards, provider flow, and repair
+  transition were re-checked and accepted on mobile.
 
-Status: **Implemented**
+Status: **Verified**
 
 ## R-08: Final Control, Publication, and Delivery
 
@@ -293,8 +313,10 @@ Reference: `documentos/prototipo/app.js` control flow and `constancia.js`.
 - [x] Delivered-control consultation summarizes verified labor, supports optional grouped inspection by category, and exposes the conformity PDF action in the final-control header.
 - [x] Printable conformity record matches the approved prototype content and
   geometry; manually validated on 2026-10-17.
+- [x] Product-owner validation confirmed the complete mobile/desktop sequence:
+  final control, publication, reopening, and delivery.
 
-Status: **Implemented**
+Status: **Verified**
 
 ## R-09: Public Tracking
 
@@ -304,8 +326,10 @@ Reference: `documentos/prototipo/seguimiento.html`, `seguimiento.js`.
 - [x] Only public progress is exposed.
 - [x] Terminal and cancelled states match prototype.
 - [x] Mobile-first tracking screen matches prototype intent.
+- [x] Product-owner validation confirmed desktop and local-network mobile lookup,
+  URL prefill, valid/invalid handling, and public-only information display.
 
-Status: **Implemented**
+Status: **Verified**
 
 ## R-10: Reports, Audit, and Documents
 
@@ -321,6 +345,10 @@ Reference: `documentos/prototipo/app.js`, `constancia.js`.
 - [x] CSV export and institutional A4 PDF downloads implemented on 2026-10-17.
   Descargas, filtros y comportamiento visual fueron validados manualmente el
   2026-10-17.
+- [x] Mobile report filters now stack without clipped controls; date labels use
+  their own row and result tables render as cards on narrow screens.
+- [x] Dashboard and both operational report tabs were re-checked and accepted
+  on mobile after the responsive filter, result-card, and navigation changes.
 - [x] Immutable Administrator-only audit search with text, user, action, and
   date filters; manually approved on 2026-10-17. The filter presents Spanish
   action labels while retaining technical values for the query.
@@ -409,9 +437,34 @@ complete, correct operational records to produce meaningful results.
 | 2026-10-17 | R-07 individual parts management redesign | Desktop visual/manual review, production build and server tests | Desktop accepted | Product owner accepted the individual-parts workflow and its field/action distribution. Partial receipt was removed from active UI/API behavior; supplier contact is directly consultable. Global workbench, filters, mobile layout and repair transition remain pending the full R-07 validation. |
 | 2026-10-17 | R-04 reception wizard mobile refinements | Mobile visual review, production build and server tests | Considerations accepted / implementation verified | Tab capture order was aligned with the rendered fields. Checklist gained category-level rapid review, undo and exception capture; diagnosis and summary/signature received clearer mobile task hierarchy. Product owner accepted the final consideration spacing and touch presentation. `npm run build` and `npm test` passed with 34 tests and 1 skipped. |
 | 2026-10-17 | R-05 order detail | Manual desktop/mobile validation with `DEM-101` | Passed | Product owner verified all detail tabs, operational correction with reason, audit event in history, reception A4 reprint, reload/logout/login, and persistence in desktop and mobile. |
-| 2026-10-17 | R-06 quote validation | Manual review plus production build and server tests | Pending revalidation | Approval of `DEM-202`, historical versions and exports were reported correct. Draft recovery was not sufficiently explicit after the `DEM-101` edit; the editor now provides “Recargar borrador” from the persisted version and states that empty description rows are omitted. Repeat save/reload with a described line before closing R-06. |
+| 2026-10-17 | R-06 quote validation | Manual desktop/mobile validation, production build and server tests | Passed | Product owner confirmed draft save/reload, separate creation of versions, V2 adjustment reason, send/approval, historical versions, PDF/XLSX export and Cotizaciones access. The persisted draft recovery correction was included in the accepted flow. |
 | 2026-10-17 | Dashboard operational pending center | Local MariaDB, production build and server tests | Implemented; manual visual validation pending | `GET /orders/pending-notifications` derives 1 diagnosis pending and 5 quote pending cases in the local database. Bell, Dashboard section, once-per-session reminder, direct order links, SVG bell, compact notification rows, and plate identifiers were implemented. `npm test` passed with 34 tests and `npm run build` passed. |
 | 2026-10-17 | Order inbox plate layout | Local production build and server tests | Implemented; manual visual validation pending | Vehicle emojis were replaced by plate badges and the desktop inbox gained explicit aligned columns with a responsive mobile layout. `npm test` passed with 34 tests and `npm run build` passed. |
+| 2026-10-17 | R-04 cross-device reception draft and local media | Local MariaDB 11.8.9, production build and server tests | Implemented; manual validation pending | Migration `018_reception_drafts.sql` was applied. The authenticated-user draft stores a revision and current step in MariaDB; React retains structured changes in IndexedDB, retries after reconnecting, and warns on remote revision conflict. Evidence/evaluation pickers use explicit non-submit camera/gallery buttons; direct camera capture uses `getUserMedia` within the page under HTTPS and selected files are retained locally after a reload. They remain device-local until final order creation. `npm run build` passed; `npm test` passed with 35 tests and 1 skipped. |
+| 2026-10-17 | R-06 Cotizaciones inbox mobile hierarchy | Local production build | Implemented; manual visual re-check pending | The mobile list was changed from fragmented grid columns to an ordered case card: vehicle/client summary, plate, modality/status, then a full-width action. Narrow mobile filters now stack and the date label occupies its own row; the navigation hides while scrolling down. `npm run build` passed. Re-check on a physical mobile viewport before restoring R-06 to Verified. |
+| 2026-10-17 | R-05 Orders inbox mobile alignment | Local production build | Implemented; manual visual re-check pending | At narrow widths the order filters stack to a single column, controls no longer overflow, and content reserves bottom space for the fixed mobile navigation/safe area. `npm run build` passed. |
+| 2026-10-17 | R-07 Repuestos mobile filter alignment | Local production build | Implemented; manual visual re-check pending | The global-parts search now occupies a complete row on narrow screens while state/urgency and provider/quality remain paired. The global mobile navigation starts hidden on long operational lists and reappears on upward scroll. `npm run build` passed. |
+| 2026-10-17 | R-04 reception continuity | Product-owner manual validation | Passed | Mobile↔PC continuation, offline recovery/reconnection, and concurrent-edit conflict handling were confirmed. |
+| 2026-10-17 | R-08 final control and delivery | Product-owner manual validation | Passed | Final control, publication, reopening, and delivery were confirmed on the operational flow. |
+| 2026-10-17 | R-09 public tracking regression | Server test suite | Passed technically | `npm test` passed with 35 tests and 1 skipped; tracking service tests confirm plate/code lookup, normalized plate handling and public-only projection. Private-window desktop/mobile validation remains pending. |
+| 2026-10-17 | R-09 local mobile connectivity | Production build and server tests | Implemented; mobile re-test pending | Tracking requests abort after 8 seconds instead of remaining in “Consultando…”. In local-network development, a failed Vite proxy request retries against the same PC IP on port 3000 with development-only CORS; production remains same-origin HTTPS. `npm run build` and `npm test` passed with 35 tests and 1 skipped. |
+| 2026-10-17 | R-09 public tracking | Product-owner desktop/mobile validation | Passed | Public lookup functions correctly on PC and mobile after the local-network fallback correction. |
+
+## Mandatory Parity Gate — 2026-10-17
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Functional and validation paths | Passed | Product owner completed R-04 continuity, R-05 detail, R-06 quotes, R-07 parts, R-08 final control/delivery, R-09 public tracking, and R-10 reports/audit paths. |
+| MariaDB persistence and session recovery | Passed | Reception, quotes, parts, control, delivery, corrections and public codes were checked through reload/login recovery where applicable. |
+| Desktop and mobile operation | Passed | Product owner accepted the responsive corrections for shell, Orders, Quotes, Parts, Dashboard/Reports, reception and public tracking. |
+| Roles and public boundary | Passed | Administrator/Advisor restrictions are covered by tests and manual review; public tracking exposes only its public projection. |
+| Commands | Passed | `npm run build` completed; `npm test` completed with 35 passed and 1 skipped. |
+| Reusable validation data | Passed | `DEM-101`, `DEM-202`, `DEM-303`, `DEM-404`, report seeds, and public-code cases are documented in `DATOS_PRUEBA_MANUAL.md`. |
+| Approved differences | Recorded | Direct PDF/XLSX exports, operational pending reminders, reception simplifications, persistent drafts and the Hostinger-compatible local-network tracking fallback are recorded in this document. |
+
+**Gate result: Passed.** Functional prototype parity is closed. Pending work in
+the technical prioritization concerns production hardening and infrastructure,
+not unresolved parity flows.
 
 ## Approved Differences Log
 

@@ -19,6 +19,12 @@ const statusMeta: Record<string, { label: string; progress: number }> = {
 };
 
 const stages = ["En taller", "Espera de repuestos", "En reparacion", "Listo para entregar"];
+async function trackingFetch(url: string) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8_000);
+  try { return await fetch(url, { cache: "no-store", signal: controller.signal }); }
+  finally { window.clearTimeout(timeout); }
+}
 
 export function PublicTracking() {
   const query = new URLSearchParams(window.location.search);
@@ -40,7 +46,15 @@ export function PublicTracking() {
     setLoading(true);
     setMessage(undefined);
     try {
-      const response = await fetch(`/api/v1/tracking?plate=${encodeURIComponent(normalizedPlate)}&code=${encodeURIComponent(normalizedCode)}`, { cache: "no-store" });
+      const query = `plate=${encodeURIComponent(normalizedPlate)}&code=${encodeURIComponent(normalizedCode)}`;
+      let response: Response;
+      try {
+        response = await trackingFetch(`/api/v1/tracking?${query}`);
+      } catch (proxyError) {
+        const isLocalNetworkDevelopment = import.meta.env.DEV && location.hostname !== "localhost" && location.hostname !== "127.0.0.1";
+        if (!isLocalNetworkDevelopment) throw proxyError;
+        response = await trackingFetch(`http://${location.hostname}:3000/api/v1/tracking?${query}`);
+      }
       if (response.status === 404) {
         setMessage("No encontramos una orden con esos datos. Verifica la placa y el codigo exactamente como aparecen en tu constancia.");
         return;
@@ -51,7 +65,7 @@ export function PublicTracking() {
       }
       setTracking((await response.json() as { tracking: Tracking }).tracking);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No fue posible realizar la consulta.");
+      setMessage(error instanceof DOMException && error.name === "AbortError" ? "La consulta tardó demasiado. Verifica la conexión e inténtalo nuevamente." : error instanceof Error ? error.message : "No fue posible realizar la consulta.");
     } finally {
       setLoading(false);
     }

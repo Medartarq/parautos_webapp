@@ -45,6 +45,7 @@ type ReceptionDraftPayload = {
   accepted: boolean;
 };
 type StoredReceptionDraft = { revision?: number; currentStep: number; payload: ReceptionDraftPayload };
+type StoredReceptionMedia = { files: File[]; diagnosisFile?: File };
 const steps = [
   "Datos",
   "Checklist",
@@ -134,10 +135,15 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 
 const receptionDraftStore = "parautos-reception-drafts";
 const receptionDraftKey = "current-user";
+const receptionMediaKey = "current-user-media";
+function createReceptionStores(database: IDBDatabase) {
+  if (!database.objectStoreNames.contains("drafts")) database.createObjectStore("drafts");
+  if (!database.objectStoreNames.contains("media")) database.createObjectStore("media");
+}
 async function localReceptionDraft(read = false, value?: StoredReceptionDraft) {
   return new Promise<StoredReceptionDraft | undefined>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore("drafts");
+    const request = indexedDB.open(receptionDraftStore, 2);
+    request.onupgradeneeded = () => createReceptionStores(request.result);
     request.onerror = () => resolve(undefined);
     request.onsuccess = () => {
       const transaction = request.result.transaction("drafts", read ? "readonly" : "readwrite");
@@ -150,10 +156,40 @@ async function localReceptionDraft(read = false, value?: StoredReceptionDraft) {
 }
 async function clearLocalReceptionDraft() {
   return new Promise<void>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore("drafts");
+    const request = indexedDB.open(receptionDraftStore, 2);
+    request.onupgradeneeded = () => createReceptionStores(request.result);
     request.onerror = () => resolve();
     request.onsuccess = () => { const transaction = request.result.transaction("drafts", "readwrite"); transaction.objectStore("drafts").delete(receptionDraftKey); transaction.oncomplete = () => resolve(); transaction.onerror = () => resolve(); };
+  });
+}
+async function localReceptionMedia(read = false, value?: StoredReceptionMedia) {
+  return new Promise<StoredReceptionMedia | undefined>((resolve) => {
+    const request = indexedDB.open(receptionDraftStore, 2);
+    request.onupgradeneeded = () => createReceptionStores(request.result);
+    request.onerror = () => resolve(undefined);
+    request.onsuccess = () => {
+      const transaction = request.result.transaction("media", read ? "readonly" : "readwrite");
+      const store = transaction.objectStore("media");
+      const operation = read ? store.get(receptionMediaKey) : store.put(value, receptionMediaKey);
+      operation.onsuccess = () => resolve(read ? operation.result as StoredReceptionMedia | undefined : value);
+      operation.onerror = () => resolve(undefined);
+    };
+  });
+}
+async function clearLocalReceptionMedia() {
+  return new Promise<void>((resolve) => {
+    const request = indexedDB.open(receptionDraftStore, 2);
+    request.onupgradeneeded = () => createReceptionStores(request.result);
+    request.onerror = () => resolve();
+    request.onsuccess = () => { const transaction = request.result.transaction("media", "readwrite"); transaction.objectStore("media").delete(receptionMediaKey); transaction.oncomplete = () => resolve(); transaction.onerror = () => resolve(); };
+  });
+}
+function readImagePreview(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 }
 
@@ -196,8 +232,11 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
   const [draftReady, setDraftReady] = useState(false);
   const [syncState, setSyncState] = useState<"loading" | "saved" | "saving" | "offline" | "conflict">("loading");
   const [syncRetry, setSyncRetry] = useState(0);
+  const [cameraTarget, setCameraTarget] = useState<"evidence" | "diagnosis">();
   const damageCanvas = useRef<HTMLCanvasElement>(null);
   const signatureCanvas = useRef<HTMLCanvasElement>(null);
+  const evidenceDeviceInput = useRef<HTMLInputElement>(null);
+  const diagnosisDeviceInput = useRef<HTMLInputElement>(null);
   const stroke = useRef<Point[]>([]);
   const skipInitialDraftSave = useRef(true);
   const draftRevisionRef = useRef<number | undefined>(undefined);
@@ -285,7 +324,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
   useEffect(() => {
     let active = true;
     const restore = async () => {
-      const local = await localReceptionDraft(true);
+      const [local, localMedia] = await Promise.all([localReceptionDraft(true), localReceptionMedia(true)]);
       try {
         const result = await api<{ draft?: StoredReceptionDraft }>("/orders/reception-draft");
         const draft = result.draft;
@@ -305,7 +344,19 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
           setSignature(local.payload.signature || ""); setReviewed(Boolean(local.payload.reviewed)); setAccepted(Boolean(local.payload.accepted));
           setStep(local.currentStep || 0); setDraftRevision(local.revision); setSyncState("offline");
         } else if (active) setSyncState("offline");
-      } finally { if (active) setDraftReady(true); }
+      } finally {
+        if (active && localMedia) {
+          const restoredEvidence = await Promise.all((localMedia.files || []).map(async (file) => ({ file, preview: await readImagePreview(file) })));
+          if (active) {
+            setFiles(restoredEvidence);
+            if (localMedia.diagnosisFile) {
+              setDiagnosisFile(localMedia.diagnosisFile);
+              setDiagnosisPreview(await readImagePreview(localMedia.diagnosisFile));
+            }
+          }
+        }
+        if (active) setDraftReady(true);
+      }
     };
     void restore();
     return () => { active = false; };
@@ -324,6 +375,10 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
     }, 900);
     return () => window.clearTimeout(timer);
   }, [serializedReceptionDraft, draftReady, syncRetry]);
+  useEffect(() => {
+    if (!draftReady) return;
+    void localReceptionMedia(false, { files: files.map((evidence) => evidence.file), diagnosisFile });
+  }, [files, diagnosisFile, draftReady]);
   const selectedDamageBody =
     catalog?.bodyTypes.find((item) => item.id === Number(d.body))?.code || "V3";
   useEffect(() => {
@@ -398,21 +453,10 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
       setMessage(
         "Solo se admiten JPG, PNG o WebP de hasta 10 MB, con un máximo de 15 evidencias.",
       );
-    const evidence = await Promise.all(
-      accepted.map(
-        (file) =>
-          new Promise<Evidence>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () =>
-              resolve({ file, preview: String(reader.result) });
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          }),
-      ),
-    );
+    const evidence = await Promise.all(accepted.map(async (file) => ({ file, preview: await readImagePreview(file) })));
     setFiles((current) => [...current, ...evidence].slice(0, 15));
   };
-  const selectDiagnosis = (file?: File) => {
+  const selectDiagnosis = async (file?: File) => {
     if (!file) return;
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
@@ -421,12 +465,20 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
       setMessage("La evaluación debe ser JPG, PNG o WebP de hasta 10 MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      const preview = await readImagePreview(file);
       setDiagnosisFile(file);
-      setDiagnosisPreview(String(reader.result));
-    };
-    reader.readAsDataURL(file);
+      setDiagnosisPreview(preview);
+    } catch {
+      setMessage("No fue posible preparar la fotografía de evaluación.");
+    }
+  };
+  const openCamera = (target: "evidence" | "diagnosis") => {
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setMessage("La cámara integrada requiere HTTPS. En esta prueba local use “Elegir del dispositivo”; en Hostinger funcionará con HTTPS.");
+      return;
+    }
+    setCameraTarget(target);
   };
   const formStep = () =>
     receptionStepOneSchema.safeParse({
@@ -627,6 +679,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
       await uploadPendingFiles(order);
       await api("/orders/reception-draft", { method: "DELETE" }).catch(() => undefined);
       await clearLocalReceptionDraft();
+      await clearLocalReceptionMedia();
       setMessage(`Orden ${order.orderNumber} creada correctamente.`);
       setTimeout(onCreated, 800);
     } catch (error) {
@@ -946,7 +999,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
               title="Evidencias"
               text={`${files.length} de 15 · orden cronológico.`}
             />
-            <label
+            <div
               className={`evidence-upload${files.length >= 15 ? " is-full" : ""}`}
             >
               <strong>
@@ -959,18 +1012,12 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
                   ? "Se alcanzó el máximo de 15 imágenes."
                   : "JPG, PNG o WebP · máximo 10 MB por imagen"}
               </small>
-              <input
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                capture="environment"
-                disabled={files.length >= 15}
-                onChange={(event) => {
-                  void addEvidence(Array.from(event.target.files || []));
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
+              <div className="evidence-upload-actions">
+                <button type="button" className="btn small" disabled={files.length >= 15} onClick={() => openCamera("evidence")}>Tomar foto</button>
+                <button type="button" className="btn small" disabled={files.length >= 15} onClick={() => evidenceDeviceInput.current?.click()}>Elegir del dispositivo</button>
+                <input ref={evidenceDeviceInput} type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(event) => { void addEvidence(Array.from(event.target.files || [])); event.currentTarget.value = ""; }} />
+              </div>
+            </div>
             <div className="evidence-grid">
               {files.length ? (
                 files.map((evidence, index) => (
@@ -1059,20 +1106,16 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
                   alt="Vista previa de evaluación manuscrita"
                 />
               ) : (
-                <label className="diagnosis-picker">
+                <div className="diagnosis-picker">
                   <span className="diagnosis-picker-icon">⌁</span>
                   <strong>Tomar o elegir fotografía</strong>
                   <small>Usa la cámara o selecciona un archivo desde este equipo.</small>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    capture="environment"
-                    onChange={(event) => {
-                      selectDiagnosis(event.target.files?.[0]);
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </label>
+                  <div className="evidence-upload-actions">
+                    <button type="button" className="btn small" onClick={() => openCamera("diagnosis")}>Tomar foto</button>
+                    <button type="button" className="btn small" onClick={() => diagnosisDeviceInput.current?.click()}>Elegir del dispositivo</button>
+                    <input ref={diagnosisDeviceInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { void selectDiagnosis(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+                  </div>
+                </div>
               )}
               {diagnosisFile && (
                 <div className="diagnosis-status">
@@ -1237,8 +1280,34 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
           </button>
         )}
       </div>
+      {cameraTarget && <CameraCapture target={cameraTarget} onCancel={() => setCameraTarget(undefined)} onCapture={(file) => { if (cameraTarget === "evidence") void addEvidence([file]); else void selectDiagnosis(file); setCameraTarget(undefined); }} />}
     </section>
   );
+}
+
+function CameraCapture({ target, onCancel, onCapture }: { target: "evidence" | "diagnosis"; onCancel: () => void; onCapture: (file: File) => void }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const [message, setMessage] = useState("Abriendo cámara…");
+  useEffect(() => {
+    let stream: MediaStream | undefined;
+    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" } } }).then((activeStream) => {
+      stream = activeStream;
+      if (!video.current) return;
+      video.current.srcObject = activeStream;
+      void video.current.play();
+      setMessage("");
+    }).catch(() => setMessage("No fue posible usar la cámara. Revise el permiso del navegador o elija una imagen del dispositivo."));
+    return () => stream?.getTracks().forEach((track) => track.stop());
+  }, []);
+  const takePhoto = () => {
+    const source = video.current;
+    if (!source || !source.videoWidth || !source.videoHeight) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = source.videoWidth; canvas.height = source.videoHeight;
+    canvas.getContext("2d")?.drawImage(source, 0, 0);
+    canvas.toBlob((blob) => { if (blob) onCapture(new File([blob], `${target}-${new Date().toISOString().replaceAll(":", "-")}.jpg`, { type: "image/jpeg" })); }, "image/jpeg", 0.9);
+  };
+  return <div className="camera-capture" role="dialog" aria-modal="true" aria-label="Cámara"><div className="camera-capture-card"><header><strong>{target === "evidence" ? "Fotografía de evidencia" : "Fotografía de evaluación"}</strong><button type="button" className="btn small" onClick={onCancel}>Cerrar</button></header>{message ? <p className="hint">{message}</p> : <video ref={video} autoPlay playsInline muted />}{!message && <button type="button" className="btn primary" onClick={takePhoto}>Capturar fotografía</button>}</div></div>;
 }
 
 function Title({ n, title, text }: { n: string; title: string; text: string }) {

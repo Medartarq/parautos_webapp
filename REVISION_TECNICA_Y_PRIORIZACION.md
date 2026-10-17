@@ -38,10 +38,11 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   mismo Asesor en móvil y PC: continuar un borrador en ambos sentidos, editar
   sin red y recuperar conexión, y provocar un conflicto de revisión desde dos
   sesiones. Registrar resultado antes de dar por verificada esta mejora.
-- [ ] **Adjuntos sin conexión.** Pendiente: fotografías y evaluación manuscrita
-  no se guardan en IndexedDB ni se cargan fragmentadamente; deben tomarse de
-  nuevo si aún no se creó la orden. No se considera cerrado hasta definir
-  almacenamiento de archivos persistente para producción y reintentos seguros.
+- [ ] **Adjuntos sin conexión.** Parcialmente implementado: fotografías y
+  evaluación manuscrita seleccionadas se conservan en IndexedDB del dispositivo
+  de origen y se restauran tras una recarga antes de crear la orden. Pendiente:
+  transferencia móvil↔PC, subida reanudable/fragmentada y almacenamiento
+  persistente de producción con reintentos seguros.
 
 ### 0. Preparación y línea base
 
@@ -116,45 +117,59 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   objetivos táctiles y separación de navegación; y jerarquía clara en
    Diagnóstico y Resumen/Firma. `npm run build` y `npm test` pasaron (34 pruebas,
    1 omitida).
-- [ ] **2.1b Verificar continuidad R-04 entre dispositivos.** La migración
+- [x] **2.1b Verificar continuidad R-04 entre dispositivos.** La migración
   `018_reception_drafts.sql` y la interfaz de borrador están implementadas:
   MariaDB es la fuente de verdad, IndexedDB conserva cambios estructurados sin
-  red y `revision` evita sobrescrituras silenciosas. Falta la validación manual
-  móvil↔PC, desconexión/reconexión y conflicto concurrente. No incluye fotos ni
-  evaluación manuscrita sin conexión.
+  red y `revision` evita sobrescrituras silenciosas. Producto confirmó la
+  validación manual móvil↔PC, desconexión/reconexión y conflicto concurrente.
+  No incluye fotos ni
+  evaluación manuscrita entre dispositivos; esos archivos sólo se preservan
+  localmente antes de crear la orden. La captura integrada usa `getUserMedia` y
+  requiere una URL HTTPS; la prueba LAN HTTP sólo puede validar galería.
+  Verificación técnica realizada el 2026-10-17: migración aplicada, `npm run
+  build` correcto y `npm test` con 35 pruebas aprobadas y 1 omitida.
 - [x] **2.2 Cerrar R-02.** Verificado manualmente el 2026-10-17: navegación de
   todas las rutas reales en escritorio y móvil; menú móvil y sidebar compacto/
   expandido; campana, panel de pendientes y recordatorio por sesión; placas en
   Dashboard, Órdenes y Cotizaciones; y visibilidad/autorización correcta para
   Administrador y Asesor. Auditoría, Reportes y Cotizaciones sustituyeron los
-  placeholders de navegación.
+  placeholders de navegación. Revisión final confirmada por producto: la barra
+  móvil se oculta al desplazarse hacia abajo y reaparece al subir o cambiar de
+  ruta, sin cubrir contenido.
 - [x] **2.3 Verificar R-05.** Validado manualmente el 2026-10-17 con el caso
   semilla `DEM-101`: detalle y pestañas Resumen/Recepción/Cotización/Historial,
   corrección operativa con razón y evento auditado, A4 de recepción reabierto,
-  recarga, nuevo inicio de sesión y persistencia en escritorio y móvil.
-- [ ] **2.4 Verificar R-06.** Validar visual y funcionalmente PDF/XLSX,
-  cotizaciones versionadas, envío, aprobación y recuperación de borradores
-  contra el prototipo. Revisión manual inicial el 2026-10-17: aprobación de
-  `DEM-202` y las demás comprobaciones informadas fueron correctas, pero se
-  detectó que el editor no hacía explícita la recuperación del borrador. Se
-  añadió recarga desde servidor y aviso de filas sin descripción. La causa del
-  `400` fue que MariaDB devolvía DECIMAL como texto; ya se normaliza a números
-  en servidor y cliente, con prueba de regresión. El 2026-10-17 se separó el
-  borrador persistente de las versiones auditables mediante la migración 017:
-  Guardar borrador no crea versión y Crear versión conserva un borrador editable
-  para el siguiente ajuste. Pendiente la validación manual completa antes del
-  cierre.
-- [ ] **2.5 Verificar R-07.** Ejecutar pruebas manuales de escritorio y móvil
+  recarga, nuevo inicio de sesión y persistencia en escritorio y móvil. Se
+  se reabrió para comprobar en móvil estrecho la corrección de filtros y la
+  reserva bajo la navegación; producto confirmó su funcionamiento correcto.
+- [x] **2.4 Verificar R-06.** Se cerró por confirmación del producto el
+  2026-10-17: se validaron en escritorio y móvil PDF/XLSX, borrador persistente
+  y recarga, creación separada de V1/Vn, motivo de ajuste, envío, aprobación,
+  historial y acceso por Cotizaciones. La migración 017 conserva el borrador
+  separado de las versiones auditables; la normalización de DECIMAL cubre la
+  regresión de guardado detectada inicialmente. Se reabrió para una única
+  comprobación visual móvil: la bandeja de Cotizaciones fue corregida para
+  presentar una tarjeta de caso legible en vez de columnas fragmentadas, y fue
+  aceptada por producto.
+- [x] **2.5 Verificar R-07.** Ejecutar pruebas manuales de escritorio y móvil
   para la mesa global de repuestos, filtros, proveedores, recepción individual
   y transición a reparación. El rediseño de gestión por orden fue aprobado en
-  escritorio el 2026-10-17; falta la validación integral indicada.
-- [ ] **2.6 Verificar R-08.** Ejecutar el flujo completo de control final,
-  publicación, reapertura y entrega en escritorio y móvil; conservar evidencia.
-- [ ] **2.7 Verificar R-09.** Comprobar la consulta pública real, URL
-  precompletada, estados terminales, mensajes de error y versión móvil.
-- [ ] **2.8 Registrar el Mandatory Parity Gate.** Para cada punto anterior,
-  registrar fecha, comandos, datos de prueba, diferencias aprobadas y resultado
-  en `PROTOTYPE_PARITY.md`.
+  escritorio el 2026-10-17; falta la validación integral indicada. En móvil se
+  corrigió la búsqueda para ocupar una fila completa y evitar el hueco/compresión
+  observado junto a los filtros; producto confirmó el resultado en dispositivo
+  físico.
+- [x] **2.6 Verificar R-08.** Producto confirmó el flujo completo de control
+  final, publicación, reapertura y entrega en escritorio y móvil.
+- [x] **2.7 Verificar R-09.** Comprobar la consulta pública real, URL
+  precompletada, estados terminales, mensajes de error y versión móvil. La
+  consulta de escritorio fue confirmada; en desarrollo LAN móvil se añadió
+  reintento directo a la API local y tiempo límite visible. Producto confirmó
+  que la consulta móvil funciona correctamente.
+- [x] **2.8 Registrar el Mandatory Parity Gate.** Registrado el 2026-10-17 en
+  `PROTOTYPE_PARITY.md`: validaciones funcionales, persistencia, escritorio y
+  móvil, roles, límite público, comandos (`npm run build`, `npm test`), datos de
+  prueba y diferencias aprobadas. Resultado: **Passed**; la paridad funcional
+  queda cerrada.
 
 ### 3. Funcionalidad pendiente del prototipo
 
@@ -192,12 +207,15 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   proveedor; etiquetas de filtros activos y limpieza; CSV y PDF A4 institucional
   con el conjunto filtrado; recarga y permisos de Administrador. La verificación
   interna complementaria confirmó 401 sin sesión, 403 para Asesor y 200 para
-  Administrador, además de cálculos analíticos consistentes.
-- [x] **3.7 Cerrar R-10.** Cerrado el 2026-10-17: Mandatory Parity Gate
+  Administrador, además de cálculos analíticos consistentes. Producto confirmó
+  la nueva disposición móvil de filtros, fechas, resultados en tarjetas y
+  navegación no superpuesta.
+- [x] **3.7 Cerrar R-10.** Cerrado inicialmente el 2026-10-17: Mandatory Parity Gate
   registrado para Auditoría, Dashboard y Reportes, CSV y PDF A4 institucional.
   Se consolidaron permisos, cálculos persistidos, filtros, exportaciones y las
   validaciones manuales de escritorio/móvil. R-10 queda verificado; el cierre
-  de shell R-02 se gestiona por separado.
+  de shell R-02 se gestiona por separado. La comprobación visual móvil de 3.6
+  fue aceptada por producto.
 
 ### Estado de cambios recientes (sin cierre automático)
 

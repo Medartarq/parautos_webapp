@@ -70,3 +70,19 @@ Usar Administrador en escritorio y comprobar la lectura principal en móvil.
 
 Registrar las transiciones efectuadas, archivos descargados y resultado por
 placa antes de cerrar R-06.
+
+## Recorrido R-09: seguimiento público
+
+Usar una orden demo y copiar desde **Resumen** su placa y código público de seis
+dígitos. La consulta no requiere iniciar sesión.
+
+1. Abrir `/seguimiento` en una ventana privada, en escritorio y móvil.
+2. Consultar con placa válida (con o sin guion) y el código correcto; confirmar
+   orden, placa, marca/modelo y sólo el estado público.
+3. Abrir `/seguimiento?plate=PLACA&code=123456` con los valores válidos y
+   confirmar el autollenado antes de consultar.
+4. Probar código incorrecto, placa incorrecta y código con menos de seis dígitos;
+   confirmar mensaje uniforme, sin filtrar si la placa o el código existe.
+5. Consultar una orden entregada o cancelada si está disponible y comprobar el
+   mensaje terminal, sin exponer cliente, asesor, siniestro, cotización ni datos
+   internos.
