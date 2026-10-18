@@ -8,8 +8,8 @@ import {
 import type { CurrentUser } from "@parautos/shared";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import loginBackground from "../../../documentos/prototipo/assets/login-img/background.webp";
-import logo from "../../../documentos/prototipo/assets/logo_parautos.svg";
+import loginBackground from "./assets/login-background.webp";
+import logo from "./assets/logo_parautos.svg";
 import "./reception.css";
 import "./orders.css";
 import "./final-control.css";

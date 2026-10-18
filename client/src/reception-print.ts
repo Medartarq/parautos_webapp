@@ -1,5 +1,5 @@
-import printLogo from "../../../documentos/prototipo/assets/logo_parautos.svg";
-import printBrands from "../../../documentos/prototipo/assets/modelo/marcas.png";
+import printLogo from "./assets/logo_parautos.svg";
+import printBrands from "./assets/marcas.png";
 import { A4_RECEPTION_PRINT_STYLES } from "./print-layout";
 
 type Point = { u: number; v: number };

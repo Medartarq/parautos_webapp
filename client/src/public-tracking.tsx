@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type FormEvent } from "react";
-import logo from "../../../documentos/prototipo/assets/logo_parautos.svg";
+import logo from "./assets/logo_parautos.svg";
 import "./public-tracking.css";
 
 type Tracking = {
