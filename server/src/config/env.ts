@@ -17,6 +17,7 @@ const environmentSchema = z.object({
   DB_CONNECTION_LIMIT: z.coerce.number().int().min(1).max(20).default(5),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24).default(8),
   STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  LOCAL_UPLOAD_BASE: z.enum(["project", "home"]).default("project"),
   LOCAL_UPLOAD_DIR: z.string().min(1).default("data/uploads"),
   S3_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().min(1).default("auto"),

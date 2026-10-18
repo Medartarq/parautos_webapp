@@ -238,7 +238,11 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   históricos sigan siendo recuperables. Se documentaron variables para AWS S3 o
   Cloudflare R2 y se cubrieron escritura, lectura, borrado, hash y prefijo con
   pruebas unitarias. Pendiente operativo: provisionar bucket/credencial y
-  ejecutar una carga real en Hostinger antes del despliegue.
+  ejecutar una carga real en Hostinger antes del despliegue. Alternativa local
+  confirmada por soporte: `LOCAL_UPLOAD_BASE=home` y
+  `LOCAL_UPLOAD_DIR=parautos-data/uploads` resuelven una carpeta privada bajo
+  `$HOME`, fuera de `public_html` y `hbuilds`; requiere prueba de marcador tras
+  reinicio/redeploy y copia de seguridad antes de depender de ella.
 - [x] **4.2 Validar contenido de imágenes.** Implementado el 2026-10-17:
   antes de persistir un adjunto, el servidor comprueba firmas binarias JPEG,
   PNG y WebP y exige coincidencia con el MIME declarado. Se conservan los
@@ -291,9 +295,14 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
 - [ ] **5.4 Optimizar carga del cliente.** Aplicar importaciones dinámicas a
   exportaciones PDF/XLSX y visualizadores; medir la reducción de los bundles
   advertidos por Vite.
-- [ ] **5.5 Resolver dependencias vulnerables.** Actualizar o sustituir la
-  cadena vulnerable de `exceljs`/`uuid`, verificar exportaciones y volver a
-  ejecutar auditoría de dependencias.
+- [ ] **5.5 Resolver dependencias vulnerables.** Investigado el 2026-10-17:
+  `npm audit --omit=dev --audit-level=moderate` mantiene dos vulnerabilidades
+  moderadas transitivas en `exceljs@4.4.0`/`uuid@8.3.2`. La alternativa indicada
+  por `npm audit fix --force` (`exceljs@3.4.0`) fue probada y revertida: añadió
+  dos vulnerabilidades bajas y una alta (`tmp`/`fast-csv`) y no compiló el uso
+  actual de fórmulas XLSX. Se requiere sustituir ExcelJS o una actualización
+  compatible aguas arriba; no debe degradarse la dependencia para silenciar la
+  auditoría.
 - [ ] **5.6 Cierre técnico.** Ejecutar pruebas, build, auditoría de
   dependencias, pruebas manuales de paridad y actualizar documentación de
   operación/despliegue.

@@ -32,6 +32,14 @@ lecturas y eliminaciones se resuelven con el proveedor registrado por adjunto.
 La credencial debe disponer únicamente de `PutObject`, `GetObject` y
 `DeleteObject` sobre el prefijo configurado.
 
+Como alternativa sin almacenamiento externo, Hostinger confirmó una carpeta
+privada fuera del despliegue. Configure `STORAGE_PROVIDER=local`,
+`LOCAL_UPLOAD_BASE=home` y `LOCAL_UPLOAD_DIR=parautos-data/uploads`; la ruta se
+construye desde `$HOME`, sin fijar el nombre del usuario. No use `public_html`,
+`hbuilds`, `nodejs` ni el directorio del proyecto para adjuntos privados. Antes
+de producción, cree un archivo marcador, reinicie y redepliegue para confirmar
+persistencia, y mantenga copias de seguridad de la carpeta junto con MariaDB.
+
 ## Credenciales locales de desarrollo
 
 > No use estas credenciales en producción. Cambie las contraseñas antes de

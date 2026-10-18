@@ -1,5 +1,5 @@
 import { getEnvironment } from "../../config/env.js";
-import { deleteLocalFile, storeLocalFile, storeLocalSignature } from "./local-storage.js";
+import { deleteLocalFile, getLocalUploadRoot, storeLocalFile, storeLocalSignature } from "./local-storage.js";
 import { deleteS3File, readS3File, storeS3Buffer, storeS3File } from "./s3-storage.js";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -19,7 +19,7 @@ export async function storeSignature(buffer: Buffer): Promise<StoredFile> {
 
 export async function readStoredFile(provider: StorageProvider, objectKey: string): Promise<Buffer> {
   if (provider === "s3") return readS3File(objectKey);
-  return readFile(join(process.cwd(), getEnvironment().LOCAL_UPLOAD_DIR, objectKey));
+  return readFile(join(getLocalUploadRoot(), objectKey));
 }
 
 export async function deleteStoredFile(provider: StorageProvider, objectKey: string): Promise<void> {
