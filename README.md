@@ -20,6 +20,11 @@ S3-compatible conserva archivos y evidencias.
 La primera cuenta se crea una sola vez mediante `POST /api/v1/setup/initial`.
 El token de bootstrap debe eliminarse del entorno despues de completar esa operacion.
 
+En Hostinger, donde el panel ejecuta un solo comando de build, mantenga
+`npm run build` y configure temporalmente `RUN_MIGRATIONS_ON_START=true`. La API
+aplicará las migraciones antes de escuchar solicitudes; confirme el despliegue y
+vuelva la variable a `false` en el siguiente redeploy.
+
 ## Archivos en producción
 
 En desarrollo se utiliza `STORAGE_PROVIDER=local`. Para Hostinger configure un
