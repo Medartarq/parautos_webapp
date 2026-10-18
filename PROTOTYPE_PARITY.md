@@ -484,6 +484,9 @@ not unresolved parity flows.
   protect both IP and normalized account keys, with bounded progressive delay.
   Rate-limited events are audited without credentials, and successful account
   authentication clears its corresponding account-key window.
+- **2026-10-17 — HTTP security integration tests:** Express route tests confirm
+  that exhausted login and tracking windows return 429 before credential or
+  public-case lookups, and that valid login clears its account-key window.
 - **2026-10-17 — Public code review:** the visible six-digit code remains
   `crypto.randomInt`-generated and recoverable by staff, as required by the
   reception constancia and public-tracking parity. Its mandatory normalized

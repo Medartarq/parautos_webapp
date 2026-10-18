@@ -282,8 +282,12 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
 - [ ] **5.2 Separar módulos extensos.** Dividir `client/src/app.tsx`,
   `client/src/full-new-order.tsx` y `server/src/modules/orders/service.ts` por
   responsabilidades, conservando comportamiento y paridad.
-- [ ] **5.3 Ampliar pruebas de integración.** Cubrir rutas Express, MariaDB,
-  migraciones, roles, adjuntos y el flujo completo de orden a entrega.
+- [ ] **5.3 Ampliar pruebas de integración.** En curso: se añadieron pruebas
+  HTTP de Express para login y seguimiento público, que verifican 429 antes de
+  comprobar credenciales/datos, creación de sesión y limpieza de la ventana de
+  cuenta tras login correcto, además de normalización y proyección pública de
+  tracking. Falta cubrir MariaDB real, roles, adjuntos y el flujo completo de
+  orden a entrega.
 - [ ] **5.4 Optimizar carga del cliente.** Aplicar importaciones dinámicas a
   exportaciones PDF/XLSX y visualizadores; medir la reducción de los bundles
   advertidos por Vite.
