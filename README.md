@@ -20,6 +20,18 @@ S3-compatible conserva archivos y evidencias.
 La primera cuenta se crea una sola vez mediante `POST /api/v1/setup/initial`.
 El token de bootstrap debe eliminarse del entorno despues de completar esa operacion.
 
+## Archivos en producción
+
+En desarrollo se utiliza `STORAGE_PROVIDER=local`. Para Hostinger configure un
+bucket S3-compatible (por ejemplo, Cloudflare R2) y establezca
+`STORAGE_PROVIDER=s3`, `S3_BUCKET`, `S3_ACCESS_KEY_ID` y
+`S3_SECRET_ACCESS_KEY`; para R2 agregue `S3_ENDPOINT` y mantenga
+`S3_REGION=auto`. `S3_PREFIX` separa los objetos de PARAUTOS dentro del bucket.
+La aplicación conserva en MariaDB la clave, proveedor, hash y metadatos; las
+lecturas y eliminaciones se resuelven con el proveedor registrado por adjunto.
+La credencial debe disponer únicamente de `PutObject`, `GetObject` y
+`DeleteObject` sobre el prefijo configurado.
+
 ## Credenciales locales de desarrollo
 
 > No use estas credenciales en producción. Cambie las contraseñas antes de

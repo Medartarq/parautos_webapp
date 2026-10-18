@@ -7,7 +7,7 @@ import {
 } from "@parautos/shared";
 import { getPool } from "../../db/pool.js";
 import { AppError } from "../../errors/app-error.js";
-import { deleteLocalFile, storeLocalSignature } from "../attachments/local-storage.js";
+import { deleteStoredFile, storeSignature } from "../attachments/storage.js";
 
 type IdRow = { id: number };
 
@@ -124,7 +124,7 @@ export async function createOrder(
 
   const connection = await pool.getConnection();
   let failed = true;
-  let storedSignature: Awaited<ReturnType<typeof storeLocalSignature>> | undefined;
+  let storedSignature: Awaited<ReturnType<typeof storeSignature>> | undefined;
   try {
     await connection.beginTransaction();
     await connection.query(
@@ -224,7 +224,7 @@ export async function createOrder(
     );
     const receptionId = Number(reception.insertId);
     const signatureBytes = Buffer.from(input.signature.slice("data:image/png;base64,".length), "base64");
-    storedSignature = await storeLocalSignature(signatureBytes);
+    storedSignature = await storeSignature(signatureBytes);
     await connection.query(
       `INSERT INTO attachments (order_id, reception_id, uploaded_by_user_id, category, storage_provider, object_key, original_name, mime_type, byte_size, sha256)
        VALUES (?, ?, ?, 'OTRO', ?, ?, 'firma-cliente.png', 'image/png', ?, ?)`,
@@ -264,7 +264,7 @@ export async function createOrder(
   } finally {
     if (failed) await connection.rollback();
     connection.release();
-    if (failed && storedSignature) await deleteLocalFile(storedSignature.objectKey);
+    if (failed && storedSignature) await deleteStoredFile(storedSignature.provider, storedSignature.objectKey);
   }
 }
 

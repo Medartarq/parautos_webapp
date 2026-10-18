@@ -5,12 +5,12 @@ const database = vi.hoisted(() => {
   return { connection, pool: { query: vi.fn(), getConnection: vi.fn(async () => connection) } };
 });
 const storage = vi.hoisted(() => ({
-  storeLocalSignature: vi.fn(),
-  deleteLocalFile: vi.fn(),
+  storeSignature: vi.fn(),
+  deleteStoredFile: vi.fn(),
 }));
 
 vi.mock("../../db/pool.js", () => ({ getPool: () => database.pool }));
-vi.mock("../attachments/local-storage.js", () => storage);
+vi.mock("../attachments/storage.js", () => storage);
 
 import { createOrder } from "./service.js";
 
@@ -40,7 +40,7 @@ function configureSuccessfulCreation() {
     if (sql.startsWith("INSERT INTO receptions")) return { insertId: 15 };
     return {};
   });
-  storage.storeLocalSignature.mockResolvedValue({ provider: "local", objectKey: "2026-10-17/signature.png", byteSize: 67, sha256: "a".repeat(64) });
+  storage.storeSignature.mockResolvedValue({ provider: "local", objectKey: "2026-10-17/signature.png", byteSize: 67, sha256: "a".repeat(64) });
 }
 
 describe("order creation signature persistence", () => {
@@ -51,13 +51,13 @@ describe("order creation signature persistence", () => {
 
     await expect(createOrder(structuredClone(input), 3, "request-1")).resolves.toMatchObject({ id: 14 });
 
-    expect(storage.storeLocalSignature).toHaveBeenCalledWith(expect.any(Buffer));
+    expect(storage.storeSignature).toHaveBeenCalledWith(expect.any(Buffer));
     expect(database.connection.query).toHaveBeenCalledWith(
       expect.stringContaining("INSERT INTO attachments"),
       [14, 15, 3, "local", "2026-10-17/signature.png", 67, "a".repeat(64)],
     );
     expect(database.connection.commit).toHaveBeenCalledOnce();
-    expect(storage.deleteLocalFile).not.toHaveBeenCalled();
+    expect(storage.deleteStoredFile).not.toHaveBeenCalled();
   });
 
   it("rolls back and removes the signature file when attachment persistence fails", async () => {
@@ -76,6 +76,6 @@ describe("order creation signature persistence", () => {
     await expect(createOrder(structuredClone(input), 3, "request-2")).rejects.toThrow("attachment failure");
 
     expect(database.connection.rollback).toHaveBeenCalledOnce();
-    expect(storage.deleteLocalFile).toHaveBeenCalledWith("2026-10-17/signature.png");
+    expect(storage.deleteStoredFile).toHaveBeenCalledWith("local", "2026-10-17/signature.png");
   });
 });

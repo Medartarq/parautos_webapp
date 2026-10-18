@@ -18,6 +18,16 @@ const environmentSchema = z.object({
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24).default(8),
   STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
   LOCAL_UPLOAD_DIR: z.string().min(1).default("data/uploads"),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_REGION: z.string().min(1).default("auto"),
+  S3_BUCKET: z.string().min(1).optional(),
+  S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  S3_PREFIX: z.string().default("parautos"),
+  S3_FORCE_PATH_STYLE: z.preprocess(
+    (value) => value === "true" ? true : value === "false" ? false : value,
+    z.boolean(),
+  ).default(false),
   BOOTSTRAP_ADMIN_EMAIL: z.string().email(),
   BOOTSTRAP_ADMIN_TOKEN: z.string().min(32).max(512)
 });

@@ -34,10 +34,10 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   reintenta al recuperar red y revisa cambios remotos al enfocar la pestaña y
   cada 30 segundos. No requiere Redis, WebSocket ni proceso persistente, por lo
   que es compatible con Hostinger Cloud Startup.
-- [ ] **Validar continuidad de recepción.** Pendiente prueba manual con el
-  mismo Asesor en móvil y PC: continuar un borrador en ambos sentidos, editar
-  sin red y recuperar conexión, y provocar un conflicto de revisión desde dos
-  sesiones. Registrar resultado antes de dar por verificada esta mejora.
+- [x] **Validar continuidad de recepción.** Producto verificó el 2026-10-17,
+  con el mismo Asesor en móvil y PC, la continuidad bidireccional, recuperación
+  tras desconexión y el conflicto de revisión entre dos sesiones. El cierre y
+  su evidencia están registrados en 2.1b y `PROTOTYPE_PARITY.md`.
 - [ ] **Adjuntos sin conexión.** Parcialmente implementado: fotografías y
   evaluación manuscrita seleccionadas se conservan en IndexedDB del dispositivo
   de origen y se restauran tras una recarga antes de crear la orden. Pendiente:
@@ -222,31 +222,58 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
 - **Centro de pendientes operativos (2026-10-17):** API derivada de órdenes,
   campana SVG, panel desplegable, recordatorio una vez por sesión y bloque en
   Dashboard para diagnóstico pendiente de subir y cotización pendiente de crear.
-  `npm test` (34 aprobadas, 1 omitida) y `npm run build` aprobaron. Falta
-  validación manual de escritorio/móvil y recarga/sesión.
+  `npm test` (34 aprobadas, 1 omitida) y `npm run build` aprobaron. La
+  validación posterior de R-02 y el Mandatory Parity Gate confirmaron
+  escritorio/móvil, recarga y sesión.
 - **Identificación por placa (2026-10-17):** se reemplazaron emojis de vehículo
   dañados por insignias estables de placa en Prioridades y Órdenes; la bandeja
-  de órdenes tiene columnas explícitas y versión móvil. Falta validación visual
-  manual.
+  de órdenes tiene columnas explícitas y versión móvil. La validación posterior
+  de R-05 y el Mandatory Parity Gate confirmaron el resultado visual.
 
 ### 4. Seguridad y almacenamiento (después de la paridad funcional)
 
-- [ ] **4.1 Resolver la configuración S3/R2.** Implementar almacenamiento
-  S3-compatible para `STORAGE_PROVIDER=s3`, incluidas escritura y lectura, o
-  retirar esa opción hasta que exista una implementación real.
-- [ ] **4.2 Validar contenido de imágenes.** Verificar firmas binarias de
-  JPEG/PNG/WebP, conservar límites de tamaño y rechazar archivos cuyo contenido
-  no corresponda con su tipo declarado.
-- [ ] **4.3 Revisar autorización por caso y adjunto.** Aplicar controles de
-  pertenencia si la matriz de permisos determina que un Asesor no puede acceder
-  a todos los casos/evidencias.
-- [ ] **4.4 Endurecer tracking público.** Sustituir el límite local en memoria
-  por uno distribuido/persistente y definir monitoreo de abuso.
-- [ ] **4.5 Endurecer login y bootstrap.** Añadir límites por IP y cuenta,
-  espera progresiva y registro de intentos anómalos.
-- [ ] **4.6 Revisar el código público.** Evaluar código de mayor entropía y/o
-  almacenamiento mediante hash, sólo si no altera el flujo de paridad de seis
-  dígitos exigido por el prototipo.
+- [x] **4.1 Resolver la configuración S3/R2.** Implementado el 2026-10-17:
+  `STORAGE_PROVIDER=s3` escribe, lee y elimina objetos mediante API
+  S3-compatible, conservando el proveedor por adjunto para que archivos locales
+  históricos sigan siendo recuperables. Se documentaron variables para AWS S3 o
+  Cloudflare R2 y se cubrieron escritura, lectura, borrado, hash y prefijo con
+  pruebas unitarias. Pendiente operativo: provisionar bucket/credencial y
+  ejecutar una carga real en Hostinger antes del despliegue.
+- [x] **4.2 Validar contenido de imágenes.** Implementado el 2026-10-17:
+  antes de persistir un adjunto, el servidor comprueba firmas binarias JPEG,
+  PNG y WebP y exige coincidencia con el MIME declarado. Se conservan los
+  límites de Multer (un archivo, máximo 10 MB) y se rechazan bytes arbitrarios
+  o tipos falsificados; las pruebas cubren firmas válidas y discrepancias.
+- [x] **4.3 Revisar autorización por caso y adjunto.** Decisión de producto
+  confirmada el 2026-10-17: el acceso operativo es global para Administrador y
+  Asesor; no existe asignación exclusiva de casos. Órdenes y adjuntos exigen
+  sesión autenticada y uno de ambos roles, mientras Reportes y Auditoría siguen
+  restringidos a Administrador. No se aplican filtros por `advisor_user_id` para
+  no alterar el flujo operativo validado. Una futura regla de asignación deberá
+  convertir esta decisión en controles de pertenencia sobre cada ruta por orden,
+  repuesto y adjunto.
+- [x] **4.4 Endurecer tracking público.** Implementado el 2026-10-17 con
+  `019_public_rate_limits.sql`: MariaDB aplica una ventana compartida de 60
+  segundos y 10 intentos por IP anonimizada con SHA-256. Las solicitudes que
+  exceden el límite reciben 429; se purgan filas vencidas oportunistamente sin
+  Redis ni procesos persistentes. Las pruebas cubren hash, límite permitido y
+  rechazo. El monitoreo inicial consiste en la tabla indexada; el monitoreo
+  externo de Hostinger debe alertar sobre respuestas 429 anómalas.
+- [x] **4.5 Endurecer login y bootstrap.** Implementado el 2026-10-17 sobre
+  el límite persistente de MariaDB: login limita 20 intentos/IP y 5 por cuenta
+  cada 60 segundos; bootstrap limita 5/IP y 3 por correo. La espera aumenta de
+  forma acotada hasta 1.5 segundos, los intentos que reciben 429 quedan en
+  Auditoría como `RATE_LIMITED` sin guardar credenciales, y un login/bootstrap
+  correcto limpia el contador de cuenta correspondiente.
+- [x] **4.6 Revisar el código público.** Evaluado el 2026-10-17. Se mantiene el
+  código criptográficamente aleatorio de seis dígitos generado con
+  `crypto.randomInt`, porque esa longitud visible y recuperable por el personal
+  es un requisito de paridad. Aumentar su longitud rompería la constancia y usar
+  sólo hash impediría mostrarlo de nuevo en el Resumen. El riesgo se mitiga con
+  placa obligatoria normalizada, respuesta uniforme sin coincidencia y límite
+  persistente de 10 intentos por IP cada 60 segundos. Cualquier futura migración
+  a token de mayor entropía deberá rediseñar explícitamente la constancia y el
+  flujo público, no sustituir silenciosamente este código.
 
 ### 5. Calidad, rendimiento y mantenimiento continuo
 

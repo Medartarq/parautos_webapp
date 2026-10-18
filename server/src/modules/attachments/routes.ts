@@ -1,12 +1,10 @@
 import { Router } from "express";
 import multer from "multer";
 import { getPool } from "../../db/pool.js";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { getEnvironment } from "../../config/env.js";
 import { AppError } from "../../errors/app-error.js";
 import { requireAuthentication, requireRoles } from "../../middleware/auth.js";
-import { deleteLocalFile, storeLocalFile } from "./local-storage.js";
+import { deleteStoredFile, readStoredFile, storeFile, type StorageProvider } from "./storage.js";
+import { hasDeclaredImageContent } from "./image-validation.js";
 
 const categories = new Set(["RECEPCION", "DANIO", "EVALUACION_MANUSCRITA", "OTRO"]);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 1 }, fileFilter: (_request, file, callback) => callback(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) });
@@ -21,20 +19,22 @@ attachmentsRouter.get("/orders/:orderId", async (request, response) => {
 attachmentsRouter.get("/:attachmentId/content", async (request, response) => {
   const attachmentId = Number(request.params.attachmentId);
   if (!Number.isSafeInteger(attachmentId) || attachmentId < 1) throw new AppError(400, "INVALID_ATTACHMENT", "El adjunto no es válido.");
-  const rows = await getPool().query<{ objectKey: string; mimeType: string; originalName: string }[]>("SELECT object_key AS objectKey, mime_type AS mimeType, original_name AS originalName FROM attachments WHERE id = ?", [attachmentId]);
+  const rows = await getPool().query<{ objectKey: string; storageProvider: StorageProvider; mimeType: string; originalName: string }[]>("SELECT object_key AS objectKey, storage_provider AS storageProvider, mime_type AS mimeType, original_name AS originalName FROM attachments WHERE id = ?", [attachmentId]);
   const attachment = rows[0];
   if (!attachment) throw new AppError(404, "ATTACHMENT_NOT_FOUND", "El adjunto no existe.");
-  const file = await readFile(join(process.cwd(), getEnvironment().LOCAL_UPLOAD_DIR, attachment.objectKey));
+  const file = await readStoredFile(attachment.storageProvider, attachment.objectKey);
   response.type(attachment.mimeType).setHeader("Content-Disposition", `inline; filename=\"${attachment.originalName.replace(/[\"\\]/g, "")}\"`).send(file);
 });
 attachmentsRouter.post("/orders/:orderId", upload.single("file"), async (request, response) => {
   const orderId = Number(request.params.orderId); const category = request.body.category;
   if (!Number.isSafeInteger(orderId) || orderId < 1) throw new AppError(400, "INVALID_ORDER", "La orden no es valida.");
   if (!request.file) throw new AppError(400, "INVALID_FILE", "Adjunte una imagen JPEG, PNG o WEBP de hasta 10 MB.");
+  if (!hasDeclaredImageContent(request.file))
+    throw new AppError(400, "INVALID_IMAGE_CONTENT", "El contenido del archivo no coincide con una imagen JPEG, PNG o WEBP válida.");
   if (!categories.has(category)) throw new AppError(400, "INVALID_ATTACHMENT_CATEGORY", "La categoria de evidencia no es valida.");
   const order = await getPool().query<{ id: number }[]>("SELECT id FROM service_orders WHERE id = ?", [orderId]);
   if (!order[0]) throw new AppError(404, "ORDER_NOT_FOUND", "La orden no existe.");
-  const stored = await storeLocalFile(request.file);
+  const stored = await storeFile(request.file);
   const connection = await getPool().getConnection();
   let committed = false;
   try {
@@ -49,7 +49,7 @@ attachmentsRouter.post("/orders/:orderId", upload.single("file"), async (request
     response.status(201).json({ attachment: { id: Number(result.insertId), category, originalName: request.file.originalname } });
   } catch (error) {
     if (!committed) await connection.rollback();
-    if (!committed) await deleteLocalFile(stored.objectKey);
+    if (!committed) await deleteStoredFile(stored.provider, stored.objectKey);
     throw error;
   } finally {
     connection.release();
