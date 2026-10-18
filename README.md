@@ -47,10 +47,10 @@ persistencia, y mantenga copias de seguridad de la carpeta junto con MariaDB.
 
 | Perfil | Usuario | Contraseña | Rol |
 | --- | --- | --- | --- |
-| Desarrollador | `admin.local` | `Parautos!Acceso2026` | `ADMINISTRADOR` |
-| Gerente | `C.Amaya` | `Parautos!Acceso2026` | `ADMINISTRADOR` |
-| Asesor 1 | `asesor01` | `Parautos!Acceso1` | `ASESOR` |
-| Asesor 2 | `asesor02` | `Parautos!Acceso2` | `ASESOR` |
+| Desarrollador | `admin.local` | Configuración local no versionada | `ADMINISTRADOR` |
+| Gerente | `C.Amaya` | Configuración local no versionada | `ADMINISTRADOR` |
+| Asesor 1 | `asesor01` | Configuración local no versionada | `ASESOR` |
+| Asesor 2 | `asesor02` | Configuración local no versionada | `ASESOR` |
 
 ## Estructura
 

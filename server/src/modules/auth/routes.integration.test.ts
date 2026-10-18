@@ -39,7 +39,7 @@ describe("login HTTP integration", () => {
   it("creates a session and clears the account window after a valid login", async () => {
     limits.consumeRateLimit.mockResolvedValue({ attempts: 1, limited: false });
     auth.login.mockResolvedValue({ token: "session-token", user: { id: 2, names: "Asesor", username: "asesor01", email: "asesor@parautos.pe", role: "ASESOR" } });
-    const response = await fetch(`${origin}/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ identifier: "asesor01", password: "Parautos!Acceso1" }) });
+    const response = await fetch(`${origin}/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ identifier: "asesor01", password: "test-password-only" }) });
 
     expect(response.status).toBe(200);
     expect(limits.clearRateLimit).toHaveBeenCalledWith("login_identifier", "asesor01");

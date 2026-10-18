@@ -11,9 +11,9 @@ identificados por sus documentos demo.
 
 | Rol | Usuario | Contraseña | Uso |
 | --- | --- | --- | --- |
-| Administrador | `admin.local` | `Parautos!Acceso2026` | Flujo total, Reportes y Auditoría. |
-| Asesor | `asesor01` | `Parautos!Acceso1` | Flujo operativo y comprobación de restricciones. |
-| Asesor | `asesor02` | `Parautos!Acceso2` | Carga/actividad alternativa en Reportes. |
+| Administrador | `admin.local` | Configuración local no versionada | Flujo total, Reportes y Auditoría. |
+| Asesor | `asesor01` | Configuración local no versionada | Flujo operativo y comprobación de restricciones. |
+| Asesor | `asesor02` | Configuración local no versionada | Carga/actividad alternativa en Reportes. |
 
 ## Casos semilla
 
