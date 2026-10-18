@@ -23,7 +23,8 @@ El token de bootstrap debe eliminarse del entorno despues de completar esa opera
 En Hostinger, donde el panel ejecuta un solo comando de build, mantenga
 `npm run build` y configure temporalmente `RUN_MIGRATIONS_ON_START=true`. La API
 aplicará las migraciones antes de escuchar solicitudes; confirme el despliegue y
-vuelva la variable a `false` en el siguiente redeploy.
+vuelva la variable a `false` en el siguiente redeploy. Tras crear el primer
+Administrador, `BOOTSTRAP_ADMIN_TOKEN` puede eliminarse de forma segura.
 
 ## Archivos en producción
 

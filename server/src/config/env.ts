@@ -34,7 +34,7 @@ const environmentSchema = z.object({
     z.boolean(),
   ).default(false),
   BOOTSTRAP_ADMIN_EMAIL: z.string().email(),
-  BOOTSTRAP_ADMIN_TOKEN: z.string().min(32).max(512)
+  BOOTSTRAP_ADMIN_TOKEN: z.string().min(32).max(512).optional()
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

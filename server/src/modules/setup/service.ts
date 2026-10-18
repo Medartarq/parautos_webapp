@@ -28,6 +28,8 @@ export async function getSetupStatus(): Promise<{ configured: boolean }> {
 
 export async function bootstrapAdministrator(input: BootstrapAdminInput, requestId: string, ipAddress?: string, userAgent?: string): Promise<void> {
   const env = getEnvironment();
+  if (!env.BOOTSTRAP_ADMIN_TOKEN)
+    throw new AppError(409, "SETUP_DISABLED", "La configuración inicial ya no está disponible.");
   if (!matchesBootstrapToken(input.token, env.BOOTSTRAP_ADMIN_TOKEN)) {
     throw new AppError(403, "INVALID_BOOTSTRAP_TOKEN", "El token de configuracion no es valido.");
   }
