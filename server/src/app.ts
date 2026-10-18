@@ -14,6 +14,7 @@ import { auditRouter } from "./modules/audit/routes.js";
 import { reportsRouter } from "./modules/reports/routes.js";
 import { attachmentsRouter } from "./modules/attachments/routes.js";
 import { trackingRouter } from "./modules/tracking/routes.js";
+import { usersRouter } from "./modules/users/routes.js";
 
 export function createApp(): express.Express {
   const env = getEnvironment();
@@ -34,6 +35,7 @@ export function createApp(): express.Express {
   app.use("/api/v1/audit", auditRouter);
   app.use("/api/v1/reports", reportsRouter);
   app.use("/api/v1/attachments", attachmentsRouter);
+  app.use("/api/v1/users", usersRouter);
 
   // In production the API and the compiled React application share one origin.
   const clientDist = join(dirname(fileURLToPath(import.meta.url)), "../../client/dist");

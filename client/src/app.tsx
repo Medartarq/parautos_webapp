@@ -19,7 +19,7 @@ import { openReceptionPrint } from "./reception-print";
 
 type AppState = "loading" | "setup" | "login" | "dashboard";
 type Route =
-  "dashboard" | "new" | "orders" | "orderDetail" | "quotes" | "parts" | "reports" | "audit";
+  "dashboard" | "new" | "orders" | "orderDetail" | "quotes" | "parts" | "reports" | "audit" | "users";
 type DashboardOrder = {
   id: number;
   orderNumber: string;
@@ -286,6 +286,7 @@ const navigation: Array<{
   { route: "parts", icon: "▧", label: "Repuestos" },
   { route: "reports", icon: "◫", label: "Reportes", admin: true },
   { route: "audit", icon: "⌁", label: "Auditoría", admin: true },
+  { route: "users", icon: "♙", label: "Usuarios", admin: true },
 ];
 const titles: Record<Route, string> = {
   dashboard: "Panel principal",
@@ -296,6 +297,7 @@ const titles: Record<Route, string> = {
   parts: "Repuestos",
   reports: "Dashboard y reportes",
   audit: "Auditoría",
+  users: "Usuarios",
 };
 
 function Dashboard({
@@ -539,6 +541,8 @@ function Dashboard({
             <QuotesView onOpen={(orderId) => { setSelectedOrderId(orderId); setSelectedOrderTab("quotes"); changeRoute("orderDetail"); }} />
           ) : route === "audit" ? (
             <AuditView />
+          ) : route === "users" ? (
+            <UsersView />
           ) : route === "reports" ? (
             <ReportsView />
           ) : (
@@ -754,6 +758,15 @@ function AuditView() {
   const load = async () => { try { setError(undefined); const query = new URLSearchParams(); if (text.trim()) query.set("text", text.trim()); if (action) query.set("action", action); if (userId) query.set("userId", userId); if (from) query.set("from", from); if (to) query.set("to", to); setResult(await api<AuditResult>(`/audit/events?${query}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible cargar la auditoría."); } };
   useEffect(() => { void load(); }, []);
   return <><div className="page-head"><div><h1>Auditoría</h1><p>Consulta inmutable de eventos registrados en la aplicación.</p></div></div><section className="card audit-view"><div className="audit-filters"><input value={text} onChange={(event) => setText(event.target.value)} placeholder="Buscar acción, entidad, registro o usuario" /><select value={action} onChange={(event) => setAction(event.target.value)}><option value="">Todas las acciones</option>{result?.actions.map((item) => <option key={item} value={item}>{auditActionLabel(item)}</option>)}</select><select value={userId} onChange={(event) => setUserId(event.target.value)}><option value="">Todos los usuarios</option>{result?.users.map((item) => <option key={item.id} value={item.id}>{item.names}</option>)}</select><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label><button className="btn primary" onClick={() => void load()}>Filtrar</button></div>{error ? <div className="empty">{error}</div> : !result ? <div className="empty">Cargando auditoría...</div> : <div className="audit-events">{result.events.length ? result.events.map((event) => <article key={event.id}><div><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.orderNumber || `${event.entity} #${event.recordId}`}</span></div><div><b>{event.actorName || "Sistema"}</b><small>{new Date(event.createdAt).toLocaleString()}</small></div></article>) : <div className="empty">No hay eventos con estos filtros.</div>}</div>}</section></>;
+}
+type ManagedUser = { id: number; names: string; username: string; email: string; role: "ADMINISTRADOR" | "ASESOR"; active: boolean; createdAt: string };
+function UsersView() {
+  const [users, setUsers] = useState<ManagedUser[]>([]); const [message, setMessage] = useState<string>(); const [error, setError] = useState<string>(); const [saving, setSaving] = useState(false);
+  const load = async () => { try { setUsers((await api<{ users: ManagedUser[] }>("/users")).users); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible cargar usuarios."); } };
+  useEffect(() => { void load(); }, []);
+  const create = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const form = new FormData(event.currentTarget); setSaving(true); setMessage(undefined); setError(undefined); try { await api("/users", { method: "POST", body: JSON.stringify({ names: form.get("names"), username: form.get("username"), email: form.get("email"), role: form.get("role"), password: form.get("password") }) }); event.currentTarget.reset(); setMessage("Usuario creado correctamente."); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible crear el usuario."); } finally { setSaving(false); } };
+  const toggle = async (user: ManagedUser) => { try { await api(`/users/${user.id}/active`, { method: "PATCH", body: JSON.stringify({ active: !user.active }) }); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible actualizar el usuario."); } };
+  return <><div className="page-head"><div><h1>Usuarios</h1><p>Administración de cuentas operativas y administrativas.</p></div></div><section className="card report-view"><form className="report-toolbar" onSubmit={(event) => void create(event)}><div className="report-filter-group"><label>Nombres<input name="names" minLength={3} required /></label><label>Usuario<input name="username" pattern="[a-zA-Z0-9._-]+" minLength={3} required /></label><label>Correo<input name="email" type="email" required /></label><label>Rol<select name="role" defaultValue="ASESOR"><option value="ASESOR">Asesor</option><option value="ADMINISTRADOR">Administrador</option></select></label><label>Contraseña<input name="password" type="password" minLength={12} autoComplete="new-password" required /></label></div><button className="btn primary" disabled={saving}>{saving ? "Creando..." : "Crear usuario"}</button></form>{message && <p className="success-message">{message}</p>}{error && <p className="form-error">{error}</p>}<div className="audit-events">{users.map((user) => <article key={user.id}><div><strong>{user.names}</strong><span>{user.username} · {user.email} · {user.role === "ADMINISTRADOR" ? "Administrador" : "Asesor"}</span></div><div><b>{user.active ? "Activo" : "Inactivo"}</b><button className="btn" onClick={() => void toggle(user)}>{user.active ? "Desactivar" : "Activar"}</button></div></article>)}</div></section></>;
 }
 type Activity = { names: string; created: number; diagnosis: number; quotes: number; sent: number; delivered: number };
 type Workload = { names: string; quotePending: number; approvalPending: number; partsPending: number; repair: number; ready: number };

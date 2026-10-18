@@ -25,6 +25,15 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const managedUserSchema = z.object({
+  names: z.string().trim().min(3).max(120),
+  username: z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9._-]+$/),
+  email: z.string().email().max(150),
+  role: userRoleSchema,
+  password: z.string().min(12).max(128),
+});
+export type ManagedUserInput = z.infer<typeof managedUserSchema>;
+
 export function collapseWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
