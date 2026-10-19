@@ -537,7 +537,7 @@ function Dashboard({
           ) : route === "audit" ? (
             <Suspense fallback={<div className="empty">Cargando auditoría...</div>}><AuditView /></Suspense>
           ) : route === "users" ? (
-            <Suspense fallback={<div className="empty">Cargando usuarios...</div>}><UsersView /></Suspense>
+            <Suspense fallback={<div className="empty">Cargando usuarios...</div>}><UsersView currentUserId={user.id} /></Suspense>
           ) : route === "reports" ? (
             <Suspense fallback={<div className="empty">Cargando reportes...</div>}><ReportsView /></Suspense>
           ) : (
