@@ -40,7 +40,7 @@ let pool: Pool | undefined;
            OR (table_name = 'receptions' AND column_name = 'diagnosis_review_state'))`,
     );
 
-    expect(Number(migrations[0]?.total)).toBe(16);
+    expect(Number(migrations[0]?.total)).toBe(20);
     expect(Number(columns[0]?.total)).toBe(2);
   });
 });

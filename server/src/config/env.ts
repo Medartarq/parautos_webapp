@@ -8,10 +8,6 @@ dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), "../../../.e
 const environmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-  RUN_MIGRATIONS_ON_START: z.preprocess(
-    (value) => value === "true" ? true : value === "false" ? false : value,
-    z.boolean(),
-  ).default(false),
   APP_ORIGIN: z.string().url().default("http://localhost:5173"),
   DB_HOST: z.string().min(1),
   DB_PORT: z.coerce.number().int().min(1).max(65535).default(3306),

@@ -1,12 +1,12 @@
 # PARAUTOS - Aplicacion final
 
 Monolito modular para la operacion de PARAUTOS. La interfaz React y la API Express
-se despliegan bajo el mismo dominio; MariaDB conserva los datos y un almacenamiento
-S3-compatible conserva archivos y evidencias.
+se despliegan bajo el mismo dominio; MariaDB conserva los datos y almacenamiento
+privado configurable conserva archivos y evidencias.
 
 ## Requisitos
 
-- Node.js 22 o superior.
+- Node.js 22.12 o superior.
 - MariaDB 11.8.9 o compatible.
 
 ## Desarrollo local
@@ -17,14 +17,16 @@ S3-compatible conserva archivos y evidencias.
 4. Ejecute `npm run dev`.
 5. Abra `http://localhost:5173`.
 
-La primera cuenta se crea una sola vez mediante `POST /api/v1/setup/initial`.
+La primera cuenta se crea una sola vez mediante `POST /api/v1/setup/initial` con
+el rol `SUPERADMINISTRADOR`.
 El token de bootstrap debe eliminarse del entorno despues de completar esa operacion.
 
-En Hostinger, donde el panel ejecuta un solo comando de build, mantenga
-`npm run build` y configure temporalmente `RUN_MIGRATIONS_ON_START=true`. La API
-aplicará las migraciones antes de escuchar solicitudes; confirme el despliegue y
-vuelva la variable a `false` en el siguiente redeploy. Tras crear el primer
-Administrador, `BOOTSTRAP_ADMIN_TOKEN` puede eliminarse de forma segura.
+En Hostinger configure el comando de build `npm run build:deploy`. Este comando
+compila y aplica las migraciones **antes** de publicar la nueva versión. Si una
+migración falla, Hostinger conserva la aplicación previamente activa; la API no
+ejecuta migraciones al iniciar y, por tanto, no queda bloqueada durante el
+arranque. Tras crear el primer Superadministrador,
+`BOOTSTRAP_ADMIN_TOKEN` puede eliminarse de forma segura.
 
 ## Archivos en producción
 
