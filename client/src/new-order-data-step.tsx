@@ -8,10 +8,13 @@ type Catalog = {
 
 function DataStepTitle({ n, title, text }: { n: string; title: string; text: string }) {
   return (
-    <header className="step-title">
-      <b>{n}</b>
-      <div><h2>{title}</h2><p>{text}</p></div>
-    </header>
+    <div className="section-title">
+      <span>{n}</span>
+      <div>
+        <h2>{title}</h2>
+        <small>{text}</small>
+      </div>
+    </div>
   );
 }
 
