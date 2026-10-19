@@ -20,5 +20,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }
