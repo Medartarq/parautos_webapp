@@ -32,7 +32,7 @@ Run this gate before starting a subsequent module and before any release:
    case from MariaDB.
 4. Test desktop and a mobile viewport. Reception must be usable one-handed in
    the workshop.
-5. Confirm Administrator and Advisor permissions match the prototype rule.
+5. Confirm Superadministrator, Administrator, and Advisor permissions match the approved access matrix.
 6. Record the commands, test data, and any approved difference in this file.
 7. Mark the item **Verified** only when all its checkboxes are complete.
 
@@ -65,8 +65,8 @@ These are improvements, not parity failures:
 - MariaDB is the source of truth instead of browser `localStorage`.
 - Authentication uses Argon2id and HTTP-only sessions instead of selectable
   demo users.
-- Files use local development storage and will use S3/R2 in production instead
-  of Data URLs in `localStorage`.
+- Files use private local storage in Hostinger (`$HOME/parautos-data/uploads`)
+  or configurable S3/R2 storage, instead of Data URLs in `localStorage`.
 - API authorization and state transitions run on Express, not only in the UI.
 - Reception considerations are intentionally reduced from the prototype's 24 technical flags to six immediately observable intake checks, per product requirement for faster registration.
 - The damage editor uses only the body type selected during registration, instead of allowing a second body-type selection in the editor, to prevent inconsistent marks and unnecessary data.
@@ -75,7 +75,7 @@ These are improvements, not parity failures:
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Login and session | Verified | Real login, bootstrap administrator, logout, role in session; desktop/mobile validation recorded on 2026-10-17. |
+| Login and session | Verified | Real login, bootstrap Superadministrator, logout, role in session; desktop/mobile validation recorded on 2026-10-17. |
 | Login visual identity | Implemented | Prototype logo/background and responsive two-panel composition applied. |
 | Application shell | Implemented | Sidebar, topbar, mobile navigation, role-visible navigation. |
 | Dashboard | Implemented | Live metrics, priorities, distribution, pending-claim alert, derived operational-pending center, and responsive hierarchy use persisted cases. The new reminder/panel requires final manual visual validation. |
@@ -88,10 +88,11 @@ These are improvements, not parity failures:
 Reference: `documentos/prototipo/index.html`, `panel.html`, `app.js` role rules.
 
 - [x] Real user authentication replaces demo profile selection.
-- [x] Administrator and Advisor roles exist.
+- [x] Superadministrator, Administrator, and Advisor roles exist.
 - [x] Session is protected with an HTTP-only cookie.
+- [x] Superadministrator-only account management is hidden and API-protected from Administrator and Advisor.
 - [x] Administrator-only navigation is hidden from Advisor.
-- [x] Administrator-only API authorization is verified for the implemented protected modules.
+- [x] API authorization is verified for implemented protected modules, including HTTP tests for account management roles.
 - [x] Login form visual parity was accepted manually on desktop and mobile on 2026-10-17.
 
 Status: **Verified**

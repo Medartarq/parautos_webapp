@@ -1,6 +1,6 @@
 # Datos reutilizables de prueba manual
 
-Última actualización: 2026-10-17.
+Última actualización: 2026-10-19.
 
 Este catálogo evita usar órdenes reales para las validaciones de paridad. Antes
 de una ronda, ejecute `npm run seed:demo` y, para Dashboard/Reportes,
@@ -11,7 +11,8 @@ identificados por sus documentos demo.
 
 | Rol | Usuario | Contraseña | Uso |
 | --- | --- | --- | --- |
-| Administrador | `admin.local` | Configuración local no versionada | Flujo total, Reportes y Auditoría. |
+| Superadministrador | Cuenta creada por bootstrap | Configuración local no versionada | Todos los módulos y administración de cuentas. |
+| Administrador | `admin.local` | Configuración local no versionada | Flujo total, Reportes y Auditoría; sin Usuarios. |
 | Asesor | `asesor01` | Configuración local no versionada | Flujo operativo y comprobación de restricciones. |
 | Asesor | `asesor02` | Configuración local no versionada | Carga/actividad alternativa en Reportes. |
 
@@ -36,7 +37,7 @@ Usar desde **Nueva orden → Cargar datos demo**:
 
 ## Recorrido R-05: detalle de orden
 
-1. Iniciar sesión como Administrador o Asesor y abrir una orden demo.
+1. Iniciar sesión como Superadministrador, Administrador o Asesor y abrir una orden demo.
 2. Revisar Resumen, Recepción, Cotización e Historial; abrir evidencia o
    diagnóstico si está disponible y reabrir el documento A4 de recepción.
 3. Corregir un dato operativo permitido con razón; confirmar que el cambio se
@@ -50,7 +51,7 @@ de cerrar R-05.
 
 ## Recorrido R-06: cotizaciones y exportaciones
 
-Usar Administrador en escritorio y comprobar la lectura principal en móvil.
+Usar Superadministrador o Administrador en escritorio y comprobar la lectura principal en móvil.
 
 1. **`DEM-101` (borrador):** abrir Cotización, editar una partida y usar
    **Guardar borrador**; recargar y comprobar la recuperación. Después usar

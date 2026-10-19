@@ -29,6 +29,17 @@ tanto, no queda bloqueada durante el arranque. En desarrollo local la variable
 no debe definirse y `npm run build` sólo compilará. Tras crear el primer Superadministrador,
 `BOOTSTRAP_ADMIN_TOKEN` puede eliminarse de forma segura.
 
+## Roles y permisos
+
+| Rol | Acceso |
+| --- | --- |
+| `SUPERADMINISTRADOR` | Todos los módulos y administración exclusiva de cuentas: listar, crear, activar y desactivar usuarios. |
+| `ADMINISTRADOR` | Todo el flujo operativo, Reportes y Auditoría; no puede acceder a Usuarios. |
+| `ASESOR` | Flujo operativo; no puede acceder a Reportes, Auditoría ni Usuarios. |
+
+La API aplica estas reglas por ruta; ocultar una opción del menú no es el único
+control de autorización.
+
 ## Archivos en producción
 
 En desarrollo se utiliza `STORAGE_PROVIDER=local`. Para Hostinger configure un
@@ -60,6 +71,9 @@ persistencia, y mantenga copias de seguridad de la carpeta junto con MariaDB.
 | Gerente | `C.Amaya` | Configuración local no versionada | `ADMINISTRADOR` |
 | Asesor 1 | `asesor01` | Configuración local no versionada | `ASESOR` |
 | Asesor 2 | `asesor02` | Configuración local no versionada | `ASESOR` |
+
+La cuenta Superadministrador se crea sólo mediante el bootstrap inicial o una
+migración controlada; no se crea desde el directorio de usuarios.
 
 ## Estructura
 

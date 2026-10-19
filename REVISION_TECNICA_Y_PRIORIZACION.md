@@ -1,6 +1,17 @@
 # Revisión técnica y priorización
 
-Fecha de revisión: 2026-10-17.
+Fecha de revisión: 2026-10-19.
+
+## Estado operativo actual
+
+- Hostinger ejecuta `npm run build` con `DEPLOY_RUN_MIGRATIONS=true`: las
+  migraciones se aplican durante el build, antes de publicar. La API no migra al
+  iniciar, evitando indisponibilidad por una migración fallida.
+- Hay 20 migraciones versionadas. La cuenta inicial es `SUPERADMINISTRADOR`;
+  `ADMINISTRADOR` conserva todos los módulos excepto Usuarios y `ASESOR` el
+  flujo operativo.
+- La autorización HTTP de Usuarios está cubierta para los tres roles. La línea
+  base actual es 56 pruebas aprobadas y 1 omitida.
 
 ## Decisión recomendada
 
@@ -55,7 +66,7 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   `npm run build` aprobó con las advertencias de tamaño ya registradas. Repetir
   estas comprobaciones antes de cada fase relevante.
 - [x] **0.3 Definir datos de prueba.** Completado el 2026-10-17 en
-  `DATOS_PRUEBA_MANUAL.md`: usuarios Administrador/Asesor, casos semilla por
+  `DATOS_PRUEBA_MANUAL.md`: usuarios Superadministrador/Administrador/Asesor, casos semilla por
   placa/estado, comandos idempotentes de carga y datos de recepción reutilizables
   para pruebas manuales. Incluye el recorrido documentado de R-05.
 
@@ -70,11 +81,12 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   de compatibilidad para instalaciones existentes está documentado más abajo.
 - [x] **1.3 Automatizar instalación limpia.** Completado el 2026-10-17:
   `server/src/db/migrate.integration.test.ts` crea una base temporal y verifica
-  las 16 migraciones y las dos columnas antes duplicadas. Se activa sólo con
+  las migraciones disponibles y las dos columnas antes duplicadas. Se activa sólo con
   variables `MIGRATION_TEST_DB_*` administrativas, sin guardar credenciales.
-- [x] **1.4 Verificar migraciones reales.** Verificado el 2026-10-17: la
-  instalación limpia completó 16 migraciones y `npm run migrate` sobre la base
-  ya configurada también finalizó sin cambios ni errores.
+- [x] **1.4 Verificar migraciones reales.** Verificado inicialmente el
+  2026-10-17 y actualizado al conjunto actual de 20 migraciones: una instalación
+  limpia las aplica y `npm run migrate` sobre la base ya configurada finaliza sin
+  cambios ni errores.
 - [x] **1.5 Confirmar la matriz de permisos.** Completado el 2026-10-17:
   `documentos/prototipo/app.js` limita exclusivamente las rutas Reportes y
   Auditoría a Administrador; el flujo operativo (órdenes, cotizaciones,
@@ -84,13 +96,14 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
 - [x] **Matriz aplicada — Asesor.** Puede usar el flujo operativo; no puede
   acceder a Reportes ni Auditoría.
 - [x] **1.6 Implementar autorización de API.** Completado el 2026-10-17:
-  `requireRoles` valida el usuario y sus roles; los routers operativos de
-  Órdenes y Adjuntos la aplican explícitamente para Administrador y Asesor.
-  Las rutas administrativas futuras deberán usar `requireRoles("ADMINISTRADOR")`.
-- [x] **1.7 Cubrir autorización con pruebas.** Completado para el middleware
-  el 2026-10-17: se prueban acceso permitido, `403` de Asesor y `401` sin
-  usuario para una acción exclusiva de Administrador. Cada ruta administrativa
-  que se implemente en la Fase 3 deberá añadir su prueba HTTP específica.
+   `requireRoles` valida el usuario y sus roles; los routers operativos de
+   Órdenes y Adjuntos la aplican explícitamente para Superadministrador,
+   Administrador y Asesor. Usuarios usa exclusivamente
+   `requireRoles("SUPERADMINISTRADOR")`.
+- [x] **1.7 Cubrir autorización con pruebas.** El middleware cubre acceso
+  permitido, `403` y `401`; además, las pruebas HTTP de Usuarios validan que
+  sólo Superadministrador puede listar, crear o cambiar el estado de cuentas y
+  que Administrador y Asesor reciben `403`.
 - [x] **1.8 Asegurar consistencia de orden y archivos.** Completado el
   2026-10-17: la firma obligatoria se almacena como adjunto dentro de la misma
   transacción que crea la orden y su recepción. La evidencia y el diagnóstico
@@ -290,19 +303,15 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   HTTP de Express para login y seguimiento público, que verifican 429 antes de
   comprobar credenciales/datos, creación de sesión y limpieza de la ventana de
   cuenta tras login correcto, además de normalización y proyección pública de
-  tracking. Falta cubrir MariaDB real, roles, adjuntos y el flujo completo de
-  orden a entrega.
+  tracking. También se cubrieron por HTTP los roles de Usuarios. Falta cubrir
+  MariaDB real, adjuntos y el flujo completo de orden a entrega.
 - [ ] **5.4 Optimizar carga del cliente.** Aplicar importaciones dinámicas a
   exportaciones PDF/XLSX y visualizadores; medir la reducción de los bundles
   advertidos por Vite.
-- [ ] **5.5 Resolver dependencias vulnerables.** Investigado el 2026-10-17:
-  `npm audit --omit=dev --audit-level=moderate` mantiene dos vulnerabilidades
-  moderadas transitivas en `exceljs@4.4.0`/`uuid@8.3.2`. La alternativa indicada
-  por `npm audit fix --force` (`exceljs@3.4.0`) fue probada y revertida: añadió
-  dos vulnerabilidades bajas y una alta (`tmp`/`fast-csv`) y no compiló el uso
-  actual de fórmulas XLSX. Se requiere sustituir ExcelJS o una actualización
-  compatible aguas arriba; no debe degradarse la dependencia para silenciar la
-  auditoría.
+- [x] **5.5 Resolver dependencias vulnerables.** Completado: los overrides
+  vigentes de `uuid@11.1.1` y `esbuild@0.28.2` dejan
+  `npm audit --omit=dev --audit-level=moderate` sin vulnerabilidades. No usar
+  `npm audit fix --force` para degradar ExcelJS.
 - [ ] **5.6 Cierre técnico.** Ejecutar pruebas, build, auditoría de
   dependencias, pruebas manuales de paridad y actualizar documentación de
   operación/despliegue.
@@ -332,10 +341,10 @@ en `schema_migrations`.
 
 La ejecución de `npm run migrate` contra la base configurada finalizó
 correctamente. También se verificó una instalación limpia en una base temporal
-MariaDB 11.8.9 creada con una cuenta administrativa: las 16 migraciones se
-aplicaron y el esquema resultante contiene una sola columna `body_code` y una
-sola columna `diagnosis_review_state`. La base temporal fue eliminada al
-finalizar.
+MariaDB 11.8.9 creada con una cuenta administrativa: en esa verificación
+histórica se aplicaron 16 migraciones. El conjunto vigente contiene 20; el
+esquema resultante contiene una sola columna `body_code` y una sola columna
+`diagnosis_review_state`. La base temporal fue eliminada al finalizar.
 
 Acción:
 
@@ -348,9 +357,9 @@ Acción:
 
 ### P0 — Autorización efectiva por rol
 
-Actualmente la API autentica sesiones, pero no aplica permisos de
-`ADMINISTRADOR` frente a `ASESOR`. Ocultar menús en React no impide que un
-asesor invoque la ruta HTTP directamente.
+Diagnóstico histórico, resuelto: la API ahora aplica permisos por ruta. Ocultar
+menús en React no es el único control; Usuarios exige Superadministrador y sus
+pruebas HTTP confirman `403` para Administrador y Asesor.
 
 Acción:
 
@@ -425,20 +434,19 @@ paridad una vez corregidos los bloqueadores de la Fase 0.
 - Reemplazar los resultados SQL `any` por tipos explícitos.
 - Separar `client/src/app.tsx`, `client/src/full-new-order.tsx` y
   `server/src/modules/orders/service.ts` por responsabilidades.
-- Añadir pruebas de integración de rutas, roles, MariaDB, migraciones y carga
-  de archivos; las pruebas actuales son principalmente unitarias con base de
-  datos simulada.
+- Ampliar pruebas de integración con MariaDB y carga de archivos; las rutas de
+  Usuarios ya cuentan con cobertura HTTP por rol, pero buena parte de la suite
+  aún usa persistencia simulada.
 - Usar importación dinámica para exportaciones PDF/XLSX y visualizadores; el
   build actual alerta por bundles mayores a 500 KB.
-- Resolver las dos vulnerabilidades moderadas transitivas reportadas por
-  `npm audit` en la cadena de `exceljs`, validando antes las exportaciones.
+- Mantener los overrides de seguridad y repetir la auditoría al actualizar
+  dependencias, validando antes las exportaciones XLSX.
 
 ## Verificación observada durante la revisión
 
-- `npm test`: 7 archivos y 28 pruebas aprobadas.
+- `npm test`: estado actual de referencia: 56 pruebas aprobadas y 1 omitida.
 - `npm run build`: aprobado; Vite reportó bundles grandes.
-- `npm audit --omit=dev --audit-level=moderate`: dos vulnerabilidades
-  moderadas transitivas asociadas a `uuid` mediante `exceljs`.
+- `npm audit --omit=dev --audit-level=moderate`: sin vulnerabilidades.
 
-Estas verificaciones no sustituyen pruebas contra MariaDB real, autorización de
-rutas ni verificación visual contra el prototipo.
+Estas verificaciones no sustituyen pruebas contra MariaDB real, carga de
+archivos ni verificación visual contra el prototipo.
