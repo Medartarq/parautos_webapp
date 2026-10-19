@@ -15,6 +15,8 @@ import { reportsRouter } from "./modules/reports/routes.js";
 import { attachmentsRouter } from "./modules/attachments/routes.js";
 import { trackingRouter } from "./modules/tracking/routes.js";
 import { usersRouter } from "./modules/users/routes.js";
+import { demoRouter } from "./modules/demo/routes.js";
+import { demoContext } from "./middleware/demo-context.js";
 
 export function createApp(): express.Express {
   const env = getEnvironment();
@@ -30,12 +32,13 @@ export function createApp(): express.Express {
   });
   app.use("/api/v1/setup", setupRouter);
   app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1/demo", demoRouter);
   app.use("/api/v1/tracking", trackingRouter);
-  app.use("/api/v1/orders", ordersRouter);
-  app.use("/api/v1/audit", auditRouter);
-  app.use("/api/v1/reports", reportsRouter);
-  app.use("/api/v1/attachments", attachmentsRouter);
-  app.use("/api/v1/users", usersRouter);
+  app.use("/api/v1/orders", demoContext, ordersRouter);
+  app.use("/api/v1/audit", demoContext, auditRouter);
+  app.use("/api/v1/reports", demoContext, reportsRouter);
+  app.use("/api/v1/attachments", demoContext, attachmentsRouter);
+  app.use("/api/v1/users", demoContext, usersRouter);
 
   // In production the API and the compiled React application share one origin.
   const clientDist = join(dirname(fileURLToPath(import.meta.url)), "../../client/dist");

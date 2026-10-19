@@ -1,4 +1,6 @@
 import { closePool, getPool } from "./pool.js";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createOrder, createQuote, transitionQuote } from "../modules/orders/service.js";
 
 type Demo = {
@@ -48,12 +50,12 @@ const demos: Demo[] = [
   },
 ];
 
-async function seed(): Promise<void> {
+export async function seedDemo(): Promise<void> {
   const pool = getPool();
-  const users = await pool.query<Array<{ id: number }>>("SELECT id FROM users WHERE active = 1 ORDER BY id LIMIT 1");
+  const users = await pool.query<Array<{ id: number }>>("SELECT id FROM users WHERE username = 'demo.system' AND active = 1 LIMIT 1");
   const bodyTypes = await pool.query<Array<{ id: number }>>("SELECT id FROM body_types ORDER BY id LIMIT 1");
   const checklist = await pool.query<Array<{ id: number }>>("SELECT id FROM checklist_items ORDER BY id");
-  if (!users[0] || !bodyTypes[0] || !checklist.length) throw new Error("Se requiere un usuario activo y catálogos de recepción para cargar datos demo.");
+  if (!users[0] || !bodyTypes[0] || !checklist.length) throw new Error("Se requiere el actor técnico y catálogos de recepción para cargar datos demo.");
   const actorId = users[0].id;
 
   for (const demo of demos) {
@@ -80,4 +82,5 @@ async function seed(): Promise<void> {
   }
 }
 
-seed().then(() => closePool()).catch(async (error: unknown) => { console.error(error); await closePool(); process.exitCode = 1; });
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  seedDemo().then(() => closePool()).catch(async (error: unknown) => { console.error(error); await closePool(); process.exitCode = 1; });

@@ -242,6 +242,7 @@ a:visited {
   align-items: center;
   gap: 13px;
 }
+.demo-mode-toggle{min-height:34px;padding:7px 10px;border:1px solid #d99b12;border-radius:8px;background:#fffaf0;color:#8a5a00;font-size:12px;font-weight:800}.demo-mode-toggle.active{border-color:#b42318;background:#fff1f1;color:#b42318}.demo-mode-banner{position:fixed;right:18px;bottom:18px;z-index:40;padding:10px 13px;border:1px solid #d99b12;border-radius:9px;background:#fff8e8;color:#704d00;box-shadow:0 8px 24px #17212b24;font-size:12px;font-weight:800}@media(max-width:700px){.demo-mode-toggle{display:none}.demo-mode-banner{right:12px;bottom:84px;left:12px;text-align:center}}
 .bell {
   position: relative;
   width: 44px;

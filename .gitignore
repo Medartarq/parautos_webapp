@@ -5,5 +5,7 @@ dist/
 !.env.example
 coverage/
 data/uploads/
+data/demo-uploads/
 server/data/uploads/
+server/data/demo-uploads/
 *.tsbuildinfo
