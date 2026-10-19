@@ -32,9 +32,9 @@ const input = {
 function configureSuccessfulCreation() {
   database.pool.query.mockResolvedValue([{ id: 1 }]);
   database.connection.query.mockImplementation(async (sql: string) => {
-    if (sql.includes("SELECT id FROM clients")) return [{ id: 11 }];
-    if (sql.includes("SELECT id FROM vehicles")) return [{ id: 12 }];
-    if (sql.includes("SELECT id FROM client_vehicles")) return [{ id: 13 }];
+    if (sql.startsWith("INSERT INTO clients")) return { insertId: 11 };
+    if (sql.startsWith("INSERT INTO vehicles")) return { insertId: 12 };
+    if (sql.startsWith("INSERT INTO client_vehicles")) return { insertId: 13 };
     if (sql.includes("SELECT o.id FROM service_orders")) return [];
     if (sql.startsWith("INSERT INTO service_orders")) return { insertId: 14 };
     if (sql.startsWith("INSERT INTO receptions")) return { insertId: 15 };
@@ -60,12 +60,24 @@ describe("order creation signature persistence", () => {
     expect(storage.deleteStoredFile).not.toHaveBeenCalled();
   });
 
+  it("preserves the enum value for color_type when the vehicle plate already exists", async () => {
+    configureSuccessfulCreation();
+
+    await createOrder(structuredClone(input), 3, "request-existing-vehicle");
+
+    const vehicleUpsert = database.connection.query.mock.calls.find(
+      ([sql]) => typeof sql === "string" && sql.startsWith("INSERT INTO vehicles"),
+    )?.[0];
+    expect(vehicleUpsert).toContain("color_type = VALUES(color_type)");
+    expect(vehicleUpsert).not.toContain("color_type = VALUES(color),");
+  });
+
   it("rolls back and removes the signature file when attachment persistence fails", async () => {
     configureSuccessfulCreation();
     database.connection.query.mockImplementation(async (sql: string) => {
-      if (sql.includes("SELECT id FROM clients")) return [{ id: 11 }];
-      if (sql.includes("SELECT id FROM vehicles")) return [{ id: 12 }];
-      if (sql.includes("SELECT id FROM client_vehicles")) return [{ id: 13 }];
+      if (sql.startsWith("INSERT INTO clients")) return { insertId: 11 };
+      if (sql.startsWith("INSERT INTO vehicles")) return { insertId: 12 };
+      if (sql.startsWith("INSERT INTO client_vehicles")) return { insertId: 13 };
       if (sql.includes("SELECT o.id FROM service_orders")) return [];
       if (sql.startsWith("INSERT INTO service_orders")) return { insertId: 14 };
       if (sql.startsWith("INSERT INTO receptions")) return { insertId: 15 };

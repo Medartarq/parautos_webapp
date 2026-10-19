@@ -322,8 +322,7 @@ function Dashboard({
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const compact =
-    sidebarMode === "compact" || (sidebarMode === "auto" && route === "parts");
+  const compact = sidebarMode === "compact";
   useEffect(() => {
     let previous = window.scrollY;
     const onScroll = () => {

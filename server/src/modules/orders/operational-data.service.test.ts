@@ -27,6 +27,18 @@ describe("operational data correction service", () => {
     expect(database.connection.query).toHaveBeenCalledTimes(1);
   });
 
+  it("allows contact corrections for particular orders that retain an existing claim number", async () => {
+    const particularInput = { ...input, claimNumber: "SIN-21" };
+    database.connection.query
+      .mockResolvedValueOnce([{ modality: "PARTICULAR", internalStatus: "COTIZACION_PENDIENTE", claimNumber: "SIN-21", claimPending: 0 }])
+      .mockResolvedValue({});
+
+    await expect(correctOperationalData(5, particularInput, ...context)).resolves.toBeUndefined();
+
+    expect(database.connection.query.mock.calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET claim_number"), ["SIN-21", 0, 5]]);
+    expect(database.connection.commit).toHaveBeenCalledOnce();
+  });
+
   it("rejects a correction that does not change operational data", async () => {
     database.connection.query.mockResolvedValueOnce([{ modality: "MAPFRE", internalStatus: "EN_REPARACION", claimNumber: "SIN-22", claimPending: 0, phoneOverride: "999888777", emailOverride: "operaciones@parautos.pe" }]);
     await expect(correctOperationalData(5, input, ...context)).rejects.toMatchObject({ code: "NO_MEANINGFUL_CHANGE" });
