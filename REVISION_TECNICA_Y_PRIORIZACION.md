@@ -299,8 +299,8 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   SQL por tipos explícitos y normalizadores de filas.
 - [ ] **5.2 Separar módulos extensos.** En curso: la API cliente, el cargador
   PDF, Reportes, la barra y el editor de Cotizaciones, Recepción, Repuestos por
-  orden y Control final se separaron de `client/src/app.tsx`; esos módulos se
-  cargan de forma diferida. Falta dividir el detalle principal de orden,
+  orden, Control final y detalle principal se separaron de `client/src/app.tsx`;
+  esos módulos se cargan de forma diferida. Falta dividir
   `client/src/full-new-order.tsx` y
   `server/src/modules/orders/service.ts`, conservando comportamiento y paridad.
 - [ ] **5.3 Ampliar pruebas de integración.** En curso: se añadieron pruebas
@@ -311,7 +311,7 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   MariaDB real, adjuntos y el flujo completo de orden a entrega.
 - [x] **5.4 Optimizar carga del cliente.** Completado: ExcelJS y las librerías
   PDF (`jspdf` y `jspdf-autotable`) se cargan bajo demanda al exportar. El
-  bundle inicial JavaScript bajó de 919.76 kB a 425.09 kB sin minificar; los
+  bundle inicial JavaScript bajó de 919.76 kB a 415.49 kB sin minificar; los
   chunks pesados se descargan sólo al solicitar XLSX, PDF o abrir Reportes.
 - [x] **5.5 Resolver dependencias vulnerables.** Completado: los overrides
   vigentes de `uuid@11.1.1` y `esbuild@0.28.2` dejan
