@@ -18,6 +18,7 @@ import "./body-type-suggestion";
 import "./checklist-parity";
 import "./demo-fill";
 import { openReceptionPrint } from "./reception-print";
+import { clearLocalReceptionDraft, clearLocalReceptionMedia, localReceptionDraft, localReceptionMedia } from "./reception-draft-storage";
 
 type Catalog = {
   bodyTypes: Array<{ id: number; code: DamageBody; name: string }>;
@@ -133,57 +134,6 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
-const receptionDraftStore = "parautos-reception-drafts";
-const receptionDraftKey = "current-user";
-const receptionMediaKey = "current-user-media";
-function createReceptionStores(database: IDBDatabase) {
-  if (!database.objectStoreNames.contains("drafts")) database.createObjectStore("drafts");
-  if (!database.objectStoreNames.contains("media")) database.createObjectStore("media");
-}
-async function localReceptionDraft(read = false, value?: StoredReceptionDraft) {
-  return new Promise<StoredReceptionDraft | undefined>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 2);
-    request.onupgradeneeded = () => createReceptionStores(request.result);
-    request.onerror = () => resolve(undefined);
-    request.onsuccess = () => {
-      const transaction = request.result.transaction("drafts", read ? "readonly" : "readwrite");
-      const store = transaction.objectStore("drafts");
-      const operation = read ? store.get(receptionDraftKey) : store.put(value, receptionDraftKey);
-      operation.onsuccess = () => resolve(read ? operation.result as StoredReceptionDraft | undefined : value);
-      operation.onerror = () => resolve(undefined);
-    };
-  });
-}
-async function clearLocalReceptionDraft() {
-  return new Promise<void>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 2);
-    request.onupgradeneeded = () => createReceptionStores(request.result);
-    request.onerror = () => resolve();
-    request.onsuccess = () => { const transaction = request.result.transaction("drafts", "readwrite"); transaction.objectStore("drafts").delete(receptionDraftKey); transaction.oncomplete = () => resolve(); transaction.onerror = () => resolve(); };
-  });
-}
-async function localReceptionMedia(read = false, value?: StoredReceptionMedia) {
-  return new Promise<StoredReceptionMedia | undefined>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 2);
-    request.onupgradeneeded = () => createReceptionStores(request.result);
-    request.onerror = () => resolve(undefined);
-    request.onsuccess = () => {
-      const transaction = request.result.transaction("media", read ? "readonly" : "readwrite");
-      const store = transaction.objectStore("media");
-      const operation = read ? store.get(receptionMediaKey) : store.put(value, receptionMediaKey);
-      operation.onsuccess = () => resolve(read ? operation.result as StoredReceptionMedia | undefined : value);
-      operation.onerror = () => resolve(undefined);
-    };
-  });
-}
-async function clearLocalReceptionMedia() {
-  return new Promise<void>((resolve) => {
-    const request = indexedDB.open(receptionDraftStore, 2);
-    request.onupgradeneeded = () => createReceptionStores(request.result);
-    request.onerror = () => resolve();
-    request.onsuccess = () => { const transaction = request.result.transaction("media", "readwrite"); transaction.objectStore("media").delete(receptionMediaKey); transaction.oncomplete = () => resolve(); transaction.onerror = () => resolve(); };
-  });
-}
 function readImagePreview(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
