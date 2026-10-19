@@ -11,7 +11,8 @@ Fecha de revisión: 2026-10-19.
   `ADMINISTRADOR` conserva todos los módulos excepto Usuarios y `ASESOR` el
   flujo operativo.
 - La autorización HTTP de Usuarios está cubierta para los tres roles. La línea
-  base actual es 56 pruebas aprobadas y 1 omitida.
+  base actual es 58 pruebas aprobadas y 2 omitidas (las de MariaDB requieren
+  credenciales temporales explícitas).
 
 ## Decisión recomendada
 
@@ -445,7 +446,7 @@ paridad una vez corregidos los bloqueadores de la Fase 0.
 
 ## Verificación observada durante la revisión
 
-- `npm test`: estado actual de referencia: 56 pruebas aprobadas y 1 omitida.
+- `npm test`: estado actual de referencia: 58 pruebas aprobadas y 2 omitidas.
 - `npm run build`: aprobado; Vite reportó bundles grandes.
 - `npm audit --omit=dev --audit-level=moderate`: sin vulnerabilidades.
 

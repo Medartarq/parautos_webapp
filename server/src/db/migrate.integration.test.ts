@@ -43,4 +43,22 @@ let pool: Pool | undefined;
     expect(Number(migrations[0]?.total)).toBe(20);
     expect(Number(columns[0]?.total)).toBe(2);
   });
+
+  it("reapplies migration 020 by promoting administrators and recording its audit event once", async () => {
+    const administratorRole = await pool!.query<{ id: number }[]>("SELECT id FROM roles WHERE code = 'ADMINISTRADOR'");
+    const created = await pool!.query<{ insertId: number }>("INSERT INTO users (role_id, names, username, email, password_hash) VALUES (?, 'Administrador histórico', 'admin.hist', 'admin.hist@parautos.pe', 'not-used-in-test')", [administratorRole[0]!.id]);
+    const userId = Number(created.insertId);
+    await pool!.query("DELETE FROM schema_migrations WHERE version = '020_superadministrator_role.sql'");
+
+    await applyMigrations(pool!);
+
+    const users = await pool!.query<{ role: string }[]>("SELECT r.code AS role FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ?", [userId]);
+    const events = await pool!.query<{ total: number }[]>("SELECT COUNT(*) AS total FROM audit_events WHERE entity = 'user' AND record_id = ? AND action = 'ROLE_MIGRATED_TO_SUPERADMINISTRADOR'", [String(userId)]);
+    expect(users[0]?.role).toBe("SUPERADMINISTRADOR");
+    expect(Number(events[0]?.total)).toBe(1);
+
+    await applyMigrations(pool!);
+    const eventsAfterRerun = await pool!.query<{ total: number }[]>("SELECT COUNT(*) AS total FROM audit_events WHERE entity = 'user' AND record_id = ? AND action = 'ROLE_MIGRATED_TO_SUPERADMINISTRADOR'", [String(userId)]);
+    expect(Number(eventsAfterRerun[0]?.total)).toBe(1);
+  });
 });

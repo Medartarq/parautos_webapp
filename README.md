@@ -75,6 +75,15 @@ persistencia, y mantenga copias de seguridad de la carpeta junto con MariaDB.
 La cuenta Superadministrador se crea sólo mediante el bootstrap inicial o una
 migración controlada; no se crea desde el directorio de usuarios.
 
+## Pruebas de integración con MariaDB
+
+Para ejecutar las pruebas reales de migraciones, configure las variables
+`MIGRATION_TEST_DB_HOST`, `MIGRATION_TEST_DB_PORT`, `MIGRATION_TEST_DB_USER` y
+`MIGRATION_TEST_DB_PASSWORD` con una cuenta de **prueba** que sólo pueda crear y
+eliminar bases temporales. `npm test` creará una base efímera, aplicará las 20
+migraciones y comprobará la migración de Superadministrador. Nunca use las
+credenciales de producción.
+
 ## Estructura
 
 - `client/`: React responsive.
