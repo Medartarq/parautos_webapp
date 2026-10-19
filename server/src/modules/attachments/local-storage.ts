@@ -2,13 +2,15 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import { extname, isAbsolute, join } from "node:path";
 import { getEnvironment } from "../../config/env.js";
+import { isDemoScope } from "../../db/pool.js";
 
 export function getLocalUploadRoot(): string {
   const env = getEnvironment();
-  const relativeDirectory = env.LOCAL_UPLOAD_DIR.replace(/\\/g, "/");
+  const demo = isDemoScope();
+  const relativeDirectory = (demo ? env.DEMO_LOCAL_UPLOAD_DIR : env.LOCAL_UPLOAD_DIR)!.replace(/\\/g, "/");
   if (isAbsolute(relativeDirectory) || relativeDirectory.split("/").includes(".."))
     throw new Error("LOCAL_UPLOAD_DIR debe ser una ruta relativa sin segmentos '..'.");
-  const baseDirectory = env.LOCAL_UPLOAD_BASE === "home" ? process.env.HOME : process.cwd();
+  const baseDirectory = (demo ? env.DEMO_LOCAL_UPLOAD_BASE : env.LOCAL_UPLOAD_BASE) === "home" ? process.env.HOME : process.cwd();
   if (!baseDirectory)
     throw new Error("HOME es obligatorio cuando LOCAL_UPLOAD_BASE=home.");
   return join(baseDirectory, relativeDirectory);

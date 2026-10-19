@@ -5,17 +5,22 @@ if (process.env.DEPLOY_RUN_MIGRATIONS !== "true") {
   process.exit(0);
 }
 
+function run(script) {
+  return new Promise((resolve, reject) => {
+    const migration = spawn(process.execPath, [script], { env: process.env, stdio: "inherit" });
+    migration.on("error", reject);
+    migration.on("exit", (code, signal) => code === 0 ? resolve() : reject(new Error(`Database migrations failed${signal ? ` (${signal})` : ""}.`)));
+  });
+}
+
 console.info("Applying database migrations before publishing the deployment.");
-const migration = spawn(process.execPath, ["server/dist/db/migrate.js"], {
-  env: process.env,
-  stdio: "inherit",
-});
-migration.on("error", (error) => {
-  console.error("Could not start database migrations.", error);
+try {
+  await run("server/dist/db/migrate.js");
+  if (process.env.DEMO_MODE_ENABLED === "true") {
+    await run("server/dist/db/migrate-demo.js");
+    await run("server/dist/db/seed-demo-environment.js");
+  }
+} catch (error) {
+  console.error(error);
   process.exitCode = 1;
-});
-migration.on("exit", (code, signal) => {
-  if (code === 0) return;
-  console.error(`Database migrations failed${signal ? ` (${signal})` : ""}.`);
-  process.exitCode = code ?? 1;
-});
+}

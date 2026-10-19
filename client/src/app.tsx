@@ -320,6 +320,8 @@ function Dashboard({
     "loading",
   );
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
+  const [demoAvailable, setDemoAvailable] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const compact = sidebarMode === "compact";
@@ -341,6 +343,8 @@ function Dashboard({
     }
   }, [route]);
   const isAdministrator = user.role === "ADMINISTRADOR" || user.role === "SUPERADMINISTRADOR";
+  useEffect(() => { if (user.role !== "SUPERADMINISTRADOR") return; void api<{ enabled: boolean; active: boolean }>("/demo/status").then((status) => { setDemoAvailable(status.enabled); setDemoMode(status.enabled && status.active); }).catch(() => { setDemoAvailable(false); setDemoMode(false); }); }, [user.role]);
+  const toggleDemoMode = async () => { await api(`/demo/${demoMode ? "exit" : "enter"}`, { method: "POST" }); window.location.reload(); };
   const allowed = navigation.filter(
     (item) => (!item.admin || isAdministrator) && (!item.superadmin || user.role === "SUPERADMINISTRADOR"),
   );
@@ -483,7 +487,8 @@ function Dashboard({
                   : "Sin conexión"}
             </small>
           </div>
-          <div className="top-actions">
+            <div className="top-actions">
+              {user.role === "SUPERADMINISTRADOR" && demoAvailable && <button className={`demo-mode-toggle${demoMode ? " active" : ""}`} onClick={() => void toggleDemoMode()}>{demoMode ? "Salir de demo" : "Modo demo"}</button>}
             <div className="notification-center">
               <button className="bell" title="Pendientes operativos" aria-label={`${operationalPending.total} pendientes operativos`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><BellIcon />{operationalPending.total > 0 && <b>{operationalPending.total > 99 ? "99+" : operationalPending.total}</b>}</button>
               {notificationsOpen && <OperationalNotificationsPanel notifications={operationalPending} onClose={() => setNotificationsOpen(false)} onOpen={openPending} />}
@@ -540,6 +545,7 @@ function Dashboard({
           )}
         </section>
       </main>
+      {demoMode && <div className="demo-mode-banner" role="status">Modo demostración · datos ficticios aislados</div>}
       <nav className={`mobile-nav${mobileNavHidden ? " hidden" : ""}`}>
         {allowed.slice(0, 4).map((item) => (
           <button

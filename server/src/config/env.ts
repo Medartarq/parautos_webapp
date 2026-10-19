@@ -15,6 +15,14 @@ const environmentSchema = z.object({
   DB_USER: z.string().min(1),
   DB_PASSWORD: z.string().min(1),
   DB_CONNECTION_LIMIT: z.coerce.number().int().min(1).max(20).default(5),
+  DEMO_MODE_ENABLED: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
+  DEMO_DB_HOST: z.string().min(1).optional(),
+  DEMO_DB_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  DEMO_DB_NAME: z.string().min(1).optional(),
+  DEMO_DB_USER: z.string().min(1).optional(),
+  DEMO_DB_PASSWORD: z.string().min(1).optional(),
+  DEMO_LOCAL_UPLOAD_BASE: z.enum(["project", "home"]).optional(),
+  DEMO_LOCAL_UPLOAD_DIR: z.string().min(1).optional(),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24).default(8),
   STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
   LOCAL_UPLOAD_BASE: z.enum(["project", "home"]).default("project"),
@@ -31,6 +39,10 @@ const environmentSchema = z.object({
   ).default(false),
   BOOTSTRAP_ADMIN_EMAIL: z.string().email(),
   BOOTSTRAP_ADMIN_TOKEN: z.string().min(32).max(512).optional()
+}).superRefine((value, context) => {
+  if (!value.DEMO_MODE_ENABLED) return;
+  for (const key of ["DEMO_DB_HOST", "DEMO_DB_PORT", "DEMO_DB_NAME", "DEMO_DB_USER", "DEMO_DB_PASSWORD", "DEMO_LOCAL_UPLOAD_BASE", "DEMO_LOCAL_UPLOAD_DIR"] as const)
+    if (value[key] === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: "Es obligatoria cuando DEMO_MODE_ENABLED=true." });
 });
 
 export type Environment = z.infer<typeof environmentSchema>;
