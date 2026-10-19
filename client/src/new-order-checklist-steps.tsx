@@ -20,14 +20,13 @@ type ChecklistProps = {
 type ConsiderationsProps = { flagsSelected: string[]; setFlagsSelected: Dispatch<SetStateAction<string[]>> };
 
 const flags = [
-  "Veh?culo presenta suciedad que impide la revisi?n eficaz",
+  "Vehículo presenta suciedad que impide la revisión eficaz",
   "Interior con objetos personales que deben retirarse",
   "Manchas de aceite en el piso inferior",
-  "Abolladuras con deformaci?n de la plancha",
+  "Abolladuras con deformación de la plancha",
   "Vidrios con grietas o impactos",
-  "Documentaci?n incompleta o con datos que no coinciden",
+  "Documentación incompleta o con datos que no coinciden",
 ];
-
 function StepTitle({ n, title, text }: { n: string; title: string; text: string }) {
   return <div className="section-title"><span>{n}</span><div><h2>{title}</h2><small>{text}</small></div></div>;
 }
