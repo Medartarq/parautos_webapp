@@ -1,5 +1,4 @@
 import { randomInt } from "node:crypto";
-import type { PoolConnection } from "mariadb";
 import {
   receptionStepOneSchema,
   type CreateOrderInput,
@@ -8,8 +7,6 @@ import {
 import { getPool } from "../../db/pool.js";
 import { AppError } from "../../errors/app-error.js";
 import { deleteStoredFile, storeSignature } from "../attachments/storage.js";
-
-type IdRow = { id: number };
 
 export function generatePublicCode(): string {
   return String(randomInt(100_000, 1_000_000));
@@ -31,20 +28,18 @@ export async function getReceptionCatalog() {
   return { bodyTypes, checklist };
 }
 
-async function idFor(
-  connection: PoolConnection,
+function insertedId(
+  result: { insertId?: number | bigint },
   entity: "cliente" | "vehículo" | "vínculo cliente-vehículo",
-  query: string,
-  parameters: unknown[],
-): Promise<number> {
-  const rows = await connection.query<IdRow[]>(query, parameters);
-  if (!rows[0])
+): number {
+  const id = Number(result.insertId);
+  if (!Number.isSafeInteger(id) || id < 1)
     throw new AppError(
       500,
       "PERSISTENCE_ERROR",
       `No fue posible recuperar el ${entity} creado.`,
     );
-  return Number(rows[0].id);
+  return id;
 }
 
 export async function createOrder(
@@ -85,7 +80,7 @@ export async function createOrder(
   input.claimNumber = normalized.claimNumber;
   input.mileage = normalized.mileage;
   const pool = getPool();
-  const activeChecklist = await pool.query<IdRow[]>(
+  const activeChecklist = await pool.query<{ id: number }[]>(
     "SELECT id FROM checklist_items WHERE active = 1 ORDER BY id",
   );
   const expected = new Set(activeChecklist.map((item) => Number(item.id)));
@@ -128,9 +123,9 @@ export async function createOrder(
   let storedSignature: Awaited<ReturnType<typeof storeSignature>> | undefined;
   try {
     await connection.beginTransaction();
-    await connection.query(
+    const client = await connection.query<{ insertId: number }>(
       `INSERT INTO clients (document_type, document_number, full_name, phone, email) VALUES (?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), phone = VALUES(phone), email = VALUES(email)`,
+      ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), full_name = VALUES(full_name), phone = VALUES(phone), email = VALUES(email)`,
       [
         input.client.documentType,
         input.client.documentNumber,
@@ -139,16 +134,11 @@ export async function createOrder(
         input.client.email || null,
       ],
     );
-    const clientId = await idFor(
-      connection,
-      "cliente",
-      "SELECT id FROM clients WHERE document_type = ? AND document_number = ?",
-      [input.client.documentType, input.client.documentNumber],
-    );
+    const clientId = insertedId(client, "cliente");
     const plate = normalizePlate(input.vehicle.plate);
-    await connection.query(
+    const vehicle = await connection.query<{ insertId: number }>(
       `INSERT INTO vehicles (plate, brand, model, manufacture_year, vin, color, color_type, body_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE brand = VALUES(brand), model = VALUES(model), manufacture_year = VALUES(manufacture_year), vin = VALUES(vin), color = VALUES(color), color_type = VALUES(color_type), body_type_id = VALUES(body_type_id)`,
+      ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), brand = VALUES(brand), model = VALUES(model), manufacture_year = VALUES(manufacture_year), vin = VALUES(vin), color = VALUES(color), color_type = VALUES(color), body_type_id = VALUES(body_type_id)`,
       [
         plate,
         input.vehicle.brand.toUpperCase(),
@@ -160,27 +150,17 @@ export async function createOrder(
         input.vehicle.bodyTypeId,
       ],
     );
-    const vehicleId = await idFor(
-      connection,
-      "vehículo",
-      "SELECT id FROM vehicles WHERE plate = ?",
-      [plate],
-    );
-    await connection.query(
-      "INSERT IGNORE INTO client_vehicles (client_id, vehicle_id) VALUES (?, ?)",
+    const vehicleId = insertedId(vehicle, "vehículo");
+    const clientVehicle = await connection.query<{ insertId: number }>(
+      "INSERT INTO client_vehicles (client_id, vehicle_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
       [clientId, vehicleId],
     );
-    const clientVehicleId = await idFor(
-      connection,
-      "vínculo cliente-vehículo",
-      "SELECT id FROM client_vehicles WHERE client_id = ? AND vehicle_id = ?",
-      [clientId, vehicleId],
-    );
+    const clientVehicleId = insertedId(clientVehicle, "vínculo cliente-vehículo");
     // The vehicle upsert holds its row lock, serializing active-code checks for this plate.
     let publicCode = "";
     for (let attempt = 0; attempt < 10; attempt += 1) {
       const candidate = generatePublicCode();
-      const matchingOrders = await connection.query<IdRow[]>(
+      const matchingOrders = await connection.query<{ id: number }[]>(
         `SELECT o.id FROM service_orders o
          JOIN client_vehicles cv ON cv.id = o.client_vehicle_id
          WHERE cv.vehicle_id = ? AND o.public_code = ?
