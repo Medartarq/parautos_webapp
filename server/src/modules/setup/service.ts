@@ -46,9 +46,9 @@ export async function bootstrapAdministrator(input: BootstrapAdminInput, request
       throw new AppError(409, "SETUP_ALREADY_COMPLETED", "La configuracion inicial ya fue completada.");
     }
 
-    const roles = await connection.query<RoleRow[]>("SELECT id FROM roles WHERE code = 'ADMINISTRADOR' AND active = 1 LIMIT 1");
+    const roles = await connection.query<RoleRow[]>("SELECT id FROM roles WHERE code = 'SUPERADMINISTRADOR' AND active = 1 LIMIT 1");
     const role = roles[0];
-    if (!role) throw new AppError(500, "ADMIN_ROLE_MISSING", "No existe el rol de administrador.");
+    if (!role) throw new AppError(500, "SUPERADMIN_ROLE_MISSING", "No existe el rol de superadministrador.");
 
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
     const result = await connection.query<{ insertId: number }>(

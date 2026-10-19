@@ -9,7 +9,7 @@ import { hasDeclaredImageContent } from "./image-validation.js";
 const categories = new Set(["RECEPCION", "DANIO", "EVALUACION_MANUSCRITA", "OTRO"]);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 1 }, fileFilter: (_request, file, callback) => callback(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) });
 export const attachmentsRouter = Router();
-attachmentsRouter.use(requireAuthentication, requireRoles("ADMINISTRADOR", "ASESOR"));
+attachmentsRouter.use(requireAuthentication, requireRoles("SUPERADMINISTRADOR", "ADMINISTRADOR", "ASESOR"));
 attachmentsRouter.get("/orders/:orderId", async (request, response) => {
   const orderId = Number(request.params.orderId);
   if (!Number.isSafeInteger(orderId) || orderId < 1) throw new AppError(400, "INVALID_ORDER", "La orden no es valida.");

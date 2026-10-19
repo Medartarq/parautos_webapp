@@ -15,7 +15,8 @@ CREATE TABLE roles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO roles (code, name, description) VALUES
-  ('ADMINISTRADOR', 'Administrador', 'Gestiona usuarios, reportes y auditoria.'),
+  ('SUPERADMINISTRADOR', 'Superadministrador', 'Acceso total y administración exclusiva de cuentas.'),
+  ('ADMINISTRADOR', 'Administrador', 'Gestiona todos los módulos excepto las cuentas de usuario.'),
   ('ASESOR', 'Asesor', 'Registra y gestiona casos operativos.');
 
 CREATE TABLE users (

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const userRoleSchema = z.enum(["ADMINISTRADOR", "ASESOR"]);
+export const userRoleSchema = z.enum(["SUPERADMINISTRADOR", "ADMINISTRADOR", "ASESOR"]);
 export type UserRole = z.infer<typeof userRoleSchema>;
 
 export const bootstrapAdminSchema = z.object({
@@ -29,7 +29,7 @@ export const managedUserSchema = z.object({
   names: z.string().trim().min(3).max(120),
   username: z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9._-]+$/),
   email: z.string().email().max(150),
-  role: userRoleSchema,
+  role: z.enum(["ADMINISTRADOR", "ASESOR"]),
   password: z.string().min(12).max(128),
 });
 export type ManagedUserInput = z.infer<typeof managedUserSchema>;

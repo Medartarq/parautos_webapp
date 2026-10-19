@@ -12,7 +12,7 @@ type AgingRow = { source: string; recent: number | string; attention: number | s
 type QuoteFunnelRow = { created: number | string; sent: number | string; approved: number | string };
 
 export const reportsRouter = Router();
-reportsRouter.use(requireAuthentication, requireRoles("ADMINISTRADOR"));
+reportsRouter.use(requireAuthentication, requireRoles("SUPERADMINISTRADOR", "ADMINISTRADOR"));
 reportsRouter.get("/operational", async (_request, response) => {
   const pool = getPool();
   const [orders, quotes, parts, advisorActivity, weekly, advisorWorkload, aging, quoteFunnel] = await Promise.all([

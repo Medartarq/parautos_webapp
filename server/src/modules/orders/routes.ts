@@ -39,7 +39,7 @@ import {
 } from "./service.js";
 
 export const ordersRouter = Router();
-ordersRouter.use(requireAuthentication, requireRoles("ADMINISTRADOR", "ASESOR"));
+ordersRouter.use(requireAuthentication, requireRoles("SUPERADMINISTRADOR", "ADMINISTRADOR", "ASESOR"));
 ordersRouter.get("/reception-catalog", async (_request, response) =>
   response.json(await getReceptionCatalog()),
 );
