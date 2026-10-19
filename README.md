@@ -21,11 +21,12 @@ La primera cuenta se crea una sola vez mediante `POST /api/v1/setup/initial` con
 el rol `SUPERADMINISTRADOR`.
 El token de bootstrap debe eliminarse del entorno despues de completar esa operacion.
 
-En Hostinger configure el comando de build `npm run build:deploy`. Este comando
-compila y aplica las migraciones **antes** de publicar la nueva versión. Si una
-migración falla, Hostinger conserva la aplicación previamente activa; la API no
-ejecuta migraciones al iniciar y, por tanto, no queda bloqueada durante el
-arranque. Tras crear el primer Superadministrador,
+En Hostinger mantenga el comando de build `npm run build` y agregue la variable
+`DEPLOY_RUN_MIGRATIONS=true`. El build compila y aplica las migraciones **antes**
+de publicar la nueva versión. Si una migración falla, Hostinger conserva la
+aplicación previamente activa; la API no ejecuta migraciones al iniciar y, por
+tanto, no queda bloqueada durante el arranque. En desarrollo local la variable
+no debe definirse y `npm run build` sólo compilará. Tras crear el primer Superadministrador,
 `BOOTSTRAP_ADMIN_TOKEN` puede eliminarse de forma segura.
 
 ## Archivos en producción
