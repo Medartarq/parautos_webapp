@@ -60,6 +60,18 @@ describe("order creation signature persistence", () => {
     expect(storage.deleteStoredFile).not.toHaveBeenCalled();
   });
 
+  it("preserves the enum value for color_type when the vehicle plate already exists", async () => {
+    configureSuccessfulCreation();
+
+    await createOrder(structuredClone(input), 3, "request-existing-vehicle");
+
+    const vehicleUpsert = database.connection.query.mock.calls.find(
+      ([sql]) => typeof sql === "string" && sql.startsWith("INSERT INTO vehicles"),
+    )?.[0];
+    expect(vehicleUpsert).toContain("color_type = VALUES(color_type)");
+    expect(vehicleUpsert).not.toContain("color_type = VALUES(color),");
+  });
+
   it("rolls back and removes the signature file when attachment persistence fails", async () => {
     configureSuccessfulCreation();
     database.connection.query.mockImplementation(async (sql: string) => {

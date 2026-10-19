@@ -138,7 +138,7 @@ export async function createOrder(
     const plate = normalizePlate(input.vehicle.plate);
     const vehicle = await connection.query<{ insertId: number }>(
       `INSERT INTO vehicles (plate, brand, model, manufacture_year, vin, color, color_type, body_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), brand = VALUES(brand), model = VALUES(model), manufacture_year = VALUES(manufacture_year), vin = VALUES(vin), color = VALUES(color), color_type = VALUES(color), body_type_id = VALUES(body_type_id)`,
+      ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), brand = VALUES(brand), model = VALUES(model), manufacture_year = VALUES(manufacture_year), vin = VALUES(vin), color = VALUES(color), color_type = VALUES(color_type), body_type_id = VALUES(body_type_id)`,
       [
         plate,
         input.vehicle.brand.toUpperCase(),
@@ -358,7 +358,7 @@ export async function correctOperationalData(
       claimNumber: input.claimNumber,
       claimPendingReminder: input.claimPendingReminder,
     };
-    if (order.modality === "PARTICULAR" && (newData.claimNumber || newData.claimPendingReminder))
+    if (order.modality === "PARTICULAR" && (newData.claimNumber !== oldData.claimNumber || newData.claimPendingReminder !== oldData.claimPendingReminder))
       throw new AppError(400, "CLAIM_NOT_ALLOWED", "Las órdenes particulares no pueden registrar siniestro.");
     if (order.modality !== "PARTICULAR" && Boolean(newData.claimNumber) === newData.claimPendingReminder)
       throw new AppError(400, "CLAIM_INVARIANT", "La aseguradora debe tener número de siniestro o recordatorio pendiente, pero no ambos.");
@@ -402,20 +402,22 @@ export async function completePendingClaim(
   try {
     await connection.beginTransaction();
     const rows = await connection.query<any[]>(
-      "SELECT claim_number AS claimNumber, claim_pending_reminder AS claimPending FROM service_orders WHERE id = ? FOR UPDATE",
+      "SELECT modality, claim_number AS claimNumber, claim_pending_reminder AS claimPending FROM service_orders WHERE id = ? FOR UPDATE",
       [orderId],
     );
     const order = rows[0];
     if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "La orden no existe.");
-    if (!order.claimPending)
-      throw new AppError(409, "CLAIM_NOT_PENDING", "La orden no tiene un siniestro pendiente.");
+    if (order.modality === "PARTICULAR")
+      throw new AppError(400, "CLAIM_NOT_ALLOWED", "Las órdenes particulares no pueden registrar siniestro.");
+    if (order.claimNumber)
+      throw new AppError(409, "CLAIM_ALREADY_RECORDED", "El siniestro ya fue registrado para esta orden.");
     await connection.query(
       "UPDATE service_orders SET claim_number = ?, claim_pending_reminder = 0 WHERE id = ?",
       [claimNumber, orderId],
     );
     await connection.query(
-      "INSERT INTO audit_events (actor_user_id, entity, record_id, action, previous_data, new_data, request_id, ip_address, user_agent) VALUES (?, 'service_order', ?, 'CLAIM_COMPLETED', JSON_OBJECT('claimPending', true), JSON_OBJECT('claimNumber', ?, 'claimPending', false), ?, ?, ?)",
-      [actorUserId, String(orderId), claimNumber, requestId, ipAddress ?? null, userAgent ?? null],
+      "INSERT INTO audit_events (actor_user_id, entity, record_id, action, previous_data, new_data, request_id, ip_address, user_agent) VALUES (?, 'service_order', ?, 'CLAIM_COMPLETED', JSON_OBJECT('claimPending', ?), JSON_OBJECT('claimNumber', ?, 'claimPending', false), ?, ?, ?)",
+      [actorUserId, String(orderId), order.claimPending ? true : false, claimNumber, requestId, ipAddress ?? null, userAgent ?? null],
     );
     await connection.commit();
     failed = false;
