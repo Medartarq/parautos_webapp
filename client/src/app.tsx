@@ -24,6 +24,8 @@ const QuoteEditor = lazy(() => import("./quote-editor").then(({ QuoteEditor }) =
 const FinalControl = lazy(() => import("./final-control").then(({ FinalControl }) => ({ default: FinalControl })));
 const PartsOrderWorkbench = lazy(() => import("./parts-order-workbench").then(({ PartsOrderWorkbench }) => ({ default: PartsOrderWorkbench })));
 const OrderDetail = lazy(() => import("./order-detail").then(({ OrderDetail }) => ({ default: OrderDetail })));
+const AuditView = lazy(() => import("./audit-view").then(({ AuditView }) => ({ default: AuditView })));
+const UsersView = lazy(() => import("./users-view").then(({ UsersView }) => ({ default: UsersView })));
 
 type AppState = "loading" | "setup" | "login" | "dashboard";
 type Route =
@@ -529,9 +531,9 @@ function Dashboard({
           ) : route === "quotes" ? (
             <QuotesView onOpen={(orderId) => { setSelectedOrderId(orderId); setSelectedOrderTab("quotes"); changeRoute("orderDetail"); }} />
           ) : route === "audit" ? (
-            <AuditView />
+            <Suspense fallback={<div className="empty">Cargando auditoría...</div>}><AuditView /></Suspense>
           ) : route === "users" ? (
-            <UsersView />
+            <Suspense fallback={<div className="empty">Cargando usuarios...</div>}><UsersView /></Suspense>
           ) : route === "reports" ? (
             <Suspense fallback={<div className="empty">Cargando reportes...</div>}><ReportsView /></Suspense>
           ) : (
@@ -716,47 +718,6 @@ function Metric({
       <em>{value === 0 ? emptyLabel : "Requiere seguimiento"}</em>
     </article>
   );
-}
-type AuditEvent = { id: number; entity: string; recordId: string; action: string; createdAt: string; actorUserId?: number; actorName?: string; orderNumber?: string; previousData?: unknown; newData?: unknown };
-type AuditResult = { events: AuditEvent[]; actions: string[]; users: Array<{ id: number; names: string }> };
-const auditActionLabels: Record<string, string> = {
-  CREATED: "Orden creada",
-  CLAIM_COMPLETED: "Número de siniestro registrado",
-  DIAGNOSIS_UPLOADED: "Diagnóstico cargado",
-  OPERATIONAL_DATA_CORRECTED: "Datos operativos corregidos",
-  QUOTE_CREATED: "Cotización creada",
-  QUOTE_UPDATED: "Cotización actualizada",
-  QUOTE_DELETED: "Cotización eliminada",
-  QUOTE_SENT: "Cotización enviada",
-  QUOTE_APPROVED: "Cotización aprobada",
-  PART_UPDATED: "Repuesto actualizado",
-  PARTS_LOGISTICS_UPDATED: "Logística de repuestos actualizada",
-  REPAIR_STARTED: "Reparación iniciada",
-  LABOR_VERIFIED: "Partida de mano de obra verificada",
-  LABOR_VERIFICATION_REMOVED: "Verificación de partida retirada",
-  ALL_LABOR_VERIFIED: "Todas las partidas verificadas",
-  ALL_LABOR_VERIFICATIONS_REMOVED: "Verificación masiva retirada",
-  FINAL_CONTROL_COMPLETED: "Control final completado",
-  FINAL_CONTROL_REOPENED: "Control final reabierto",
-  READY_FOR_PICKUP_PUBLISHED: "Lista para entrega publicada",
-  ORDER_DELIVERED: "Orden entregada",
-};
-const auditActionLabel = (action: string) => auditActionLabels[action] || action.replaceAll("_", " ");
-function AuditView() {
-  const [result, setResult] = useState<AuditResult>(); const [text, setText] = useState(""); const [action, setAction] = useState(""); const [userId, setUserId] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState(""); const [error, setError] = useState<string>();
-  const load = async () => { try { setError(undefined); const query = new URLSearchParams(); if (text.trim()) query.set("text", text.trim()); if (action) query.set("action", action); if (userId) query.set("userId", userId); if (from) query.set("from", from); if (to) query.set("to", to); setResult(await api<AuditResult>(`/audit/events?${query}`)); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible cargar la auditoría."); } };
-  useEffect(() => { void load(); }, []);
-  return <><div className="page-head"><div><h1>Auditoría</h1><p>Consulta inmutable de eventos registrados en la aplicación.</p></div></div><section className="card audit-view"><div className="audit-filters"><input value={text} onChange={(event) => setText(event.target.value)} placeholder="Buscar acción, entidad, registro o usuario" /><select value={action} onChange={(event) => setAction(event.target.value)}><option value="">Todas las acciones</option>{result?.actions.map((item) => <option key={item} value={item}>{auditActionLabel(item)}</option>)}</select><select value={userId} onChange={(event) => setUserId(event.target.value)}><option value="">Todos los usuarios</option>{result?.users.map((item) => <option key={item.id} value={item.id}>{item.names}</option>)}</select><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label><button className="btn primary" onClick={() => void load()}>Filtrar</button></div>{error ? <div className="empty">{error}</div> : !result ? <div className="empty">Cargando auditoría...</div> : <div className="audit-events">{result.events.length ? result.events.map((event) => <article key={event.id}><div><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.orderNumber || `${event.entity} #${event.recordId}`}</span></div><div><b>{event.actorName || "Sistema"}</b><small>{new Date(event.createdAt).toLocaleString()}</small></div></article>) : <div className="empty">No hay eventos con estos filtros.</div>}</div>}</section></>;
-}
-type ManagedUser = { id: number; names: string; username: string; email: string; role: "SUPERADMINISTRADOR" | "ADMINISTRADOR" | "ASESOR"; active: boolean; createdAt: string };
-function UsersView() {
-  const [users, setUsers] = useState<ManagedUser[]>([]); const [message, setMessage] = useState<string>(); const [error, setError] = useState<string>(); const [saving, setSaving] = useState(false); const [search, setSearch] = useState(""); const [showPassword, setShowPassword] = useState(false);
-  const load = async () => { try { setError(undefined); setUsers((await api<{ users: ManagedUser[] }>("/users")).users); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible cargar usuarios."); } };
-  useEffect(() => { void load(); }, []);
-  const create = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); const form = new FormData(event.currentTarget); setSaving(true); setMessage(undefined); setError(undefined); try { await api("/users", { method: "POST", body: JSON.stringify({ names: form.get("names"), username: form.get("username"), email: form.get("email"), role: form.get("role"), password: form.get("password") }) }); event.currentTarget.reset(); setMessage("Usuario creado correctamente."); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible crear el usuario."); } finally { setSaving(false); } };
-  const toggle = async (user: ManagedUser) => { const action = user.active ? "desactivar" : "activar"; if (!window.confirm(`¿Confirma ${action} la cuenta de ${user.names}?`)) return; setError(undefined); try { await api(`/users/${user.id}/active`, { method: "PATCH", body: JSON.stringify({ active: !user.active }) }); setMessage(`Cuenta ${user.active ? "desactivada" : "activada"} correctamente.`); await load(); } catch (cause) { setError(cause instanceof Error ? cause.message : "No fue posible actualizar el usuario."); } };
-  const visibleUsers = users.filter((user) => `${user.names} ${user.username} ${user.email} ${user.role}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())); const activeCount = users.filter((user) => user.active).length;
-  return <><div className="page-head users-page-head"><div><h1>Usuarios</h1><p>Administra accesos operativos y administrativos de PARAUTOS.</p></div><span className="users-count">{activeCount} activo{activeCount === 1 ? "" : "s"} · {users.length} total</span></div><section className="card users-create"><header><div><h2>Crear usuario</h2><p>Las cuentas nuevas quedan activas inmediatamente.</p></div></header><form onSubmit={(event) => void create(event)}><div className="users-form-grid"><label>Nombres y apellidos<input name="names" placeholder="Ej. Ana Pérez" minLength={3} autoComplete="name" required /></label><label>Usuario<input name="username" placeholder="ana.perez" pattern="[a-zA-Z0-9._-]+" minLength={3} autoComplete="username" required /><small>Solo letras, números, punto, guion y guion bajo.</small></label><label>Correo corporativo<input name="email" type="email" placeholder="ana@empresa.com" autoComplete="email" required /></label><label>Rol<select name="role" defaultValue="ASESOR"><option value="ASESOR">Asesor — gestión operativa</option><option value="ADMINISTRADOR">Administrador — todos los módulos, sin gestión de cuentas</option></select></label><label className="users-password">Contraseña inicial<div><input name="password" type={showPassword ? "text" : "password"} minLength={12} autoComplete="new-password" required /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? "Ocultar" : "Mostrar"}</button></div><small>Mínimo 12 caracteres. Compártala de forma segura.</small></label></div><footer><p>El usuario podrá iniciar sesión al finalizar la creación.</p><button className="btn primary" disabled={saving}>{saving ? "Creando usuario..." : "Crear usuario"}</button></footer></form></section>{message && <p className="users-notice success-message" role="status">{message}</p>}{error && <p className="users-notice form-error" role="alert">{error}</p>}<section className="card users-directory"><header><div><h2>Directorio de usuarios</h2><p>Consulta el acceso y estado de cada cuenta.</p></div><label className="users-search"><span>Buscar</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre, usuario o correo" /></label></header>{visibleUsers.length ? <><div className="users-table-head"><span>Usuario</span><span>Rol</span><span>Estado</span><span>Acciones</span></div><div className="users-list">{visibleUsers.map((user) => <article key={user.id} className={!user.active ? "inactive" : ""}><div className="user-identity"><span className="user-avatar" aria-hidden="true">{user.names.trim().slice(0, 1).toUpperCase()}</span><div><strong>{user.names}</strong><small>@{user.username} · {user.email}</small></div></div><span className={`user-role ${user.role === "SUPERADMINISTRADOR" ? "superadmin" : user.role === "ADMINISTRADOR" ? "admin" : "advisor"}`}>{user.role === "SUPERADMINISTRADOR" ? "Superadministrador" : user.role === "ADMINISTRADOR" ? "Administrador" : "Asesor"}</span><span className={`user-state ${user.active ? "active" : "inactive"}`}>{user.active ? "Activo" : "Inactivo"}</span><button className={`btn user-toggle ${user.active ? "danger" : ""}`} onClick={() => void toggle(user)}>{user.active ? "Desactivar" : "Activar"}</button></article>)}</div></> : <div className="empty">No se encontraron usuarios con esa búsqueda.</div>}</section></>;
 }
 function ModulePlaceholder({ route }: { route: Route }) {
   return (
