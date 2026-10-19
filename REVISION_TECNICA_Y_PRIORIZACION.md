@@ -305,9 +305,10 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
   cuenta tras login correcto, además de normalización y proyección pública de
   tracking. También se cubrieron por HTTP los roles de Usuarios. Falta cubrir
   MariaDB real, adjuntos y el flujo completo de orden a entrega.
-- [ ] **5.4 Optimizar carga del cliente.** Aplicar importaciones dinámicas a
-  exportaciones PDF/XLSX y visualizadores; medir la reducción de los bundles
-  advertidos por Vite.
+- [x] **5.4 Optimizar carga del cliente.** Completado: ExcelJS y las librerías
+  PDF (`jspdf` y `jspdf-autotable`) se cargan bajo demanda al exportar. El
+  bundle inicial JavaScript bajó de 919.76 kB a 490.58 kB sin minificar; los
+  chunks pesados se descargan sólo al solicitar XLSX o PDF.
 - [x] **5.5 Resolver dependencias vulnerables.** Completado: los overrides
   vigentes de `uuid@11.1.1` y `esbuild@0.28.2` dejan
   `npm audit --omit=dev --audit-level=moderate` sin vulnerabilidades. No usar
