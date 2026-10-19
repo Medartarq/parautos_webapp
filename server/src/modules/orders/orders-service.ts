@@ -33,6 +33,7 @@ export async function getReceptionCatalog() {
 
 async function idFor(
   connection: PoolConnection,
+  entity: "cliente" | "vehículo" | "vínculo cliente-vehículo",
   query: string,
   parameters: unknown[],
 ): Promise<number> {
@@ -41,7 +42,7 @@ async function idFor(
     throw new AppError(
       500,
       "PERSISTENCE_ERROR",
-      "No fue posible recuperar el registro creado.",
+      `No fue posible recuperar el ${entity} creado.`,
     );
   return Number(rows[0].id);
 }
@@ -140,6 +141,7 @@ export async function createOrder(
     );
     const clientId = await idFor(
       connection,
+      "cliente",
       "SELECT id FROM clients WHERE document_type = ? AND document_number = ?",
       [input.client.documentType, input.client.documentNumber],
     );
@@ -160,6 +162,7 @@ export async function createOrder(
     );
     const vehicleId = await idFor(
       connection,
+      "vehículo",
       "SELECT id FROM vehicles WHERE plate = ?",
       [plate],
     );
@@ -169,6 +172,7 @@ export async function createOrder(
     );
     const clientVehicleId = await idFor(
       connection,
+      "vínculo cliente-vehículo",
       "SELECT id FROM client_vehicles WHERE client_id = ? AND vehicle_id = ?",
       [clientId, vehicleId],
     );
