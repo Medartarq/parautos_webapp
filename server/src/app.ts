@@ -17,6 +17,7 @@ import { trackingRouter } from "./modules/tracking/routes.js";
 import { usersRouter } from "./modules/users/routes.js";
 import { demoRouter } from "./modules/demo/routes.js";
 import { demoContext } from "./middleware/demo-context.js";
+import { lookupsRouter } from "./modules/lookups/routes.js";
 
 export function createApp(): express.Express {
   const env = getEnvironment();
@@ -34,6 +35,7 @@ export function createApp(): express.Express {
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/demo", demoRouter);
   app.use("/api/v1/tracking", trackingRouter);
+  app.use("/api/v1/lookups", demoContext, lookupsRouter);
   app.use("/api/v1/orders", demoContext, ordersRouter);
   app.use("/api/v1/audit", demoContext, auditRouter);
   app.use("/api/v1/reports", demoContext, reportsRouter);

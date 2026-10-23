@@ -64,12 +64,22 @@ export function DataStep({
   updateNumeric,
   updateUpper,
   catalog,
+  lookupBusy,
+  onLocalClient,
+  onLocalVehicle,
+  onFactilizaClient,
+  onFactilizaVehicle,
 }: {
   d: Record<string, string>;
   set: (key: string, value: string) => void;
   updateNumeric: (key: string, value: string, length: number) => void;
   updateUpper: (key: string, value: string, length: number) => void;
   catalog: Catalog;
+  lookupBusy?: "client" | "vehicle";
+  onLocalClient: (document: string) => void;
+  onLocalVehicle: (plate: string) => void;
+  onFactilizaClient: () => void;
+  onFactilizaVehicle: () => void;
 }) {
   const models = brands[d.brand] || [];
   return (
@@ -86,12 +96,10 @@ export function DataStep({
         </header>
         <div className="form-grid">
           <Field label="DNI o RUC *">
-            <input
-              inputMode="numeric"
-              maxLength={11}
-              value={d.document || ""}
-              onChange={(e) => updateNumeric("document", e.target.value, 11)}
-            />
+            <div className="lookup-control">
+              <input inputMode="numeric" maxLength={11} placeholder="DNI (8) o RUC (11)" value={d.document || ""} onChange={(e) => updateNumeric("document", e.target.value, 11)} onBlur={(e) => onLocalClient(e.target.value)} />
+              <button type="button" className="btn small" disabled={lookupBusy === "client"} onClick={onFactilizaClient}>{lookupBusy === "client" ? "Consultando..." : "Consultar"}</button>
+            </div>
           </Field>
           <Field label="Cliente *">
             <input
@@ -123,17 +131,10 @@ export function DataStep({
         </header>
         <div className="form-grid">
           <Field label="Placa *">
-            <input
-              maxLength={9}
-              value={d.plate || ""}
-              onChange={(e) =>
-                set(
-                  "plate",
-                  e.target.value.replace(/[^A-Za-z0-9- ]/g, "").toUpperCase(),
-                )
-              }
-              onBlur={(e) => set("plate", normalizePlate(e.target.value))}
-            />
+            <div className="lookup-control">
+              <input maxLength={9} placeholder="ABC-123 · NG-1234 · E ABC-789 · CD-0123" value={d.plate || ""} onChange={(e) => set("plate", e.target.value.replace(/[^A-Za-z0-9- ]/g, "").toUpperCase())} onBlur={(e) => { const plate = normalizePlate(e.target.value); set("plate", plate); onLocalVehicle(plate); }} />
+              <button type="button" className="btn small" disabled={lookupBusy === "vehicle"} onClick={onFactilizaVehicle}>{lookupBusy === "vehicle" ? "Consultando..." : "Consultar"}</button>
+            </div>
           </Field>
           <Field label="Marca *">
             <input

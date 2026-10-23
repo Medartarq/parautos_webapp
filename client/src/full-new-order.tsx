@@ -49,6 +49,8 @@ type ReceptionDraftPayload = {
 };
 type StoredReceptionDraft = { revision?: number; currentStep: number; payload: ReceptionDraftPayload };
 type StoredReceptionMedia = { files: File[]; diagnosisFile?: File };
+type ClientLookup = { documentType: "DNI" | "RUC"; documentNumber: string; fullName: string; phone?: string; email?: string };
+type VehicleLookup = { plate: string; brand: string; model: string; color: string; colorType: "CATALOGO" | "PERSONALIZADO"; year?: number; vin?: string; bodyTypeId?: number };
 const steps = [
   "Datos",
   "Checklist",
@@ -131,6 +133,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
   const [syncState, setSyncState] = useState<"loading" | "saved" | "saving" | "offline" | "conflict">("loading");
   const [syncRetry, setSyncRetry] = useState(0);
   const [cameraTarget, setCameraTarget] = useState<"evidence" | "diagnosis">();
+  const [lookupBusy, setLookupBusy] = useState<"client" | "vehicle">();
   const damageCanvas = useRef<HTMLCanvasElement>(null);
   const signatureCanvas = useRef<HTMLCanvasElement>(null);
   const evidenceDeviceInput = useRef<HTMLInputElement>(null);
@@ -338,6 +341,89 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
         .toUpperCase()
         .slice(0, length),
     );
+  const applyClientLookup = (client: ClientLookup) => setD((current) => ({
+    ...current,
+    document: client.documentNumber,
+    client: client.fullName,
+    phone: client.phone || current.phone,
+    email: client.email || current.email,
+  }));
+  const applyVehicleLookup = (vehicle: VehicleLookup) => setD((current) => ({
+    ...current,
+    plate: vehicle.plate,
+    brand: vehicle.brand,
+    model: vehicle.model,
+    color: vehicle.color,
+    colorType: vehicle.colorType,
+    year: vehicle.year ? String(vehicle.year) : current.year,
+    vin: vehicle.vin || current.vin,
+    body: vehicle.bodyTypeId ? String(vehicle.bodyTypeId) : current.body,
+  }));
+  const lookupLocalClient = async (document: string) => {
+    if (!/^\d{8}$|^\d{11}$/.test(document)) return;
+    setLookupBusy("client");
+    try {
+      const { client } = await api<{ client: ClientLookup | null }>(`/lookups/local/client/${document}`);
+      if (client) {
+        applyClientLookup(client);
+        setMessage("Datos del cliente recuperados de los registros de PARAUTOS.");
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible consultar los datos locales del cliente.");
+    } finally {
+      setLookupBusy(undefined);
+    }
+  };
+  const lookupLocalVehicle = async (plate: string) => {
+    const normalizedPlate = normalizePlate(plate);
+    if (normalizedPlate.replace(/[^A-Z0-9]/g, "").length < 5) return;
+    setLookupBusy("vehicle");
+    try {
+      const { vehicle } = await api<{ vehicle: VehicleLookup | null }>(`/lookups/local/vehicle/${encodeURIComponent(normalizedPlate)}`);
+      if (vehicle) {
+        applyVehicleLookup(vehicle);
+        setMessage("Datos del vehículo recuperados de los registros de PARAUTOS.");
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible consultar los datos locales del vehículo.");
+    } finally {
+      setLookupBusy(undefined);
+    }
+  };
+  const lookupFactilizaClient = async () => {
+    const document = d.document || "";
+    if (!/^\d{8}$|^\d{11}$/.test(document)) {
+      setMessage("Ingrese un DNI de 8 dígitos o RUC de 11 dígitos antes de consultar.");
+      return;
+    }
+    setLookupBusy("client");
+    try {
+      const { client } = await api<{ client: ClientLookup }>(`/lookups/factiliza/client/${document}`);
+      applyClientLookup(client);
+      setMessage("Datos del cliente obtenidos mediante Factiliza. Verifique y corrija los campos si es necesario.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible consultar los datos del cliente.");
+    } finally {
+      setLookupBusy(undefined);
+    }
+  };
+  const lookupFactilizaVehicle = async () => {
+    const plate = normalizePlate(d.plate || "");
+    if (plate.replace(/[^A-Z0-9]/g, "").length < 5) {
+      setMessage("Ingrese una placa válida antes de consultar.");
+      return;
+    }
+    setLookupBusy("vehicle");
+    try {
+      const { vehicle } = await api<{ vehicle: VehicleLookup }>(`/lookups/factiliza/vehicle/${encodeURIComponent(plate)}`);
+      applyVehicleLookup(vehicle);
+      setMessage("Datos del vehículo obtenidos mediante Factiliza. Verifique y corrija los campos si es necesario.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible consultar los datos del vehículo.");
+    } finally {
+      setLookupBusy(undefined);
+    }
+  };
   const addEvidence = async (selected: File[]) => {
     const available = 15 - files.length;
     const accepted = selected
@@ -785,6 +871,11 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
             updateNumeric={updateNumeric}
             updateUpper={updateUpper}
             catalog={catalog}
+            lookupBusy={lookupBusy}
+            onLocalClient={lookupLocalClient}
+            onLocalVehicle={lookupLocalVehicle}
+            onFactilizaClient={() => void lookupFactilizaClient()}
+            onFactilizaVehicle={() => void lookupFactilizaVehicle()}
           />
         )}
         {step === 1 && <ChecklistStep catalog={catalog} answers={answers} setAnswers={setAnswers} notes={notes} setNotes={setNotes} openChecklistCategory={openChecklistCategory} setOpenChecklistCategory={setOpenChecklistCategory} checklistUndo={checklistUndo} undoChecklistCategory={undoChecklistCategory} categories={categories} markCategoryConforming={markCategoryConforming} openChecklistNotes={openChecklistNotes} setOpenChecklistNotes={setOpenChecklistNotes} />}
