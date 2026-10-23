@@ -24,7 +24,8 @@
   },
   "overrides": {
     "uuid": "11.1.1",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "body-parser": "2.4.0"
   },
   "allowScripts": {
     "argon2@0.41.1": true,

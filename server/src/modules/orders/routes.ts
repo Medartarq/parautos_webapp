@@ -49,7 +49,7 @@ ordersRouter.get("/navigation-summary", async (_request, response) =>
 ordersRouter.get("/pending-notifications", async (_request, response) =>
   response.json(await getOperationalPendingNotifications()),
 );
-const receptionDraftSchema = z.object({ revision: z.number().int().positive().optional(), currentStep: z.number().int().min(0).max(6), payload: z.record(z.unknown()) });
+const receptionDraftSchema = z.object({ revision: z.number().int().positive().optional(), currentStep: z.number().int().min(0).max(6), payload: z.record(z.string(), z.unknown()) });
 ordersRouter.get("/reception-draft", async (request, response) => response.json({ draft: await getReceptionDraft(request.currentUser!.id) }));
 ordersRouter.put("/reception-draft", async (request, response) => response.json({ draft: await saveReceptionDraft(request.currentUser!.id, receptionDraftSchema.parse(request.body)) }));
 ordersRouter.delete("/reception-draft", async (request, response) => { await deleteReceptionDraft(request.currentUser!.id); response.status(204).end(); });

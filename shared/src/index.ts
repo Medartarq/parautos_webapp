@@ -293,7 +293,8 @@ export const createOrderSchema = z
       bodyTypeId: value.vehicle.bodyTypeId,
     });
     if (!validation.success)
-      for (const issue of validation.error.issues) context.addIssue(issue);
+      for (const issue of validation.error.issues)
+        context.addIssue({ code: "custom", path: issue.path, message: issue.message });
   });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
