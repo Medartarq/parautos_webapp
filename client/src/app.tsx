@@ -1230,6 +1230,7 @@ function LegacyNewOrder({ onCreated }: { onCreated: () => void }) {
                 <option value="LA_POSITIVA">La Positiva</option>
                 <option value="RIMAC">Rimac</option>
                 <option value="PACIFICO">Pacifico</option>
+                <option value="QUALITAS">Qualitas</option>
               </select>
             </WizardField>
             <WizardField label="Marca *">

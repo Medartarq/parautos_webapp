@@ -25,6 +25,11 @@ describe("reception step-one validation", () => {
     expect(receptionStepOneSchema.safeParse({ ...valid, modality: "MAPFRE", claimNumber: "", claimPendingReminder: false }).success).toBe(false);
   });
 
+  it("accepts QUALITAS as an insured modality and requires its claim or reminder", () => {
+    expect(receptionStepOneSchema.safeParse({ ...valid, modality: "QUALITAS", claimNumber: "QUI-2026-001", claimPendingReminder: false }).success).toBe(true);
+    expect(receptionStepOneSchema.safeParse({ ...valid, modality: "QUALITAS", claimNumber: "", claimPendingReminder: false }).success).toBe(false);
+  });
+
   it("formats the known plate variants from the prototype", () => {
     expect(normalizePlate("e abc789")).toBe("E ABC-789");
     expect(normalizePlate("cd0123")).toBe("CD-0123");

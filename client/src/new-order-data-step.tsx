@@ -200,7 +200,7 @@ export function DataStep({
               value={d.modality}
               onChange={(e) => set("modality", e.target.value)}
             >
-              {["PARTICULAR", "MAPFRE", "LA_POSITIVA", "RIMAC", "PACIFICO"].map(
+              {["PARTICULAR", "MAPFRE", "LA_POSITIVA", "RIMAC", "PACIFICO", "QUALITAS"].map(
                 (value) => (
                   <option key={value}>{value}</option>
                 ),
