@@ -307,6 +307,7 @@ export const operationalDataSchema = z.object({
     .optional()
     .transform((value) => value || undefined),
   emailOverride: optionalText(150),
+  modality: z.enum(["PARTICULAR", "PACIFICO", "MAPFRE", "LA_POSITIVA", "RIMAC", "QUALITAS"]).optional(),
   claimNumber: optionalText(60),
   claimPendingReminder: z.boolean(),
   reason: z.string().transform(collapseWhitespace).pipe(z.string().min(1).max(500)),

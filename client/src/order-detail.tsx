@@ -24,13 +24,6 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
   const [order, setOrder] = useState<OrderDetailData>();
   const [message, setMessage] = useState<string>();
   const [claimNumber, setClaimNumber] = useState("");
-  const [operationalEditing, setOperationalEditing] = useState(false);
-  const [operationalPhone, setOperationalPhone] = useState("");
-  const [operationalEmail, setOperationalEmail] = useState("");
-  const [operationalClaim, setOperationalClaim] = useState("");
-  const [operationalPending, setOperationalPending] = useState(false);
-  const [operationalReason, setOperationalReason] = useState("");
-  const [operationalBusy, setOperationalBusy] = useState(false);
   const [quoteRevision, setQuoteRevision] = useState(0);
   const refreshOrder = async () => {
     try { setOrder((await api<{ order: OrderDetailData }>(`/orders/${orderId}`)).order); }
@@ -53,18 +46,6 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
       setMessage(error instanceof Error ? error.message : "No fue posible registrar el siniestro.");
     }
   };
-  const beginOperationalEdit = () => {
-    setOperationalPhone(order.operationalPhone || order.phone || ""); setOperationalEmail(order.operationalEmail || order.email || "");
-    setOperationalReason(""); setOperationalEditing(true);
-  };
-  const saveOperationalData = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); setOperationalBusy(true); setMessage(undefined);
-    try {
-      await api(`/orders/${orderId}/operational-data`, { method: "PATCH", body: JSON.stringify({ phoneOverride: operationalPhone, emailOverride: operationalEmail, claimNumber: order.claimNumber, claimPendingReminder: Boolean(order.claimPending), reason: operationalReason }) });
-      setOperationalEditing(false); setMessage("Datos operativos actualizados."); await refreshOrder();
-    } catch (error) { setMessage(error instanceof Error ? error.message : "No fue posible actualizar los datos operativos."); }
-    finally { setOperationalBusy(false); }
-  };
   const tabs: Array<[DetailTab, string]> = [
     ["summary", "Resumen"], ["reception", "Recepción"], ["quotes", "Cotización"],
     ["parts", "Repuestos"], ["control", "Control final"], ["history", "Historial"],
@@ -76,7 +57,7 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
     </section>
     <section className="detail-progress card"><div><small>Avance del caso</small><strong>{status.progress}%</strong><span>Etapa alcanzada; no representa avance físico exacto.</span></div><div className="progress-bar" aria-label={`Avance ${status.progress}%`}><i style={{ width: `${status.progress}%` }} /></div></section>
     <div className="tabs detail-tabs" role="tablist" aria-label="Detalle de orden">{tabs.map(([key, label]) => <button key={key} role="tab" aria-selected={tab === key} className={tab === key ? "active" : ""} onClick={() => setTab(key)}>{label}</button>)}</div>
-    {tab === "summary" && <><div className="detail-grid"><section className="card"><header><h2>Información del caso</h2></header><div className="card-body detail-fields"><DetailField label="Cliente" value={order.client} note={`${order.documentType} ${order.documentNumber}`} /><DetailField label="Vehículo" value={`${order.brand} ${order.model}`} note={`${order.plate} · ${order.color}`} /><DetailField label="Modalidad" value={order.modality.replaceAll("_", " ")} note={order.claimNumber ? `Siniestro: ${order.claimNumber}` : order.claimPending ? "Siniestro pendiente" : "Sin siniestro registrado"} /><DetailField label="Carrocería" value={order.bodyName} note={order.year ? `Año ${order.year}` : "Año no registrado"} /><DetailField label="Código público" value={order.publicCode || "No disponible"} note="Compártalo con el cliente junto con la placa para el seguimiento." /><DetailField label="Estados" value={`Interno: ${status.label}`} note={`Público: ${order.publicStatus.replaceAll("_", " ")}`} /></div></section><section className="card"><header><h2>Resumen de recepción</h2></header><div className="card-body detail-fields"><DetailField label="Kilometraje" value={order.reception?.mileage === undefined ? "No registrado" : `${order.reception.mileage} km`} /><DetailField label="Combustible" value={order.reception?.fuelLevel === undefined ? "No registrado" : `${order.reception.fuelLevel}%`} /><DetailField label="Checklist" value={`${order.checklist.length} ítems registrados`} /><DetailField label="Daños" value={`${order.damages.length} marcas registradas`} /><DetailField label="Evidencias" value={`${order.attachments.length} archivos adjuntos`} /><DetailField label="Diagnóstico" value={order.reception?.diagnosis ? "Registrado" : "No registrado"} /></div></section></div><section className="card operational-data-editor"><header><div><h2>Contacto operativo actual</h2><small>La recepción original y su documento A4 son inmutables.</small></div>{!operationalEditing && <button className="btn small" disabled={["ENTREGADA", "CANCELADA"].includes(order.internalStatus)} onClick={beginOperationalEdit}>Corregir datos</button>}</header>{operationalEditing ? <form className="card-body operational-data-form" onSubmit={saveOperationalData}><label>Teléfono operativo<input inputMode="tel" value={operationalPhone} onChange={(event) => setOperationalPhone(event.target.value)} maxLength={20} /></label><label>Correo operativo<input type="email" value={operationalEmail} onChange={(event) => setOperationalEmail(event.target.value)} maxLength={150} /></label><label className="operational-reason">Motivo de corrección<textarea required minLength={1} maxLength={500} value={operationalReason} onChange={(event) => setOperationalReason(event.target.value)} /></label><div className="operational-actions"><button type="button" className="btn" disabled={operationalBusy} onClick={() => setOperationalEditing(false)}>Cancelar</button><button className="btn primary" disabled={operationalBusy}>{operationalBusy ? "Guardando..." : "Guardar cambios"}</button></div></form> : <div className="card-body detail-fields"><DetailField label="Teléfono" value={order.operationalPhone || order.phone || "No registrado"} /><DetailField label="Correo" value={order.operationalEmail || order.email || "No registrado"} /></div>}</section>{!order.claimNumber && order.modality !== "PARTICULAR" && <form className="claim-completion card" onSubmit={completeClaim}><strong>Completar siniestro pendiente</strong><input value={claimNumber} onChange={(event) => setClaimNumber(event.target.value)} placeholder="Número de siniestro" required /><button className="btn primary">Registrar siniestro</button></form>}</>}
+    {tab === "summary" && <><div className="detail-grid"><section className="card"><header><h2>Información del caso</h2></header><div className="card-body detail-fields"><DetailField label="Cliente" value={order.client} note={`${order.documentType} ${order.documentNumber}`} /><DetailField label="Vehículo" value={`${order.brand} ${order.model}`} note={`${order.plate} · ${order.color}`} /><DetailField label="Modalidad" value={order.modality.replaceAll("_", " ")} note={order.claimNumber ? `Siniestro: ${order.claimNumber}` : order.claimPending ? "Siniestro pendiente" : "Sin siniestro registrado"} /><DetailField label="Carrocería" value={order.bodyName} note={order.year ? `Año ${order.year}` : "Año no registrado"} /><DetailField label="Código público" value={order.publicCode || "No disponible"} note="Compártalo con el cliente junto con la placa para el seguimiento." /><DetailField label="Estados" value={`Interno: ${status.label}`} note={`Público: ${order.publicStatus.replaceAll("_", " ")}`} /></div></section><section className="card"><header><h2>Resumen de recepción</h2></header><div className="card-body detail-fields"><DetailField label="Kilometraje" value={order.reception?.mileage === undefined ? "No registrado" : `${order.reception.mileage} km`} /><DetailField label="Combustible" value={order.reception?.fuelLevel === undefined ? "No registrado" : `${order.reception.fuelLevel}%`} /><DetailField label="Checklist" value={`${order.checklist.length} ítems registrados`} /><DetailField label="Daños" value={`${order.damages.length} marcas registradas`} /><DetailField label="Evidencias" value={`${order.attachments.length} archivos adjuntos`} /><DetailField label="Diagnóstico" value={order.reception?.diagnosis ? "Registrado" : "No registrado"} /></div></section></div><OperationalDataEditor order={order} orderId={orderId} onChanged={refreshOrder} onMessage={setMessage} />{!order.claimNumber && order.modality !== "PARTICULAR" && <form className="claim-completion card" onSubmit={completeClaim}><strong>Completar siniestro pendiente</strong><input value={claimNumber} onChange={(event) => setClaimNumber(event.target.value)} placeholder="Número de siniestro" required /><button className="btn primary">Registrar siniestro</button></form>}</>}
     {tab === "reception" && <Suspense fallback={<div className="empty">Cargando recepción...</div>}><ReceptionDetail order={order} onRefresh={refreshOrder} /></Suspense>}
     {tab === "quotes" && <><Suspense fallback={<div className="empty">Cargando exportadores...</div>}><QuoteExportToolbar order={order} revision={quoteRevision} /></Suspense><Suspense fallback={<div className="empty">Cargando editor de cotización...</div>}><QuoteEditor orderId={orderId} diagnoses={order.attachments.filter((attachment) => attachment.category === "EVALUACION_MANUSCRITA")} onQuotesChanged={() => setQuoteRevision((current) => current + 1)} /></Suspense></>}
     {tab === "parts" && <Suspense fallback={<div className="empty">Cargando repuestos...</div>}><PartsOrderWorkbench orderId={orderId} onRepairStarted={refreshOrder} /></Suspense>}
@@ -86,3 +67,43 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
   </>;
 }
 function DetailField({ label, value, note }: { label: string; value: string; note?: string }) { return <div><small>{label}</small><strong>{value}</strong>{note && <span>{note}</span>}</div>; }
+
+function OperationalDataEditor({ order, orderId, onChanged, onMessage }: { order: OrderDetailData; orderId: number; onChanged: () => Promise<void>; onMessage: (message: string | undefined) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [modality, setModality] = useState(order.modality);
+  const [claimNumber, setClaimNumber] = useState("");
+  const [claimPending, setClaimPending] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const terminal = ["ENTREGADA", "CANCELADA"].includes(order.internalStatus);
+  const begin = () => {
+    setPhone(order.operationalPhone || order.phone || "");
+    setEmail(order.operationalEmail || order.email || "");
+    setModality(order.modality);
+    setClaimNumber(order.claimNumber || "");
+    setClaimPending(Boolean(order.claimPending));
+    setReason("");
+    setEditing(true);
+  };
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBusy(true);
+    onMessage(undefined);
+    try {
+      await api(`/orders/${orderId}/operational-data`, {
+        method: "PATCH",
+        body: JSON.stringify({ phoneOverride: phone, emailOverride: email, modality, claimNumber, claimPendingReminder: claimPending, reason }),
+      });
+      setEditing(false);
+      onMessage("Datos operativos actualizados.");
+      await onChanged();
+    } catch (error) {
+      onMessage(error instanceof Error ? error.message : "No fue posible actualizar los datos operativos.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return <section className="card operational-data-editor"><header><div><h2>Datos operativos actuales</h2><small>La recepción original y su documento A4 son inmutables; las correcciones quedan auditadas.</small></div>{!editing && <button className="btn small" disabled={terminal} onClick={begin}>Corregir datos</button>}</header>{editing ? <form className="card-body operational-data-form" onSubmit={submit}><label>Modalidad<select value={modality} onChange={(event) => { const next = event.target.value; setModality(next); if (next === "PARTICULAR") { setClaimNumber(""); setClaimPending(false); } }}><option value="PARTICULAR">Particular</option><option value="PACIFICO">Pacífico</option><option value="MAPFRE">Mapfre</option><option value="LA_POSITIVA">La Positiva</option><option value="RIMAC">Rimac</option><option value="QUALITAS">Qualitas</option></select></label><label>Teléfono operativo<input inputMode="tel" value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={20} /></label><label>Correo operativo<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={150} /></label>{modality !== "PARTICULAR" && <><label>Número de siniestro<input disabled={claimPending} value={claimNumber} onChange={(event) => setClaimNumber(event.target.value)} maxLength={60} required={!claimPending} /></label><label className="claim-field"><input type="checkbox" checked={claimPending} onChange={(event) => { setClaimPending(event.target.checked); if (event.target.checked) setClaimNumber(""); }} />Número de siniestro pendiente</label></>}<label className="operational-reason">Motivo de corrección<textarea required minLength={1} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} /></label><div className="operational-actions"><button type="button" className="btn" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button><button className="btn primary" disabled={busy}>{busy ? "Guardando..." : "Guardar cambios"}</button></div></form> : <div className="card-body detail-fields"><DetailField label="Modalidad" value={order.modality.replaceAll("_", " ")} note={order.claimNumber ? `Siniestro: ${order.claimNumber}` : order.claimPending ? "Siniestro pendiente" : "Sin siniestro registrado"} /><DetailField label="Teléfono" value={order.operationalPhone || order.phone || "No registrado"} /><DetailField label="Correo" value={order.operationalEmail || order.email || "No registrado"} /></div>}</section>;
+}

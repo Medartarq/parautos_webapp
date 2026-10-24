@@ -347,20 +347,22 @@ export async function correctOperationalData(
       throw new AppError(409, "ORDER_TERMINAL", "No puede corregir datos operativos de una orden cerrada.");
 
     const oldData = {
+      modality: order.modality,
       phoneOverride: order.phoneOverride || undefined,
       emailOverride: order.emailOverride || undefined,
       claimNumber: order.claimNumber || undefined,
       claimPendingReminder: Boolean(order.claimPending),
     };
     const newData = {
+      modality: input.modality ?? order.modality,
       phoneOverride: input.phoneOverride,
       emailOverride: input.emailOverride,
       claimNumber: input.claimNumber,
       claimPendingReminder: input.claimPendingReminder,
     };
-    if (order.modality === "PARTICULAR" && (newData.claimNumber !== oldData.claimNumber || newData.claimPendingReminder !== oldData.claimPendingReminder))
+    if (newData.modality === "PARTICULAR" && order.modality !== "PARTICULAR" && (newData.claimNumber || newData.claimPendingReminder))
       throw new AppError(400, "CLAIM_NOT_ALLOWED", "Las órdenes particulares no pueden registrar siniestro.");
-    if (order.modality !== "PARTICULAR" && Boolean(newData.claimNumber) === newData.claimPendingReminder)
+    if (newData.modality !== "PARTICULAR" && Boolean(newData.claimNumber) === newData.claimPendingReminder)
       throw new AppError(400, "CLAIM_INVARIANT", "La aseguradora debe tener número de siniestro o recordatorio pendiente, pero no ambos.");
     if (Object.keys(newData).every((key) => newData[key as keyof typeof newData] === oldData[key as keyof typeof oldData]))
       throw new AppError(400, "NO_MEANINGFUL_CHANGE", "Debe realizar al menos un cambio operativo.");
@@ -372,8 +374,8 @@ export async function correctOperationalData(
       [orderId, newData.phoneOverride || null, newData.emailOverride || null],
     );
     await connection.query(
-      "UPDATE service_orders SET claim_number = ?, claim_pending_reminder = ? WHERE id = ?",
-      [newData.claimNumber || null, newData.claimPendingReminder ? 1 : 0, orderId],
+      "UPDATE service_orders SET modality = ?, claim_number = ?, claim_pending_reminder = ? WHERE id = ?",
+      [newData.modality, newData.claimNumber || null, newData.claimPendingReminder ? 1 : 0, orderId],
     );
     await connection.query(
       `INSERT INTO audit_events (actor_user_id, entity, record_id, action, previous_data, new_data, request_id, ip_address, user_agent)

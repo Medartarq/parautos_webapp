@@ -35,7 +35,7 @@ describe("operational data correction service", () => {
 
     await expect(correctOperationalData(5, particularInput, ...context)).resolves.toBeUndefined();
 
-    expect(database.connection.query.mock.calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET claim_number"), ["SIN-21", 0, 5]]);
+    expect(database.connection.query.mock.calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET modality"), ["PARTICULAR", "SIN-21", 0, 5]]);
     expect(database.connection.commit).toHaveBeenCalledOnce();
   });
 
@@ -53,11 +53,21 @@ describe("operational data correction service", () => {
     const calls = database.connection.query.mock.calls;
     expect(calls.map(([sql]) => String(sql)).join("\n")).not.toMatch(/\bclients\b|\bvehicles\b|\breceptions\b|checklist|damage_marks|attachments|quote/);
     expect(calls).toContainEqual([expect.stringContaining("INSERT INTO order_operational_data"), [5, "999888777", "operaciones@parautos.pe"]]);
-    expect(calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET claim_number"), ["SIN-22", 0, 5]]);
+    expect(calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET modality"), ["MAPFRE", "SIN-22", 0, 5]]);
     const audit = calls.find(([sql]) => String(sql).includes("OPERATIONAL_DATA_CORRECTED"))!;
-    expect(JSON.parse(audit[1][2])).toEqual({ phoneOverride: "988777666", emailOverride: "old@parautos.pe", claimNumber: "SIN-21", claimPendingReminder: false });
-    expect(JSON.parse(audit[1][3])).toEqual({ ...input });
+    expect(JSON.parse(audit[1][2])).toEqual({ modality: "MAPFRE", phoneOverride: "988777666", emailOverride: "old@parautos.pe", claimNumber: "SIN-21", claimPendingReminder: false });
+    expect(JSON.parse(audit[1][3])).toEqual({ ...input, modality: "MAPFRE" });
     expect(audit[1].slice(4)).toEqual(["request-1", "127.0.0.1", "vitest"]);
     expect(database.connection.commit).toHaveBeenCalledOnce();
+  });
+
+  it("allows correcting a particular order to MAPFRE with its claim", async () => {
+    database.connection.query
+      .mockResolvedValueOnce([{ modality: "PARTICULAR", internalStatus: "COTIZACION_PENDIENTE", claimNumber: null, claimPending: 0 }])
+      .mockResolvedValue({});
+
+    await expect(correctOperationalData(5, { ...input, modality: "MAPFRE" }, ...context)).resolves.toBeUndefined();
+
+    expect(database.connection.query.mock.calls).toContainEqual([expect.stringContaining("UPDATE service_orders SET modality"), ["MAPFRE", "SIN-22", 0, 5]]);
   });
 });
