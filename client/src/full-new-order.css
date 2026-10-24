@@ -443,6 +443,24 @@
   background: #f5f3ff !important;
   color: #5b21b6 !important;
 }
+
+.full-wizard .wizard-actions .clear-step-button {
+  border-color: #d8e0e8;
+  background: #fff;
+  color: #475569;
+}
+.full-wizard .wizard-actions .clear-step-button:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+}
+@media (max-width: 700px) {
+  .full-wizard .wizard-actions .clear-step-button {
+    grid-column: 1 / -1;
+  }
+}
+
+
+
 .full-wizard .flags {
   overflow: hidden;
   border: 1px solid var(--line);

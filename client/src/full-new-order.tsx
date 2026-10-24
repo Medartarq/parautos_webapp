@@ -844,6 +844,53 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
     setNotes((current) => { const next = { ...current }; Object.entries(checklistUndo.notes).forEach(([id, value]) => value ? next[Number(id)] = value : delete next[Number(id)]); return next; });
     setMessage(`Se restauraron las respuestas de ${checklistUndo.category}.`); setChecklistUndo(undefined);
   };
+
+    const clearCurrentStep = () => {
+    if (createdOrder) return;
+    if (!window.confirm(`Se borrarán los datos ingresados en el paso «${steps[step]}». ¿Desea continuar?`)) return;
+    if (step === 0) {
+      setD((current) => ({
+        modality: "PARTICULAR",
+        colorType: "CATALOGO",
+        fuel: "",
+        ...(current.diagnosis !== undefined ? { diagnosis: current.diagnosis } : {}),
+        ...(current.diagnosisPending !== undefined ? { diagnosisPending: current.diagnosisPending } : {}),
+      }));
+    } else if (step === 1) {
+      setAnswers({});
+      setNotes({});
+      setOpenChecklistNotes({});
+      setOpenChecklistCategory(undefined);
+      setChecklistUndo(undefined);
+    } else if (step === 2) {
+      setFlagsSelected([]);
+    } else if (step === 3) {
+      setDamages([]);
+      setUndoneDamages([]);
+      setDamageExpanded(false);
+    } else if (step === 4) {
+      setFiles([]);
+    } else if (step === 5) {
+      setD((current) => {
+        const next = { ...current };
+        delete next.diagnosis;
+        delete next.diagnosisPending;
+        return next;
+      });
+      setDiagnosisFile(undefined);
+      setDiagnosisPreview("");
+      setDiagnosisLegibility("PENDIENTE");
+      setDiagnosisReviewState("PENDIENTE_REVISION");
+    } else if (step === 6) {
+      const canvas = signatureCanvas.current;
+      canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+      setSignature("");
+      setReviewed(false);
+      setAccepted(false);
+    }
+    setMessage(`Se limpiaron los campos del paso «${steps[step]}».`);
+  };
+
   return (
     <section className="wizard full-wizard">
       <p className="orientation-guidance" role="status">
@@ -947,6 +994,11 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
       </div>
       {message && <p className="wizard-message">{message}</p>}
       <div className="wizard-actions">
+      {!createdOrder && (
+          <button type="button" className="btn small clear-step-button" disabled={saving} onClick={clearCurrentStep}>
+            Limpiar campos
+          </button>
+        )}
         {step > 0 && (
           <button
             type="button"
