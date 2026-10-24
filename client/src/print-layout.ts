@@ -11,6 +11,10 @@ export const A4_RECEPTION_PRINT_STYLES = `
   .reference-side > :first-child { padding-top:1.87mm!important }
   .reference-side > :nth-child(2) { padding-top:2.4mm!important }
   .reference-side > :last-child { padding-top:1mm!important }
+  .reference-side .sign { display:flex!important; flex-direction:column!important; align-items:center!important; padding:1mm!important; text-align:center!important }
+  .reference-side .signature-title { display:block!important; flex:0 0 auto!important; min-height:7.5mm!important; font-size:5.2pt!important; font-weight:700!important; line-height:1.25!important }
+  .reference-side .sign img { position:static!important; display:block!important; flex:1 1 auto!important; min-height:0!important; width:34mm!important; height:11mm!important; margin:auto 0 .4mm!important; object-fit:contain!important }
+  .reference-side .sign label { position:static!important; display:block!important; flex:0 0 auto!important; width:100%!important; font-size:8pt!important; line-height:1!important }
   .reference-side i { print-color-adjust:exact; -webkit-print-color-adjust:exact }
   .checklist { display:block!important; overflow:hidden!important }
   .print-inventory { width:180mm; border-collapse:collapse; table-layout:fixed; font-size:6.9pt; line-height:1 }

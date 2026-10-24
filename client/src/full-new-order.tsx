@@ -738,7 +738,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
       items: catalog.checklist.filter((item) => item.category === category),
     }));
     const checklistRows = Math.max(...checklistGroups.map((group) => group.items.length));
-    const checklist = `<table class="print-inventory"><colgroup>${checklistGroups.map(() => '<col style="width:32.1mm"><col style="width:6.45mm"><col style="width:6.45mm">').join("")}</colgroup><thead><tr>${checklistGroups.map((group) => `<th>${escape(group.category)}</th><th>SI</th><th>NO</th>`).join("")}</tr></thead><tbody>${Array.from({ length: checklistRows }, (_, row) => `<tr>${checklistGroups.map((group) => {
+    const checklist = `<table class="print-inventory"><colgroup>${checklistGroups.map(() => '<col style="width:32.1mm"><col style="width:6.45mm"><col style="width:6.45mm">').join("")}</colgroup><thead><tr>${checklistGroups.map((group) => `<th>${escape(group.category)}</th><th>OK</th><th>OBS</th>`).join("")}</tr></thead><tbody>${Array.from({ length: checklistRows }, (_, row) => `<tr>${checklistGroups.map((group) => {
       const item = group.items[row];
       if (!item) return "<td></td><td></td><td></td>";
       const answer = answers[item.id];

@@ -1319,7 +1319,7 @@ function LegacyNewOrder({ onCreated }: { onCreated: () => void }) {
                             setAnswers({ ...answers, [item.id]: "SI" })
                           }
                         >
-                          Si
+                          OK
                         </button>
                         <button
                           type="button"
@@ -1330,7 +1330,7 @@ function LegacyNewOrder({ onCreated }: { onCreated: () => void }) {
                             setAnswers({ ...answers, [item.id]: "NO" })
                           }
                         >
-                          No
+                          OBS
                         </button>
                       </div>
                     </div>
