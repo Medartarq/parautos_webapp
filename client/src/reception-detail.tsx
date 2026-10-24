@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
-import logo from "./assets/logo_parautos.svg";
-import { loadPdfLibrary } from "./pdf-library";
 import { openAttachment } from "./api";
+import { downloadReceptionPdf } from "./reception-print";
 
 type ReceptionDetailOrder = {
   id: number; orderNumber: string; modality: string; claimNumber?: string; advisorName?: string; documentType: string; documentNumber: string;
@@ -23,16 +22,33 @@ export function ReceptionDetail({ order, onRefresh }: { order: ReceptionDetailOr
   const diagnosis = diagnoses[Math.min(diagnosisPage, Math.max(diagnoses.length - 1, 0))];
   const [diagnosisMessage, setDiagnosisMessage] = useState<string>();
   const downloadChecklist = async () => {
-    const { jsPDF, autoTable } = await loadPdfLibrary();
-    const pdf = new jsPDF({ unit: "mm", format: "a4" }); const left = 15; const right = 15; let y = 16;
-    const drawLogo = () => new Promise<string>((resolve, reject) => { const image = new Image(); image.onload = () => { const canvas = document.createElement("canvas"); canvas.width = image.naturalWidth; canvas.height = image.naturalHeight; canvas.getContext("2d")?.drawImage(image, 0, 0); resolve(canvas.toDataURL("image/png")); }; image.onerror = reject; image.src = logo; });
-    try { pdf.addImage(await drawLogo(), "PNG", left, 10, 27, 17); } catch { pdf.setTextColor(237, 51, 55); pdf.setFont("helvetica", "bold"); pdf.setFontSize(15); pdf.text("PARAUTOS", left, 18); }
-    pdf.setTextColor(23, 33, 43); pdf.setFont("helvetica", "bold"); pdf.setFontSize(14); pdf.text("Ficha de recepción", 195, 16, { align: "right" }); pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(95, 107, 122); pdf.text(`Orden ${order.orderNumber} · Generado ${new Date().toLocaleDateString("es-PE")}`, 195, 21, { align: "right" }); y = 31;
-    const metadata = [["CLIENTE", order.client, "DOCUMENTO", `${order.documentType} ${order.documentNumber}`], ["VEHÍCULO", `${order.brand} ${order.model} · ${order.color}`, "PLACA", order.plate], ["ASESOR", order.advisorName || "No registrado", "SINIESTRO", order.claimNumber || "Pendiente"], ["KILOMETRAJE", order.reception?.mileage === undefined ? "No registrado" : `${order.reception.mileage} km`, "COMBUSTIBLE", order.reception?.fuelLevel === undefined ? "No registrado" : `${order.reception.fuelLevel}%`], ["CARROCERÍA", order.bodyName, "FIRMA", "Registrada"]];
-    autoTable(pdf, { startY: y, margin: { left, right }, body: metadata, theme: "plain", styles: { fontSize: 8, cellPadding: 1.4, textColor: [23, 33, 43] }, columnStyles: { 0: { cellWidth: 28, fontStyle: "bold", textColor: [95, 107, 122] }, 1: { cellWidth: 59 }, 2: { cellWidth: 28, fontStyle: "bold", textColor: [95, 107, 122] }, 3: { cellWidth: 55 } }, didDrawCell: (data) => { pdf.setDrawColor(216, 224, 232); pdf.setLineWidth(.15); pdf.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height); } });
-    y = (pdf as InstanceType<typeof jsPDF> & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 7; pdf.setFont("helvetica", "bold"); pdf.setFontSize(10); pdf.setTextColor(23, 33, 43); pdf.text("Checklist de recepción", left, y); y += 3;
-    autoTable(pdf, { startY: y, margin: { left, right, top: 22, bottom: 15 }, head: [["Categoría", "Ítem", "OK", "OBS", "Observación"]], body: order.checklist.map((item) => [item.category, item.name, item.answer === "SI" ? "X" : "", item.answer === "NO" ? "X" : "", item.observation || ""]), theme: "plain", styles: { fontSize: 7.2, cellPadding: 1.35, textColor: [23, 33, 43] }, headStyles: { fillColor: [247, 248, 250], textColor: [95, 107, 122], fontStyle: "bold", fontSize: 6.8 }, columnStyles: { 0: { cellWidth: 34 }, 1: { cellWidth: 58 }, 2: { cellWidth: 10, halign: "center" }, 3: { cellWidth: 10, halign: "center" }, 4: { cellWidth: 48 } }, didDrawCell: (data) => { pdf.setDrawColor(216, 224, 232); pdf.setLineWidth(.12); pdf.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height); }, didDrawPage: (data) => { if (data.pageNumber > 1) { pdf.setFont("helvetica", "normal"); pdf.setFontSize(7); pdf.setTextColor(95, 107, 122); pdf.text(`PARAUTOS · Ficha de recepción · ${order.orderNumber} · ${order.plate}`, left, 15); } } });
-    pdf.save(`Checklist_de_Recepcion_${order.orderNumber}.pdf`);
+    try {
+      await downloadReceptionPdf({
+        modality: order.modality,
+        advisor: order.advisorName,
+        claimNumber: order.claimNumber,
+        plate: order.plate,
+        documentNumber: order.documentNumber,
+        brand: order.brand,
+        client: order.client,
+        model: order.model,
+        phone: order.phone,
+        year: order.year,
+        color: order.color,
+        vin: order.vin,
+        email: order.email,
+        mileage: order.reception?.mileage,
+        fuelLevel: order.reception?.fuelLevel,
+        considerations,
+        checklist: order.checklist,
+        body: order.bodyCode || order.damages[0]?.body || "V3",
+        damages: order.damages as Array<{ body: string; view: "01" | "02" | "03" | "04" | "05"; path: Array<{ u: number; v: number }> }>,
+        evidenceCount: order.attachments.filter((attachment) => attachment.category === "RECEPCION").length,
+        signature: order.attachments.find((attachment) => attachment.category === "OTRO") ? `/api/v1/attachments/${order.attachments.find((attachment) => attachment.category === "OTRO")?.id}/content` : undefined,
+      }, order.orderNumber);
+    } catch (error) {
+      setDiagnosisMessage(error instanceof Error ? error.message : "No fue posible generar el checklist A4.");
+    }
   };
   const uploadDiagnosis = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); const uploadForm = event.currentTarget; const files = new FormData(uploadForm).getAll("file").filter((value): value is File => value instanceof File && value.size > 0);
