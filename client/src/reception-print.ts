@@ -151,6 +151,24 @@ const waitForImages = (document: Document) => Promise.all(
   ),
 );
 
+const blobAsDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(String(reader.result));
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+async function embedSignature(signature?: string): Promise<string | undefined> {
+  if (!signature || signature.startsWith("data:")) return signature;
+  try {
+    const response = await fetch(signature, { credentials: "include" });
+    if (!response.ok) throw new Error("No fue posible cargar la firma.");
+    return await blobAsDataUrl(await response.blob());
+  } catch {
+    return signature;
+  }
+}
+
 export async function downloadReceptionPdf(data: ReceptionPrintData, orderNumber: string): Promise<void> {
   const iframe = document.createElement("iframe");
   iframe.setAttribute("aria-hidden", "true");
@@ -159,12 +177,12 @@ export async function downloadReceptionPdf(data: ReceptionPrintData, orderNumber
   try {
     const targetDocument = iframe.contentDocument;
     if (!targetDocument) throw new Error("No fue posible preparar el documento A4.");
-    writeReceptionDocument(targetDocument, data);
+    writeReceptionDocument(targetDocument, { ...data, signature: await embedSignature(data.signature) });
     const sheet = targetDocument.querySelector<HTMLElement>(".sheet");
     if (!sheet) throw new Error("No fue posible preparar el formato A4.");
     await waitForImages(targetDocument);
     const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), loadPdfLibrary()]);
-    const canvas = await html2canvas(sheet, { backgroundColor: "#ffffff", logging: false, scale: 2, useCORS: true });
+    const canvas = await html2canvas(sheet, { backgroundColor: "#ffffff", logging: false, scale: 3, useCORS: true });
     const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
     pdf.addImage(canvas, "PNG", 0, 0, 210, 297);
     pdf.save(`Checklist_A4_${orderNumber}.pdf`);

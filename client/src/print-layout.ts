@@ -2,10 +2,10 @@
 export const A4_RECEPTION_PRINT_STYLES = `
   @media print { body { background:#fff } }
   .sheet { print-color-adjust:exact; -webkit-print-color-adjust:exact }
-  .print-logo { position:absolute; left:14.9mm; top:9.8mm; width:24.2mm; height:auto }
-  .title { left:auto!important; right:14.9mm; top:18.71mm; font-size:12pt!important; font-weight:700!important; letter-spacing:0!important }
+  .print-logo { position:absolute; left:15mm; top:15mm; width:24.2mm; height:auto }
+  .title { left:auto!important; right:15mm; top:17.5mm; font-size:12pt!important; font-weight:700!important; letter-spacing:0!important }
   .subtitle { display:none }
-  .rule { left:40.6mm!important; top:22.84mm!important; width:154.3mm!important; height:.69mm!important; background:#221e1f!important }
+  .rule { left:15mm!important; top:25.5mm!important; width:180mm!important; height:.69mm!important; background:#221e1f!important }
   .reference-side { position:absolute!important; left:152.92mm!important; top:171.19mm!important; width:42mm!important; height:56.46mm!important; display:grid!important; grid-template-rows:13.92mm 12.45mm 1fr!important; gap:1.2mm!important }
   .reference-side > * { min-height:0; border:.5mm solid #231f20!important; position:relative!important; overflow:hidden }
   .reference-side > :first-child { padding-top:1.87mm!important }
@@ -17,10 +17,11 @@ export const A4_RECEPTION_PRINT_STYLES = `
   .reference-side .sign label { position:static!important; display:block!important; flex:0 0 auto!important; width:100%!important; font-size:8pt!important; line-height:1!important }
   .reference-side i { print-color-adjust:exact; -webkit-print-color-adjust:exact }
   .checklist { display:block!important; overflow:hidden!important }
-  .print-inventory { width:180mm; border-collapse:collapse; table-layout:fixed; font-size:6.9pt; line-height:1 }
+  .print-inventory { width:180mm; border-collapse:collapse; table-layout:fixed; font-size:7.1pt; line-height:1 }
   .print-inventory th, .print-inventory td { height:5.12mm; border:.25mm solid #231f20; padding:0 1mm; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; vertical-align:middle; font-weight:400 }
-  .print-inventory th { font-size:6pt; text-align:left }
-  .print-inventory th:nth-child(3n + 2), .print-inventory th:nth-child(3n) { padding:0; background:#221e1f; color:#fff; text-align:center; font-size:7.5pt; font-weight:700 }
+  .print-inventory th { padding:0 1mm; font-size:6.2pt; line-height:1; text-align:left; vertical-align:middle }
+  .print-inventory th:nth-child(3n + 1) { padding:0 1mm!important; vertical-align:middle!important }
+  .print-inventory th:nth-child(3n + 2), .print-inventory th:nth-child(3n) { padding:0!important; background:#221e1f; color:#fff; text-align:center; vertical-align:middle!important; font-size:7.5pt; font-weight:700; line-height:5.12mm!important }
   .print-inventory td:nth-child(3n + 2), .print-inventory td:nth-child(3n) { padding:0; text-align:center; font-size:9pt; font-weight:700 }
   .print-observations { position:absolute; left:28.6mm; top:76.5mm; width:166.4mm; height:15mm; border-collapse:collapse; table-layout:fixed; font-size:8pt; line-height:1.2 }
   .print-observations th, .print-observations td { padding:0; border:0; vertical-align:top; text-align:left; font-weight:400 }
