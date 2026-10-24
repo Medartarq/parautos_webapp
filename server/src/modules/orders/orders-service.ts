@@ -272,12 +272,13 @@ export async function getOperationalPendingNotifications() {
 export async function getOrderDetail(orderId: number) {
   const pool = getPool();
   const rows = await pool.query<any[]>(
-    `SELECT o.id, o.order_number AS orderNumber, o.public_code AS publicCode, o.internal_status AS internalStatus, o.public_status AS publicStatus, o.modality, o.claim_number AS claimNumber, o.claim_pending_reminder AS claimPending, o.diagnosis_pending_reminder AS diagnosisPending, o.created_at AS createdAt, c.document_type AS documentType, c.document_number AS documentNumber, c.full_name AS client, c.phone, c.email, od.phone_override AS operationalPhone, od.email_override AS operationalEmail, od.updated_at AS operationalDataUpdatedAt, v.plate, v.brand, v.model, v.manufacture_year AS year, v.vin, v.color, v.color_type AS colorType, bt.code AS bodyCode, bt.name AS bodyName
+    `SELECT o.id, o.order_number AS orderNumber, o.public_code AS publicCode, o.internal_status AS internalStatus, o.public_status AS publicStatus, o.modality, o.claim_number AS claimNumber, o.claim_pending_reminder AS claimPending, o.diagnosis_pending_reminder AS diagnosisPending, o.created_at AS createdAt, u.names AS advisorName, c.document_type AS documentType, c.document_number AS documentNumber, c.full_name AS client, c.phone, c.email, od.phone_override AS operationalPhone, od.email_override AS operationalEmail, od.updated_at AS operationalDataUpdatedAt, v.plate, v.brand, v.model, v.manufacture_year AS year, v.vin, v.color, v.color_type AS colorType, bt.code AS bodyCode, bt.name AS bodyName
      FROM service_orders o
      JOIN client_vehicles cv ON cv.id = o.client_vehicle_id
      JOIN clients c ON c.id = cv.client_id
      JOIN vehicles v ON v.id = cv.vehicle_id
      JOIN body_types bt ON bt.id = v.body_type_id
+     LEFT JOIN users u ON u.id = o.advisor_user_id
      LEFT JOIN order_operational_data od ON od.order_id = o.id
      WHERE o.id = ?`,
     [orderId],

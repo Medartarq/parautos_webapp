@@ -512,7 +512,7 @@ function Dashboard({
               onOpenPending={openPending}
             />
           ) : route === "new" ? (
-            <NewOrder onCreated={() => changeRoute("orders")} />
+            <NewOrder onCreated={() => changeRoute("orders")} advisorName={user.names} />
           ) : route === "orders" ? (
             <OrdersView
               onNew={() => changeRoute("new")}

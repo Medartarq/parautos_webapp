@@ -93,7 +93,7 @@ function readImagePreview(file: File) {
   });
 }
 
-export function NewOrder({ onCreated }: { onCreated: () => void }) {
+export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; advisorName: string }) {
   const [catalog, setCatalog] = useState<Catalog>();
   const [step, setStep] = useState(0);
   const [d, setD] = useState<Record<string, string>>({
@@ -682,6 +682,7 @@ export function NewOrder({ onCreated }: { onCreated: () => void }) {
     if (!catalog) return;
     openReceptionPrint({
       modality: d.modality,
+      advisor: advisorName,
       claimNumber: d.claim,
       plate: d.plate,
       documentNumber: d.document,
