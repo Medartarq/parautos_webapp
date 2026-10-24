@@ -32,6 +32,11 @@ const escapeXml = (value: unknown) => String(value ?? "").replace(/[&<>'"]/g, (c
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&apos;", '"': "&quot;",
 })[character] ?? character);
 const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const repairPersistedText = (value: unknown) => {
+  const text = String(value ?? "");
+  if (!/[ÃÂ]/.test(text)) return text;
+  try { return decodeURIComponent(escape(text)); } catch { return text; }
+};
 const imageDataUrls = new Map<string, Promise<string>>();
 let templatePromise: Promise<string> | undefined;
 
@@ -117,11 +122,20 @@ const markerValues = (data: ReceptionSvgData) => ({
 });
 
 function layer(data: ReceptionSvgData, bodyDiagram: string): string {
-  const entries = [
-    ...(data.considerations || []),
-    ...data.checklist.filter((item) => item.observation).map((item) => `${item.name}: ${item.observation}`),
-  ].slice(0, 4);
-  const observations = entries.map((entry, index) => `<text x="${toSvg(280)}" y="${toSvg(419 + index * 17)}" font-family="Arial, sans-serif" font-size="${toSvg(12)}" fill="#373435">${escapeXml(entry)}</text>`).join("");
+  const observationText = [
+    ...(data.considerations || []).map(repairPersistedText),
+    ...data.checklist.filter((item) => item.observation).map((item) => `${repairPersistedText(item.name)}: ${repairPersistedText(item.observation)}`),
+  ].filter(Boolean).join(", ");
+  const observationLines: string[] = [];
+  let line = "";
+  for (const word of observationText.split(/\s+/)) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > 92 && line) { observationLines.push(line); line = word; }
+    else line = next;
+  }
+  if (line) observationLines.push(line);
+  if (observationLines.length > 4) observationLines.splice(3, observationLines.length - 3, `${observationLines.slice(3).join(" ").slice(0, 89).trimEnd()}…`);
+  const observations = observationLines.map((entry, index) => `<text x="${toSvg(280)}" y="${toSvg(419 + index * 17)}" font-family="Arial, sans-serif" font-size="${toSvg(12)}" fill="#373435">${escapeXml(entry)}</text>`).join("");
   const fuelLevel = Number(data.fuelLevel);
   const fuel = Number.isFinite(fuelLevel) ? Math.max(0, Math.min(5, Math.round(fuelLevel / 20))) : 0;
   const fuelMarks = Array.from({ length: fuel }, (_, index) => `<text x="${toSvg(842 + index * 31)}" y="${toSvg(958)}" font-family="Arial, sans-serif" font-size="${toSvg(17)}" fill="#373435">X</text>`).join("");

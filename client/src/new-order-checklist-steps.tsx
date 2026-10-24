@@ -19,7 +19,7 @@ type ChecklistProps = {
 };
 type ConsiderationsProps = { flagsSelected: string[]; setFlagsSelected: Dispatch<SetStateAction<string[]>>; additionalConsideration: string; setAdditionalConsideration: (value: string) => void };
 
-const flags = [
+export const RECEPTION_CONSIDERATION_FLAGS = [
   "Vehículo presenta suciedad que impide la revisión eficaz",
   "Pertenencias personales del interior retiradas",
   "Ver evidencias fotográficas",
@@ -57,7 +57,7 @@ export function ConsiderationsStep({ flagsSelected, setFlagsSelected, additional
             />
             <div className="considerations-hint"><strong>Registro de ingreso</strong><span>Marca las condiciones aplicables al recibir el vehículo.</span></div>
             <div className="flags">
-              {flags.map((flag) => (
+              {RECEPTION_CONSIDERATION_FLAGS.map((flag) => (
                 <label key={flag}>
                   <input
                     type="checkbox"
@@ -65,7 +65,7 @@ export function ConsiderationsStep({ flagsSelected, setFlagsSelected, additional
                     onChange={(event) =>
                       setFlagsSelected(
                         event.target.checked
-                          ? [...flagsSelected, flag]
+                          ? [...new Set([...flagsSelected, flag])]
                           : flagsSelected.filter((value) => value !== flag),
                       )
                     }

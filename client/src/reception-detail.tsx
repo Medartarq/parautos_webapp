@@ -14,12 +14,16 @@ type ReceptionDetailOrder = {
 };
 
 function DetailField({ label, value }: { label: string; value: string }) { return <div><small>{label}</small><strong>{value}</strong></div>; }
+const repairPersistedText = (value: string) => {
+  if (!/[ÃÂ]/.test(value)) return value;
+  try { return decodeURIComponent(escape(value)); } catch { return value; }
+};
 
 export function ReceptionDetail({ order, onRefresh }: { order: ReceptionDetailOrder; onRefresh: () => Promise<void> }) {
   useEffect(() => {
     preloadReceptionPdfResources(order.bodyCode || order.damages[0]?.body || "V3");
   }, [order.bodyCode, order.damages]);
-  const considerations = Array.isArray(order.reception?.considerations) ? order.reception.considerations : [];
+  const considerations = Array.isArray(order.reception?.considerations) ? order.reception.considerations.map(repairPersistedText) : [];
   const categories = [...new Set(order.checklist.map((item) => item.category))];
   const diagnoses = order.attachments.filter((attachment) => attachment.category === "EVALUACION_MANUSCRITA");
   const [diagnosisPage, setDiagnosisPage] = useState(0);

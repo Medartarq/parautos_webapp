@@ -16,7 +16,7 @@ import "./checklist-parity";
 import "./demo-fill";
 import { DataStep } from "./new-order-data-step";
 import { DamageStep } from "./new-order-damage-step";
-import { ChecklistStep, ConsiderationsStep } from "./new-order-checklist-steps";
+import { ChecklistStep, ConsiderationsStep, RECEPTION_CONSIDERATION_FLAGS } from "./new-order-checklist-steps";
 import { EvidenceStep } from "./new-order-media-steps";
 import { SummaryStep } from "./new-order-summary-step";
 import { clearLocalReceptionDraft, clearLocalReceptionMedia, localReceptionDraft, localReceptionMedia } from "./reception-draft-storage";
@@ -57,11 +57,6 @@ const steps = [
   "Daños",
   "Evidencias",
   "Resumen",
-];
-const flags = [
-  "Vehículo presenta suciedad que impide la revisión eficaz",
-  "Pertenencias personales del interior retiradas",
-  "Ver evidencias fotográficas",
 ];
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -193,7 +188,7 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
         [catalog.checklist[0].id]:
           "Registro de demostración para revisión del flujo.",
       });
-      setFlagsSelected([flags[0], flags[1]]);
+      setFlagsSelected([RECEPTION_CONSIDERATION_FLAGS[0], RECEPTION_CONSIDERATION_FLAGS[1]]);
       setDamages([]);
       setFiles([]);
       setDiagnosisFile(undefined);
@@ -634,7 +629,10 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
             diagnosisPendingReminder: d.diagnosisPending === "true",
             mileage: d.mileage || undefined,
             fuelLevel: d.fuel ? Number(d.fuel) : undefined,
-            considerations: [...flagsSelected, ...(d.additionalConsideration?.trim() ? [d.additionalConsideration.trim()] : [])],
+            considerations: [...new Set([
+              ...flagsSelected.filter((flag) => RECEPTION_CONSIDERATION_FLAGS.includes(flag)),
+              ...(d.additionalConsideration?.trim() ? [d.additionalConsideration.trim()] : []),
+            ])],
             damages,
             diagnosis: undefined,
             diagnosisLegibility,
@@ -692,6 +690,50 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
     setAnswers((current) => { const next = { ...current }; Object.entries(checklistUndo.answers).forEach(([id, value]) => value ? next[Number(id)] = value : delete next[Number(id)]); return next; });
     setNotes((current) => { const next = { ...current }; Object.entries(checklistUndo.notes).forEach(([id, value]) => value ? next[Number(id)] = value : delete next[Number(id)]); return next; });
     setMessage(`Se restauraron las respuestas de ${checklistUndo.category}.`); setChecklistUndo(undefined);
+  };
+  const clearCurrentStep = () => {
+    if (createdOrder || saving) return;
+    if (!window.confirm(`Se borrarán los datos ingresados en el paso «${steps[step]}». ¿Desea continuar?`)) return;
+
+    if (step === 0) {
+      setD({ modality: "PARTICULAR", colorType: "CATALOGO", fuel: "" });
+    } else if (step === 1) {
+      setAnswers({});
+      setNotes({});
+      setOpenChecklistNotes({});
+      setOpenChecklistCategory(undefined);
+      setChecklistUndo(undefined);
+    } else if (step === 2) {
+      setFlagsSelected([]);
+      setD((current) => {
+        const next = { ...current };
+        delete next.additionalConsideration;
+        return next;
+      });
+    } else if (step === 3) {
+      setDamages([]);
+      setUndoneDamages([]);
+      setView("01");
+      setDamageExpanded(false);
+    } else if (step === 4) {
+      files.forEach((evidence) => URL.revokeObjectURL(evidence.preview));
+      setFiles([]);
+      setDiagnosisFile(undefined);
+      setDiagnosisPreview("");
+      setDiagnosisLegibility("PENDIENTE");
+      setDiagnosisReviewState("PENDIENTE_REVISION");
+      setD((current) => {
+        const next = { ...current };
+        delete next.diagnosisPending;
+        return next;
+      });
+    } else if (step === 5) {
+      signatureCanvas.current?.getContext("2d")?.clearRect(0, 0, signatureCanvas.current.width, signatureCanvas.current.height);
+      setSignature("");
+      setReviewed(false);
+      setAccepted(false);
+    }
+    setMessage(`Se limpiaron los campos del paso «${steps[step]}».`);
   };
   return (
     <section className="wizard full-wizard">
@@ -795,6 +837,7 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
       </div>
       {message && <p className="wizard-message">{message}</p>}
       <div className="wizard-actions">
+        {!createdOrder && <button type="button" className="btn small clear-step-button" disabled={saving} onClick={clearCurrentStep}>Limpiar campos</button>}
         {step > 0 && (
           <button
             type="button"
