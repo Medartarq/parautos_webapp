@@ -39,6 +39,7 @@ const environmentSchema = z.object({
   ).default(false),
   FACTILIZA_API_BASE_URL: z.string().url().default("https://api.factiliza.com/v1"),
   FACTILIZA_API_TOKEN: z.string().min(1).optional(),
+  FACTILIZA_API_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(15_000),
   BOOTSTRAP_ADMIN_EMAIL: z.string().email(),
   BOOTSTRAP_ADMIN_TOKEN: z.string().min(32).max(512).optional()
 }).superRefine((value, context) => {

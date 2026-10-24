@@ -14,5 +14,6 @@ describe("environment configuration", () => {
       BOOTSTRAP_ADMIN_TOKEN: "a".repeat(32)
     };
     expect(getEnvironment().DB_PORT).toBe(3310);
+    expect(getEnvironment().FACTILIZA_API_TIMEOUT_MS).toBe(15_000);
   });
 });

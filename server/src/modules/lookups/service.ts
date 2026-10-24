@@ -36,7 +36,7 @@ async function factiliza<T>(path: string): Promise<T> {
   if (!environment.FACTILIZA_API_TOKEN)
     throw new AppError(503, "FACTILIZA_NOT_CONFIGURED", "La consulta externa no está configurada.");
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8_000);
+  const timeout = setTimeout(() => controller.abort(), environment.FACTILIZA_API_TIMEOUT_MS);
   try {
     const response = await fetch(`${environment.FACTILIZA_API_BASE_URL}${path}`, {
       headers: { Authorization: `Bearer ${environment.FACTILIZA_API_TOKEN}`, Accept: "application/json" },
