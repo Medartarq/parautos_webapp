@@ -18,6 +18,18 @@ export function errorHandler(error: unknown, request: Request, response: Respons
     return;
   }
 
+  if (typeof error === "object" && error !== null && "sqlState" in error && (error as { sqlState?: string }).sqlState === "45000") {
+    const sqlError = error as { sqlMessage?: string; sqlState?: string; errno?: number };
+    response.status(409).json({
+      error: {
+        code: "ORDER_STATUS_TRANSITION_INVALID",
+        message: sqlError.sqlMessage || "Transicion de estado de orden no permitida",
+        requestId: request.requestId,
+      },
+    });
+    return;
+  }
+
   console.error({ requestId: request.requestId, error });
   response.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Ocurrio un error inesperado.", requestId: request.requestId } });
 }
