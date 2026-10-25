@@ -302,6 +302,7 @@ function Dashboard({
   onLogout: () => void;
 }) {
   const [route, setRoute] = useState<Route>("dashboard");
+  const [dashboardFilter, setDashboardFilter] = useState<string>();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<
     "auto" | "expanded" | "compact"
@@ -510,6 +511,7 @@ function Dashboard({
               onOrders={() => changeRoute("orders")}
               operationalPending={operationalPending}
               onOpenPending={openPending}
+              onMetricFilter={(status) => { setDashboardFilter(status); changeRoute("orders"); }}
             />
           ) : route === "new" ? (
             <NewOrder onCreated={() => changeRoute("orders")} advisorName={user.names} />
@@ -521,6 +523,7 @@ function Dashboard({
                 setSelectedOrderTab(undefined);
                 changeRoute("orderDetail");
               }}
+              initialStatus={dashboardFilter}
             />
           ) : route === "orderDetail" && selectedOrderId ? (
             <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} /></Suspense>
@@ -585,12 +588,14 @@ function DashboardHome({
   onOrders,
   operationalPending,
   onOpenPending,
+  onMetricFilter,
 }: {
   user: CurrentUser;
   onNew: () => void;
   onOrders: () => void;
   operationalPending: OperationalPendingNotifications;
   onOpenPending: (item: OperationalPendingItem) => void;
+  onMetricFilter: (status: string) => void;
 }) {
   const [orders, setOrders] = useState<DashboardOrder[]>();
   const [pendingClaims, setPendingClaims] = useState(0);
@@ -638,10 +643,10 @@ function DashboardHome({
         </button>
       </div>
       <div className="metrics">
-        <Metric label="Cotizaciones pendientes" tone="red" value={count("COTIZACION_PENDIENTE")} emptyLabel="Sin cotizaciones pendientes" />
-        <Metric label="Pendientes de aprobación" tone="amber" value={count("ESPERA_APROBACION")} emptyLabel="Sin aprobaciones por atender" />
-        <Metric label="Espera de repuestos" tone="blue" value={count("ESPERA_REPUESTOS")} emptyLabel="Sin repuestos pendientes" />
-        <Metric label="En reparación" tone="green" value={count("EN_REPARACION")} emptyLabel="Sin vehículos en reparación" />
+        <Metric label="Cotizaciones pendientes" tone="red" value={count("COTIZACION_PENDIENTE")} emptyLabel="Sin cotizaciones pendientes" onClick={() => onMetricFilter("COTIZACION_PENDIENTE")} />
+        <Metric label="Pendientes de aprobación" tone="amber" value={count("ESPERA_APROBACION")} emptyLabel="Sin aprobaciones por atender" onClick={() => onMetricFilter("ESPERA_APROBACION")} />
+        <Metric label="Espera de repuestos" tone="blue" value={count("ESPERA_REPUESTOS")} emptyLabel="Sin repuestos pendientes" onClick={() => onMetricFilter("ESPERA_REPUESTOS")} />
+        <Metric label="En reparación" tone="green" value={count("EN_REPARACION")} emptyLabel="Sin vehículos en reparación" onClick={() => onMetricFilter("EN_REPARACION")} />
       </div>
       {pendingClaims > 0 && (
         <button className="dashboard-alert" onClick={onOrders}>
@@ -710,14 +715,16 @@ function Metric({
   tone,
   value,
   emptyLabel,
+  onClick,
 }: {
   label: string;
   tone: string;
   value: number;
   emptyLabel: string;
+  onClick?: () => void;
 }) {
   return (
-    <article className={`card metric ${tone}`}>
+    <article className={`card metric ${tone}${onClick ? " clickable" : ""}`} onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined}>
       <small>{label}</small>
       <strong>{value}</strong>
       <em>{value === 0 ? emptyLabel : "Requiere seguimiento"}</em>
@@ -814,10 +821,10 @@ function QuotesView({ onOpen }: { onOpen: (orderId: number) => void }) {
   const labels: Record<string, string> = { COTIZACION_PENDIENTE: "Por cotizar", ESPERA_APROBACION: "Enviada · espera aprobación" }; const all = (orders || []).filter((order) => ["COTIZACION_PENDIENTE", "ESPERA_APROBACION"].includes(order.status)); const daysOld = (date: string) => Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86400000); const visible = all.filter((order) => { const days = daysOld(order.createdAt); const ageMatch = !age || (age === "RECENT" && days <= 2) || (age === "ATTENTION" && days >= 3 && days <= 5) || (age === "OVERDUE" && days > 5); const date = order.createdAt.slice(0, 10); return (!stage || order.status === stage) && (!modality || order.modality === modality) && ageMatch && (!from || date >= from) && (!to || date <= to) && `${order.orderNumber} ${order.plate} ${order.client} ${order.brand} ${order.model}`.toLowerCase().includes(search.toLowerCase()); }); const filterChips = [[stage && `Etapa: ${labels[stage]}`], [modality && `Modalidad: ${modality}`], [age && `Antigüedad: ${age === "RECENT" ? "0–2 días" : age === "ATTENTION" ? "3–5 días" : "+5 días"}`], [from && `Desde: ${from}`], [to && `Hasta: ${to}`], [search && `Búsqueda: ${search}`]].map(([value]) => value).filter(Boolean) as string[]; const clear = () => { setSearch(""); setStage(""); setModality(""); setAge(""); setFrom(""); setTo(""); };
   return <><div className="page-head"><div><h1>Cotizaciones</h1><p>Priorice cotizaciones por crear y envíos pendientes de aprobación.</p></div></div><div className="quote-inbox-metrics"><button className={stage === "" ? "active" : ""} onClick={() => setStage("")}><small>Casos por atender</small><strong>{all.length}</strong></button><button className={stage === "COTIZACION_PENDIENTE" ? "active amber" : "amber"} onClick={() => setStage("COTIZACION_PENDIENTE")}><small>Por cotizar</small><strong>{all.filter((item) => item.status === "COTIZACION_PENDIENTE").length}</strong></button><button className={stage === "ESPERA_APROBACION" ? "active blue" : "blue"} onClick={() => setStage("ESPERA_APROBACION")}><small>En aprobación</small><strong>{all.filter((item) => item.status === "ESPERA_APROBACION").length}</strong></button><article><small>Más de 5 días</small><strong>{all.filter((item) => daysOld(item.createdAt) > 5).length}</strong></article></div><section className="card quote-inbox"><div className="quote-inbox-toolbar"><div className="quote-inbox-filter-group"><label>Etapa<select value={stage} onChange={(event) => setStage(event.target.value)}><option value="">Todas las etapas</option><option value="COTIZACION_PENDIENTE">Por cotizar</option><option value="ESPERA_APROBACION">Enviada · espera aprobación</option></select></label><label>Modalidad<select value={modality} onChange={(event) => setModality(event.target.value)}><option value="">Todas las modalidades</option>{[...new Set(all.map((item) => item.modality))].map((item) => <option key={item}>{item.replaceAll("_", " ")}</option>)}</select></label><label>Antigüedad<select value={age} onChange={(event) => setAge(event.target.value)}><option value="">Todas</option><option value="RECENT">0–2 días</option><option value="ATTENTION">3–5 días</option><option value="OVERDUE">Más de 5 días</option></select></label></div><div className="quote-inbox-dates"><span>Fecha de creación</span><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label></div><label className="quote-inbox-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, cliente o vehículo" /></label></div><div className="quote-inbox-resultbar">{filterChips.length ? <><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></> : <span>Sin filtros aplicados</span>}<b>{visible.length} caso{visible.length === 1 ? "" : "s"}</b></div>{!orders ? <div className="empty">Cargando cotizaciones...</div> : !visible.length ? <div className="empty">No hay cotizaciones pendientes con estos filtros.</div> : <><div className="quote-inbox-head"><span aria-hidden="true" /><span>Vehículo y caso</span><span>Modalidad</span><span>Estado</span><span>Acción</span></div><div className="quote-inbox-list">{visible.map((order) => <button className="quote-case" key={order.id} onClick={() => onOpen(order.id)}><PlateBadge plate={order.plate} /><div className="quote-case-summary"><strong>{order.brand} {order.model}</strong><small>{order.orderNumber} · {order.client} · Hace {daysOld(order.createdAt)} día(s)</small></div><span className="quote-case-modality">{order.modality.replaceAll("_", " ")}</span><b className={`status quote-case-status ${order.status === "COTIZACION_PENDIENTE" ? "amber" : "blue"}`}>{labels[order.status]}</b><em className="quote-case-action">Abrir cotización →</em></button>)}</div></>}</section></>;
 }
-function OrdersView({ onNew, onOpen }: { onNew: () => void; onOpen: (orderId: number) => void }) {
+function OrdersView({ onNew, onOpen, initialStatus }: { onNew: () => void; onOpen: (orderId: number) => void; initialStatus?: string }) {
   const [orders, setOrders] = useState<OrderRow[]>();
   const [filter, setFilter] = useState("");
-  const [status, setStatus] = useState("ALL");
+  const [status, setStatus] = useState(initialStatus ?? "ALL");
   const [modality, setModality] = useState("ALL");
   const [onlyPendingClaim, setOnlyPendingClaim] = useState(false);
   useEffect(() => {
