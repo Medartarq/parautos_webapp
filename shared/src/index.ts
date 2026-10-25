@@ -85,6 +85,15 @@ const optionalText = (max: number) =>
     .optional()
     .transform((value) => value || undefined);
 const digitText = z.string().transform((value) => value.replace(/\D/g, ""));
+
+// Preserve the reception form's existing email rules with a linear scan.
+export function isReceptionEmail(value: string): boolean {
+  const at = value.indexOf("@");
+  if (at < 1 || at !== value.lastIndexOf("@") || /\s/.test(value)) return false;
+  const domain = value.slice(at + 1);
+  const dot = domain.indexOf(".", 1);
+  return dot > 0 && dot < domain.length - 1;
+}
 const optionalNumericText = (pattern: RegExp, message: string) =>
   z
     .union([z.string(), z.number()])
@@ -159,7 +168,7 @@ export const receptionStepOneSchema = z
         path: ["phone"],
         message: "El celular debe tener entre 7 y 15 dígitos.",
       });
-    if (value.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email))
+    if (value.email && !isReceptionEmail(value.email))
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["email"],
@@ -314,7 +323,7 @@ export const operationalDataSchema = z.object({
 }).superRefine((value, context) => {
   if (value.phoneOverride && !/^\d{7,15}$/.test(value.phoneOverride))
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["phoneOverride"], message: "El celular debe tener entre 7 y 15 dígitos." });
-  if (value.emailOverride && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.emailOverride))
+  if (value.emailOverride && !isReceptionEmail(value.emailOverride))
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["emailOverride"], message: "El correo no es válido." });
 });
 
@@ -334,4 +343,18 @@ export type ApiError = {
     message: string;
     requestId?: string;
   };
+};
+
+/** Identity as recorded at reception, independent from mutable master records. */
+export type ReceptionIdentitySnapshot = {
+  client: string; documentType: string; documentNumber: string;
+  phone?: string; email?: string; plate: string; brand: string; model: string;
+  year?: number; vin?: string; color: string; colorType: string;
+  bodyCode: string; bodyName: string; modality: string; claimNumber?: string;
+  advisorName?: string; receivedAt: string;
+};
+export type ReceptionSnapshot = {
+  source: "RECEPTION" | "LEGACY_BASELINE";
+  capturedAt: string;
+  payload: ReceptionIdentitySnapshot;
 };

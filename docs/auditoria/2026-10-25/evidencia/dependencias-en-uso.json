@@ -1,0 +1,220 @@
+[
+  {
+    "workspace": "client",
+    "name": "@parautos/shared",
+    "files": [
+      "client/src/app.tsx",
+      "client/src/full-new-order.tsx",
+      "client/src/new-order-data-step.tsx",
+      "client/src/order-detail.tsx",
+      "client/src/reception-detail.tsx"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "@tanstack/react-query",
+    "files": [
+      "client/src/app.tsx",
+      "client/src/main.tsx",
+      "client/src/query-client.ts",
+      "client/src/scoped-query.tsx"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "exceljs",
+    "files": [
+      "client/src/quote-export-toolbar.tsx"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "jspdf",
+    "files": [
+      "client/src/pdf-library.ts",
+      "client/src/reception-svg.ts"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "jspdf-autotable",
+    "files": [
+      "client/src/pdf-library.ts"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "react",
+    "files": [
+      "client/src/app.tsx",
+      "client/src/audit-view.tsx",
+      "client/src/final-control.tsx",
+      "client/src/full-new-order.tsx",
+      "client/src/main.tsx",
+      "client/src/new-order-checklist-steps.tsx",
+      "client/src/new-order-damage-step.tsx",
+      "client/src/new-order-data-step.tsx",
+      "client/src/new-order-media-steps.tsx",
+      "client/src/new-order-summary-step.tsx",
+      "client/src/order-detail.tsx",
+      "client/src/parts-order-workbench.tsx",
+      "client/src/public-tracking.tsx",
+      "client/src/quote-editor.tsx",
+      "client/src/quote-export-toolbar.tsx",
+      "client/src/reception-detail.tsx",
+      "client/src/reports-view.tsx",
+      "client/src/scoped-query.tsx",
+      "client/src/users-view.tsx"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "react-dom",
+    "files": [
+      "client/src/main.tsx",
+      "client/src/reception-detail.test.tsx"
+    ]
+  },
+  {
+    "workspace": "client",
+    "name": "svg2pdf.js",
+    "files": [
+      "client/src/reception-print.ts",
+      "client/src/reception-svg.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "@aws-sdk/client-s3",
+    "files": [
+      "server/src/modules/attachments/s3-storage.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "@parautos/shared",
+    "files": [
+      "server/src/middleware/auth.ts",
+      "server/src/modules/auth/routes.ts",
+      "server/src/modules/auth/service.ts",
+      "server/src/modules/auth/session-repository.ts",
+      "server/src/modules/lookups/routes.ts",
+      "server/src/modules/lookups/service.ts",
+      "server/src/modules/orders/order-detail-repository.ts",
+      "server/src/modules/orders/orders-service.ts",
+      "server/src/modules/orders/routes.ts",
+      "server/src/modules/orders/validation.test.ts",
+      "server/src/modules/setup/routes.ts",
+      "server/src/modules/setup/service.ts",
+      "server/src/modules/users/routes.ts",
+      "server/src/modules/users/service.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "argon2",
+    "files": [
+      "server/src/modules/auth/service.ts",
+      "server/src/modules/setup/service.ts",
+      "server/src/modules/users/service.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "cors",
+    "files": [
+      "server/src/app.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "dotenv",
+    "files": [
+      "server/src/config/env.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "express",
+    "files": [
+      "server/src/app.ts",
+      "server/src/middleware/auth.test.ts",
+      "server/src/middleware/auth.ts",
+      "server/src/middleware/demo-context.ts",
+      "server/src/middleware/error-handler.test.ts",
+      "server/src/middleware/error-handler.ts",
+      "server/src/middleware/order-transition-error.test.ts",
+      "server/src/middleware/request-id.ts",
+      "server/src/middleware/request-log.test.ts",
+      "server/src/middleware/request-log.ts",
+      "server/src/modules/attachments/routes.integration.test.ts",
+      "server/src/modules/attachments/routes.ts",
+      "server/src/modules/audit/routes.ts",
+      "server/src/modules/auth/routes.integration.test.ts",
+      "server/src/modules/auth/routes.ts",
+      "server/src/modules/demo/routes.ts",
+      "server/src/modules/lookups/routes.ts",
+      "server/src/modules/orders/routes.ts",
+      "server/src/modules/reports/routes.ts",
+      "server/src/modules/setup/routes.ts",
+      "server/src/modules/tracking/routes.integration.test.ts",
+      "server/src/modules/tracking/routes.ts",
+      "server/src/modules/users/routes.integration.test.ts",
+      "server/src/modules/users/routes.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "helmet",
+    "files": [
+      "server/src/app.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "mariadb",
+    "files": [
+      "server/src/db/migrate.integration.test.ts",
+      "server/src/db/migrate.ts",
+      "server/src/db/pool.ts",
+      "server/src/modules/audit/audit-writer.ts",
+      "server/src/modules/orders/reception-snapshot.ts",
+      "server/src/modules/setup/service.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "multer",
+    "files": [
+      "server/src/middleware/error-handler.ts",
+      "server/src/modules/attachments/routes.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "pino",
+    "files": [
+      "server/src/logging/technical-logger.ts"
+    ]
+  },
+  {
+    "workspace": "server",
+    "name": "zod",
+    "files": [
+      "server/src/config/env.ts",
+      "server/src/middleware/error-handler.ts",
+      "server/src/modules/audit/routes.ts",
+      "server/src/modules/lookups/routes.ts",
+      "server/src/modules/orders/routes.ts",
+      "server/src/modules/tracking/routes.ts",
+      "server/src/modules/users/routes.ts"
+    ]
+  },
+  {
+    "workspace": "shared",
+    "name": "zod",
+    "files": [
+      "shared/src/index.ts"
+    ]
+  }
+]

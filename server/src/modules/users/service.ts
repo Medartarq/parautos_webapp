@@ -1,3 +1,4 @@
+import { releaseConnection } from "../../db/release-connection.js";
 import argon2 from "argon2";
 import type { ManagedUserInput, UserRole } from "@parautos/shared";
 import { getPool } from "../../db/pool.js";
@@ -25,25 +26,38 @@ export async function createManagedUser(input: ManagedUserInput, actorUserId: nu
   const existing = await pool.query<Array<{ username: string; email: string }>>("SELECT username, email FROM users WHERE username = ? OR email = ? LIMIT 1", [input.username, input.email.toLowerCase()]);
   if (existing[0]?.username === input.username) throw new AppError(409, "USERNAME_ALREADY_EXISTS", "El nombre de usuario ya está registrado.");
   if (existing[0]?.email === input.email.toLowerCase()) throw new AppError(409, "EMAIL_ALREADY_EXISTS", "El correo ya está registrado.");
+  const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
+  const connection = await pool.getConnection();
+  let failed = true;
+  let id: number;
   try {
-    const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
-    const result = await pool.query<{ insertId: number }>("INSERT INTO users (role_id, names, username, email, password_hash) VALUES (?, ?, ?, ?, ?)", [roleRows[0].id, input.names, input.username, input.email.toLowerCase(), passwordHash]);
-    const id = Number(result.insertId);
-    await pool.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, 'USER_CREATED', JSON_OBJECT('username', ?, 'email', ?, 'role', ?), ?, ?, ?)", [actorUserId, String(id), input.username, input.email.toLowerCase(), input.role, requestId, ipAddress ?? null, userAgent ?? null]);
-    const users = await listManagedUsers();
-    return users.find((user) => user.id === id)!;
+    await connection.beginTransaction();
+    const result = await connection.query<{ insertId: number }>("INSERT INTO users (role_id, names, username, email, password_hash) VALUES (?, ?, ?, ?, ?)", [roleRows[0].id, input.names, input.username, input.email.toLowerCase(), passwordHash]);
+    id = Number(result.insertId);
+    await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, 'USER_CREATED', JSON_OBJECT('username', ?, 'email', ?, 'role', ?), ?, ?, ?)", [actorUserId, String(id), input.username, input.email.toLowerCase(), input.role, requestId, ipAddress ?? null, userAgent ?? null]);
+    await connection.commit();
+    failed = false;
   } catch (error: unknown) {
     if (error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "ER_DUP_ENTRY")
       throw new AppError(409, "USER_ALREADY_EXISTS", "El usuario o correo ya está registrado.");
     throw error;
-  }
+  } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
+  const users = await listManagedUsers();
+  return users.find((user) => user.id === id)!;
 }
 
 export async function setManagedUserActive(userId: number, active: boolean, actorUserId: number, requestId: string, ipAddress?: string, userAgent?: string): Promise<void> {
   if (userId === actorUserId && !active) throw new AppError(400, "SELF_DEACTIVATION", "No puede desactivar su propia cuenta.");
-  const result = await getPool().query<{ affectedRows: number }>("UPDATE users SET active = ?, deactivated_at = CASE WHEN ? THEN NULL ELSE UTC_TIMESTAMP(6) END WHERE id = ? AND anonymized_at IS NULL", [active ? 1 : 0, active ? 1 : 0, userId]);
+  const connection = await getPool().getConnection();
+  let failed = true;
+  try {
+    await connection.beginTransaction();
+  const result = await connection.query<{ affectedRows: number }>("UPDATE users SET active = ?, deactivated_at = CASE WHEN ? THEN NULL ELSE UTC_TIMESTAMP(6) END WHERE id = ? AND anonymized_at IS NULL", [active ? 1 : 0, active ? 1 : 0, userId]);
   if (!result.affectedRows) throw new AppError(404, "USER_NOT_FOUND", "El usuario no existe.");
-  await getPool().query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('active', ?), ?, ?, ?)", [actorUserId, String(userId), active ? "USER_ACTIVATED" : "USER_DEACTIVATED", active, requestId, ipAddress ?? null, userAgent ?? null]);
+  await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('active', ?), ?, ?, ?)", [actorUserId, String(userId), active ? "USER_ACTIVATED" : "USER_DEACTIVATED", active, requestId, ipAddress ?? null, userAgent ?? null]);
+    await connection.commit();
+    failed = false;
+  } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
 }
 
 export async function deleteManagedUser(userId: number, actorUserId: number, requestId: string, ipAddress?: string, userAgent?: string): Promise<void> {
@@ -74,5 +88,5 @@ export async function deleteManagedUser(userId: number, actorUserId: number, req
     }
     await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('username', ?), ?, ?, ?)", [actorUserId, String(userId), hasHistory ? 'USER_ANONYMIZED' : 'USER_DELETED', user.username, requestId, ipAddress ?? null, userAgent ?? null]);
     await connection.commit(); failed = false;
-  } finally { if (failed) await connection.rollback(); connection.release(); }
+  } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
 }

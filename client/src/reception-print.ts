@@ -9,6 +9,7 @@ type Damage = {
 };
 
 export type ReceptionPrintData = {
+  receivedAt?: string;
   modality?: string;
   advisor?: string;
   claimNumber?: string;

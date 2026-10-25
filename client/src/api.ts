@@ -1,14 +1,26 @@
+import { clearSessionQueries, invalidateOrderQueries } from "./query-client";
+
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = new Headers(options?.headers);
+  if (!(options?.body instanceof FormData) && !headers.has("Content-Type"))
+    headers.set("Content-Type", "application/json");
   const response = await fetch(`/api/v1${path}`, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    headers,
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => undefined)) as { error?: { message?: string } } | undefined;
-    throw new Error(body?.error?.message ?? "No fue posible completar la operacion.");
+    const error = new Error(body?.error?.message ?? "No fue posible completar la operacion.") as Error & { status: number };
+    error.status = response.status;
+    throw error;
   }
-  return response.status === 204 ? (undefined as T) : (response.json() as Promise<T>);
+  const result = response.status === 204 ? (undefined as T) : await response.json() as T;
+  const method = (options?.method || "GET").toUpperCase();
+  if (method === "POST" && ["/auth/login", "/auth/logout", "/demo/enter", "/demo/exit"].includes(path))
+    await clearSessionQueries();
+  else await invalidateOrderQueries(path, method);
+  return result;
 }
 
 export async function openAttachment(attachmentId: number): Promise<void> {

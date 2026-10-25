@@ -3,6 +3,7 @@ import { renderReceptionBodyDiagram, type VehicleDamage } from "./reception-svg-
 type ChecklistEntry = { category: string; categoryOrder?: number; name: string; itemOrder?: number; answer: string; observation?: string };
 
 export type ReceptionSvgData = {
+  receivedAt?: string;
   modality?: string;
   advisor?: string;
   claimNumber?: string;
@@ -104,8 +105,8 @@ function applyChecklistMarks(svg: string, checklist: ChecklistEntry[]): string {
 
 const markerValues = (data: ReceptionSvgData) => ({
   __MODALIDAD__: data.modality,
-  __FECHA__: new Date().toLocaleDateString("es-PE"),
-  __HORA__: new Date().toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" }),
+  __FECHA__: new Date(data.receivedAt || Date.now()).toLocaleDateString("es-PE", { timeZone: "America/Lima" }),
+  __HORA__: new Date(data.receivedAt || Date.now()).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", timeZone: "America/Lima" }),
   __ASESOR__: data.advisor,
   __NUMERO_SINIESTRO__: data.claimNumber,
   __PLACA__: data.plate,
@@ -177,7 +178,7 @@ async function imageDataUrl(url: string): Promise<string> {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error);
+        reader.onerror = () => reject(reader.error ?? new Error("No fue posible leer la imagen del checklist."));
         reader.readAsDataURL(blob);
       });
     }).catch((error) => {
@@ -204,7 +205,7 @@ async function bodyAssetDataUrls(body: string): Promise<(body: string, view: Veh
 export function renderReceptionSvg(template: string, data: ReceptionSvgData, bodyAssetUrl?: (body: string, view: VehicleDamage["view"]) => string): string {
   if (!/viewBox\s*=\s*["']0 0 21000 29700["']/i.test(template)) throw new Error("La plantilla SVG A4 no es válida.");
   let svg = template.replace(/<g id="checklist-datos-generados">[\s\S]*?<\/g>\s*(?=<\/svg>)/, "");
-  for (const [marker, value] of Object.entries(markerValues(data))) svg = svg.replaceAll(marker, escapeXml(value));
+  for (const [marker, value] of Object.entries(markerValues(data))) svg = svg.replaceAll(marker, () => escapeXml(value));
   svg = applyChecklistMarks(svg, data.checklist);
   if (!SVG_END.test(svg)) throw new Error("La plantilla SVG está incompleta.");
   const bodyLayer = bodyAssetUrl ? renderReceptionBodyDiagram({ body: data.body, damages: data.damages, assetUrl: bodyAssetUrl }) : renderReceptionBodyDiagram({ body: data.body, damages: data.damages });

@@ -1,0 +1,343 @@
+{
+  "databaseVersion": "11.8.9-MariaDB",
+  "isolated": true,
+  "migrationsPerDatabase": 25,
+  "checks": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/setup/status",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/setup/initial",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/audit/events",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/reports/operational",
+      "status": 403
+    },
+    {
+      "method": "PATCH",
+      "path": "/users/2/active",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/auth/me",
+      "status": 401
+    },
+    {
+      "method": "PATCH",
+      "path": "/users/2/active",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/users",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/reports/operational",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/audit/events",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/users",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/users/4",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/orders",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/orders/reception-catalog",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/orders/1",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/orders/1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/orders/1/operational-data",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/orders/1",
+      "status": 200
+    },
+    {
+      "method": "ASSERT",
+      "path": "reception snapshot survives master upsert and operational correction",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/lookups/local/client/70000001",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/lookups/local/vehicle/AUD101",
+      "status": 200
+    },
+    {
+      "method": "POST/GET",
+      "path": "/attachments/orders/:id (PNG byte equality)",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/attachments/3/content",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/quotes",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/quotes/1/send",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/quotes/1/approve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders/1/parts",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/start-repair",
+      "status": 409
+    },
+    {
+      "method": "PATCH",
+      "path": "/orders/parts/1",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/start-repair",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/complete",
+      "status": 409
+    },
+    {
+      "method": "PUT",
+      "path": "/orders/1/final-control/labor",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/complete",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/complete",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/publish",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/deliver",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/start-repair",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/orders/1/final-control/complete",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/tracking",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders/1",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/orders/1/operational-data",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/reports/operational",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/audit/events",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/orders/reception-draft",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/orders/reception-draft",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/demo/enter",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/orders",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders/navigation-summary",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders/pending-notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/orders",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/orders/3/quote-draft",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/orders/3/quotes/from-draft",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/orders/3/quotes",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/orders/3/quotes/7",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/orders/3/quotes/7",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/audit-stop",
+      "status": 204,
+      "poweredByAbsent": true
+    }
+  ]
+}

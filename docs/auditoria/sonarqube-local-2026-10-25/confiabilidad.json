@@ -1,0 +1,1399 @@
+[
+  {
+    "key": "b95b6f51-e21b-4e45-ae33-7461509ab174",
+    "rule": "typescript:S9011",
+    "severity": "MAJOR",
+    "component": "parautos-local:client/src/order-detail.tsx",
+    "project": "parautos-local",
+    "line": 61,
+    "hash": "1834890d919454564019613cd930388d",
+    "textRange": {
+      "startLine": 61,
+      "endLine": 61,
+      "startOffset": 2177,
+      "endOffset": 2237
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Add an explicit \"type\" attribute to this button.",
+    "effort": "2min",
+    "debt": "2min",
+    "author": "",
+    "tags": [
+      "vue",
+      "react"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "1dc4416e-2d16-4200-8931-7463739994b2",
+    "rule": "typescript:S6671",
+    "severity": "MAJOR",
+    "component": "parautos-local:client/src/reception-svg.ts",
+    "project": "parautos-local",
+    "line": 181,
+    "hash": "7c01f6d8f3a9f03183434a001454a724",
+    "textRange": {
+      "startLine": 181,
+      "endLine": 181,
+      "startOffset": 31,
+      "endOffset": 51
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Expected the Promise rejection reason to be an Error.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "type-dependent"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "d4412117-cbb1-4e79-b7b7-13fcc0486cd8",
+    "rule": "typescript:S2871",
+    "severity": "CRITICAL",
+    "component": "parautos-local:server/src/db/migrate.ts",
+    "project": "parautos-local",
+    "line": 103,
+    "hash": "6029dc527eceeb600e1b433471278f54",
+    "textRange": {
+      "startLine": 103,
+      "endLine": 103,
+      "startOffset": 83,
+      "endOffset": 87
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Provide a compare function that depends on \"String.localeCompare\", to reliably sort elements alphabetically.",
+    "effort": "10min",
+    "debt": "10min",
+    "author": "",
+    "tags": [
+      "type-dependent",
+      "bad-practice"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "HIGH"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "edc73fab-deca-4b90-878a-f42293bd3e75",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/db/migrate.ts",
+    "project": "parautos-local",
+    "line": 122,
+    "hash": "0bd378f500e92d5a1526d575413bd4b1",
+    "textRange": {
+      "startLine": 122,
+      "endLine": 122,
+      "startOffset": 6,
+      "endOffset": 27
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "68878e68-a9b0-42f5-98ee-9ec672b5c03b",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/attachments/attachment-repository.ts",
+    "project": "parautos-local",
+    "line": 29,
+    "hash": "8fcec57396e9b36db09097d2b1d1cbc7",
+    "textRange": {
+      "startLine": 29,
+      "endLine": 29,
+      "startOffset": 92,
+      "endOffset": 113
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "9ace53db-0007-45de-9da5-ed2c964e367e",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/final-control-completion-repository.ts",
+    "project": "parautos-local",
+    "line": 30,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 30,
+      "endLine": 30,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "f2e2df52-fd98-4727-bc57-aa98a29f23df",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/final-control-delivery-repository.ts",
+    "project": "parautos-local",
+    "line": 10,
+    "hash": "3ca8ea3593fdefb526384fe7ec85f832",
+    "textRange": {
+      "startLine": 10,
+      "endLine": 10,
+      "startOffset": 1598,
+      "endOffset": 1619
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "4597159f-78b4-46cf-b4ea-a42ac3534c47",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/final-control-delivery-repository.ts",
+    "project": "parautos-local",
+    "line": 14,
+    "hash": "73d5f8e1119934eef7d857e95ac86495",
+    "textRange": {
+      "startLine": 14,
+      "endLine": 14,
+      "startOffset": 1567,
+      "endOffset": 1588
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "6b5fbc8a-30f0-47f6-a20a-30b2d8e95932",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/final-control-reopen-repository.ts",
+    "project": "parautos-local",
+    "line": 19,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 19,
+      "endLine": 19,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "cded04c5-b62c-4804-846b-518f076b3a19",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/labor-verification-repository.ts",
+    "project": "parautos-local",
+    "line": 11,
+    "hash": "87a7372f4e524f7736aae73773287fd9",
+    "textRange": {
+      "startLine": 11,
+      "endLine": 11,
+      "startOffset": 1615,
+      "endOffset": 1636
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "e9c0eacf-02b5-458b-bb91-a2f09faeb097",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/labor-verification-repository.ts",
+    "project": "parautos-local",
+    "line": 15,
+    "hash": "ab6c96f4f8950b36104db471465dd38c",
+    "textRange": {
+      "startLine": 15,
+      "endLine": 15,
+      "startOffset": 1685,
+      "endOffset": 1706
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "7b14372a-d89b-469f-b2fb-a756af76515e",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/orders-service.ts",
+    "project": "parautos-local",
+    "line": 251,
+    "hash": "b239975bae74c15e5ac69f0dd1870b84",
+    "textRange": {
+      "startLine": 251,
+      "endLine": 251,
+      "startOffset": 63,
+      "endOffset": 84
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "66c1588d-8bee-4a19-aaf9-f0127fc394b4",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/orders-service.ts",
+    "project": "parautos-local",
+    "line": 346,
+    "hash": "b239975bae74c15e5ac69f0dd1870b84",
+    "textRange": {
+      "startLine": 346,
+      "endLine": 346,
+      "startOffset": 63,
+      "endOffset": 84
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "28e2b9c3-ddf9-4d05-a057-c464abbc513a",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/parts-mutation-repository.ts",
+    "project": "parautos-local",
+    "line": 9,
+    "hash": "2888301c3a7fbba9d1458ef01b5a67f8",
+    "textRange": {
+      "startLine": 9,
+      "endLine": 9,
+      "startOffset": 2159,
+      "endOffset": 2180
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "e1cda541-4cd0-4ec2-bad1-8709c6f73bfc",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/parts-mutation-repository.ts",
+    "project": "parautos-local",
+    "line": 10,
+    "hash": "e5d808ef70d2d2b95d82110fe3a0be87",
+    "textRange": {
+      "startLine": 10,
+      "endLine": 10,
+      "startOffset": 1516,
+      "endOffset": 1537
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "d2134e73-72ad-412b-b138-c6d8f41f0fca",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/parts-mutation-repository.ts",
+    "project": "parautos-local",
+    "line": 11,
+    "hash": "e380cce5c5988693fd833bb7f12e1388",
+    "textRange": {
+      "startLine": 11,
+      "endLine": 11,
+      "startOffset": 1662,
+      "endOffset": 1683
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "cda4fa29-a5fb-41c1-aaea-b56d1952177c",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/pending-claim-repository.ts",
+    "project": "parautos-local",
+    "line": 4,
+    "hash": "cd9358f879aa073b8653d96b200cdd23",
+    "textRange": {
+      "startLine": 4,
+      "endLine": 4,
+      "startOffset": 1435,
+      "endOffset": 1456
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "1d718681-1330-42d7-8221-c264240f0369",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/quote-creation-repository.ts",
+    "project": "parautos-local",
+    "line": 34,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 34,
+      "endLine": 34,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "ec106d2a-f897-4a78-8d56-05ce7ad77c38",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/quote-draft-repository.ts",
+    "project": "parautos-local",
+    "line": 33,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 33,
+      "endLine": 33,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "ed6fac88-eafc-4bc8-912b-726d034be705",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/quote-mutation-repository.ts",
+    "project": "parautos-local",
+    "line": 25,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 25,
+      "endLine": 25,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "012c4696-0c76-47d9-8f9e-cae31f7e2f40",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/quote-mutation-repository.ts",
+    "project": "parautos-local",
+    "line": 42,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 42,
+      "endLine": 42,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "02b504ee-186d-4d35-8534-0e473a4af77a",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/quote-transition-repository.ts",
+    "project": "parautos-local",
+    "line": 24,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 24,
+      "endLine": 24,
+      "startOffset": 75,
+      "endOffset": 96
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "6ce446f7-50d0-42b1-974d-2a72d3ec8641",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/orders/reception-draft-repository.ts",
+    "project": "parautos-local",
+    "line": 7,
+    "hash": "eac0fd3eaff39c251ecf04641dd27b7e",
+    "textRange": {
+      "startLine": 7,
+      "endLine": 7,
+      "startOffset": 1084,
+      "endOffset": 1105
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "ae31782e-61d7-4d46-8a3c-c6b2cff896e5",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/setup/service.ts",
+    "project": "parautos-local",
+    "line": 22,
+    "hash": "9afef9e81748c84033457b5f6e66dfb7",
+    "textRange": {
+      "startLine": 22,
+      "endLine": 22,
+      "startOffset": 14,
+      "endOffset": 35
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "61d60123-d207-4df0-8ef2-a135c15c8f7e",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/users/service.ts",
+    "project": "parautos-local",
+    "line": 43,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 43,
+      "endLine": 43,
+      "startOffset": 73,
+      "endOffset": 94
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "9f6fbc3b-5c20-4c9c-8929-3e9ae298da9f",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/users/service.ts",
+    "project": "parautos-local",
+    "line": 59,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 59,
+      "endLine": 59,
+      "startOffset": 73,
+      "endOffset": 94
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "456e5193-ad7c-4970-a54f-9e2ae5022f8b",
+    "rule": "typescript:S9383",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/users/service.ts",
+    "project": "parautos-local",
+    "line": 90,
+    "hash": "b1b96e42370c8693384d4524c12ef124",
+    "textRange": {
+      "startLine": 90,
+      "endLine": 90,
+      "startOffset": 73,
+      "endOffset": 94
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "es2017",
+      "type-dependent",
+      "promise"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "BUG",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "efb61286-771f-43ca-9870-e87b560cd716",
+    "rule": "typescript:S8786",
+    "severity": "MAJOR",
+    "component": "parautos-local:shared/src/index.ts",
+    "project": "parautos-local",
+    "line": 162,
+    "hash": "db140b037ca4e23eb283404565f0e8e8",
+    "textRange": {
+      "startLine": 162,
+      "endLine": 162,
+      "startOffset": 24,
+      "endOffset": 52
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+    "effort": "20min",
+    "debt": "20min",
+    "author": "",
+    "tags": [
+      "regex",
+      "performance"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "b37403ff-ccd8-4bc0-9797-fe71a258a23b",
+    "rule": "typescript:S8786",
+    "severity": "MAJOR",
+    "component": "parautos-local:shared/src/index.ts",
+    "project": "parautos-local",
+    "line": 317,
+    "hash": "06dcd37e9ba086045489fda482c6c634",
+    "textRange": {
+      "startLine": 317,
+      "endLine": 317,
+      "startOffset": 30,
+      "endOffset": 58
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+    "effort": "20min",
+    "debt": "20min",
+    "author": "",
+    "tags": [
+      "regex",
+      "performance"
+    ],
+    "creationDate": "2026-10-25T15:53:59-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "39e1b3f3-3492-4a71-abac-449852b6861b",
+    "rule": "typescript:S8786",
+    "severity": "MAJOR",
+    "component": "parautos-local:server/src/modules/attachments/s3-storage.ts",
+    "project": "parautos-local",
+    "line": 18,
+    "hash": "f5c6b3da2a9025639958cde4a54d67f2",
+    "textRange": {
+      "startLine": 18,
+      "endLine": 18,
+      "startOffset": 52,
+      "endOffset": 64
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking.",
+    "effort": "20min",
+    "debt": "20min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "regex",
+      "performance"
+    ],
+    "creationDate": "2026-10-17T19:27:20-05:00",
+    "updateDate": "2026-10-25T15:53:59-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  }
+]

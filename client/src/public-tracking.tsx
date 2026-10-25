@@ -82,7 +82,7 @@ export function PublicTracking() {
           <div className="tracking-fields">
             <label>Placa<input value={plate} onChange={(event) => setPlate(event.target.value)} maxLength={16} autoCapitalize="characters" autoComplete="off" placeholder="ABC-123" /></label>
             <label>Código de consulta<input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" placeholder="Ej. 123456" /></label>
-            <button disabled={loading}>{loading ? "Consultando..." : "Consultar"}</button>
+            <button type="submit" disabled={loading}>{loading ? "Consultando..." : "Consultar"}</button>
           </div>
           <p className="tracking-help">¿No tienes el código? Solicítalo a tu asesor de servicio. No se usa la contraseña de tu cuenta.</p>
           {message && <p className="tracking-message error" role="alert">{message}</p>}

@@ -145,7 +145,7 @@ function EvaluationUpload({ diagnosisFile, setDiagnosisFile, setDiagnosisPreview
                 <div className="diagnosis-status">
                   <span>{diagnosisFile.name}</span>
                   <label>
-                    Legibilidad
+                    {"Legibilidad "}
                     <select
                       value={diagnosisLegibility}
                       onChange={(event) =>
@@ -161,7 +161,7 @@ function EvaluationUpload({ diagnosisFile, setDiagnosisFile, setDiagnosisPreview
                     </select>
                   </label>
                   <label>
-                    Revisión
+                    {"Revisión "}
                     <select
                       value={diagnosisReviewState}
                       onChange={(event) =>

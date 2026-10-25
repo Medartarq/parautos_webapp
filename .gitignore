@@ -9,3 +9,32 @@ data/demo-uploads/
 server/data/uploads/
 server/data/demo-uploads/
 *.tsbuildinfo
+
+# Artefactos emitidos al compilar la configuración TypeScript de Vite.
+client/vite.config.js
+client/vite.config.d.ts
+
+# Script de esquema generado para instalaciones manuales.
+database/schema-inicial-mariadb.sql
+
+# Material local y documentos generados.
+/tmp/
+/output/
+/.opencode/
+
+# Archivos de trabajo de Sonar.
+.scannerwork/
+
+# Temporales de auditoría y copias de reconciliación.
+/docs/auditoria/**/tmp/
+/docs/auditoria/**/reconciliacion/
+
+# Logs de herramientas locales.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Metadatos del sistema operativo.
+.DS_Store
+Thumbs.db
+Desktop.ini

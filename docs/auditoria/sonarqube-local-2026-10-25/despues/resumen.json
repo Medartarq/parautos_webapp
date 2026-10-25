@@ -1,0 +1,10 @@
+{
+  "scannerExitCode": 3,
+  "analysisCompleted": true,
+  "qualityGate": "ERROR",
+  "qualityGateReason": "new_coverage=0.0, LCOV no importado, umbral 80",
+  "historicalIssues": 31,
+  "issues": 0,
+  "reliability": 0,
+  "activeTemporaryTokens": 0
+}

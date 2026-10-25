@@ -80,9 +80,21 @@ migración controlada; no se crea desde el directorio de usuarios.
 Para ejecutar las pruebas reales de migraciones, configure las variables
 `MIGRATION_TEST_DB_HOST`, `MIGRATION_TEST_DB_PORT`, `MIGRATION_TEST_DB_USER` y
 `MIGRATION_TEST_DB_PASSWORD` con una cuenta de **prueba** que sólo pueda crear y
-eliminar bases temporales. `npm test` creará una base efímera, aplicará las 20
-migraciones y comprobará la migración de Superadministrador. Nunca use las
+eliminar bases temporales. `npm test` compila los contratos compartidos, ejecuta
+las pruebas del servidor y del cliente y, con esas variables, crea una base
+efímera, aplica todas las migraciones versionadas (25 en esta revisión) y
+comprueba la migración de Superadministrador. Nunca use las
 credenciales de producción.
+
+Para verificar el flujo HTTP completo con datos sintéticos, dos bases temporales
+y adjuntos locales aislados, ejecute `node --import tsx scripts/audit-local.mjs`
+con las mismas variables `MIGRATION_TEST_DB_*`. El script admite únicamente
+conexiones locales a MariaDB; no utiliza la base `DB_NAME` de la aplicación.
+La opción `--serve` mantiene un servidor de prueba en `127.0.0.1:4180` para
+revisión visual. `Ctrl+C` elimina sus bases y adjuntos temporales. El acceso
+`/audit-login` existe sólo en ese proceso de prueba con usuarios sintéticos.
+
+La auditoría del 25 de octubre de 2026 está en [docs/auditoria/INFORME.md](docs/auditoria/INFORME.md).
 
 ## Análisis con SonarCloud
 
@@ -100,3 +112,12 @@ vinculado. Revise los resultados y el Quality Gate en
 - `database/migrations/`: esquema SQL versionado.
 
 No se guardan contrasenas, archivos ni credenciales en el repositorio.
+
+
+### Registros técnicos y caché de consultas
+
+El servidor utiliza Pino para escribir JSON en stdout, sin transportes, workers ni un servicio de logs adicional. `LOG_LEVEL=info` es el valor habitual; se puede reducir a `warn` o `error` desde el entorno. Se registran evento, fecha, identificador de petición, método, estado, duración y clasificación técnica del fallo. Se excluyen URLs y parámetros, cuerpos, cookies, tokens, contraseñas, SQL, mensajes/stack de errores y datos personales. La auditoría funcional en MariaDB permanece independiente. La retención y el acceso a stdout se gestionan en el hosting.
+
+TanStack Query comparte las lecturas del panel, órdenes y cotizaciones, y gestiona notificaciones/resumen. La caché sólo vive en memoria del navegador; las claves incluyen usuario y modo principal/demo. Las consultas tienen 15 segundos de frescura y 5 minutos de retención inactiva; se actualizan al montar/recuperar foco y tras escrituras relevantes. No hay polling. Se cancela y vacía la caché tras login, logout o cambio de modo exitosos. No se reintentan escrituras; una lectura puede reintentarse una vez, salvo errores HTTP 4xx.
+
+No se incorporan Sharp ni antivirus/servicios independientes: esta versión conserva Cloud Startup y los adjuntos originales. Véase [detalle de librerías y seguridad](docs/auditoria/LIBRERIAS_Y_SEGURIDAD.md).

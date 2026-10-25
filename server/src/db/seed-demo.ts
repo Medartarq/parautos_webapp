@@ -1,3 +1,4 @@
+import { technicalLogger } from "../logging/technical-logger.js";
 import { closePool, getPool } from "./pool.js";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -83,4 +84,4 @@ export async function seedDemo(): Promise<void> {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
-  seedDemo().then(() => closePool()).catch(async (error: unknown) => { console.error(error); await closePool(); process.exitCode = 1; });
+  seedDemo().then(() => closePool()).catch(async (error: unknown) => { technicalLogger.failure("database_task_failed", error); await closePool(); process.exitCode = 1; });

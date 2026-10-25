@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { getEnvironment } from "./config/env.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestId } from "./middleware/request-id.js";
+import { createRequestLog } from "./middleware/request-log.js";
 import { setupRouter } from "./modules/setup/routes.js";
 import { authRouter } from "./modules/auth/routes.js";
 import { ordersRouter } from "./modules/orders/routes.js";
@@ -25,8 +26,9 @@ export function createApp(): express.Express {
   app.set("trust proxy", 1);
   app.use(helmet());
   app.use(cors({ origin: env.APP_ORIGIN, credentials: true }));
-  app.use(express.json({ limit: "1mb" }));
   app.use(requestId);
+  app.use(createRequestLog());
+  app.use(express.json({ limit: "1mb" }));
 
   app.get("/api/v1/health", (_request, response) => {
     response.json({ status: "ok" });

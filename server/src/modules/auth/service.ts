@@ -2,10 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import argon2 from "argon2";
 import type { CurrentUser, LoginInput, UserRole } from "@parautos/shared";
 import { getEnvironment } from "../../config/env.js";
-import { getProductionPool } from "../../db/pool.js";
 import { AppError } from "../../errors/app-error.js";
-
-type UserRow = CurrentUser & { password_hash: string };
+import { mariaDbSessionRepository, type SessionRepository } from "./session-repository.js";
 
 export const sessionCookieName = "parautos_session";
 
@@ -30,44 +28,30 @@ export function cookieOptions() {
   };
 }
 
-export async function login(input: LoginInput): Promise<{ user: CurrentUser; token: string }> {
-  const rows = await getProductionPool().query<UserRow[]>(
-    `SELECT u.id, u.names, u.username, u.email, r.code AS role, u.password_hash
-     FROM users u JOIN roles r ON r.id = u.role_id
-     WHERE (u.email = ? OR u.username = ?) AND u.active = 1 AND r.active = 1 LIMIT 1`,
-    [input.identifier.toLowerCase(), input.identifier]
-  );
-  const user = rows[0];
-  if (!user || !(await argon2.verify(user.password_hash, input.password))) {
-    throw new AppError(401, "INVALID_CREDENTIALS", "Usuario o contrasena incorrectos.");
-  }
+export function createSessionService(repository: SessionRepository = mariaDbSessionRepository) {
+  return {
+    async login(input: LoginInput): Promise<{ user: CurrentUser; token: string }> {
+      const user = await repository.findActiveUser(input.identifier);
+      if (!user || !(await argon2.verify(user.password_hash, input.password)))
+        throw new AppError(401, "INVALID_CREDENTIALS", "Usuario o contrasena incorrectos.");
 
-  const token = randomBytes(32).toString("base64url");
-  await getProductionPool().query(
-    "INSERT INTO sessions (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
-    [user.id, hashToken(token), sessionExpiry()]
-  );
-  const { password_hash: _passwordHash, ...currentUser } = user;
-  return { user: { ...currentUser, role: currentUser.role as UserRole }, token };
+      const token = randomBytes(32).toString("base64url");
+      await repository.createSession(user.id, hashToken(token), sessionExpiry());
+      const { password_hash: _passwordHash, ...currentUser } = user;
+      return { user: { ...currentUser, role: currentUser.role as UserRole }, token };
+    },
+    async getCurrentUser(token: string): Promise<CurrentUser | undefined> {
+      const tokenHash = hashToken(token);
+      const user = await repository.findCurrentUser(tokenHash);
+      if (!user) return undefined;
+      await repository.touchSession(tokenHash);
+      return { ...user, role: user.role as UserRole };
+    },
+    logout: async (token: string): Promise<void> => repository.revokeSession(hashToken(token)),
+  };
 }
 
-export async function getCurrentUser(token: string): Promise<CurrentUser | undefined> {
-  const rows = await getProductionPool().query<CurrentUser[]>(
-    `SELECT u.id, u.names, u.username, u.email, r.code AS role
-     FROM sessions s
-     JOIN users u ON u.id = s.user_id
-     JOIN roles r ON r.id = u.role_id
-     WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > UTC_TIMESTAMP(6)
-       AND u.active = 1 AND r.active = 1
-     LIMIT 1`,
-    [hashToken(token)]
-  );
-  const user = rows[0];
-  if (!user) return undefined;
-  await getProductionPool().query("UPDATE sessions SET last_seen_at = UTC_TIMESTAMP(6) WHERE token_hash = ?", [hashToken(token)]);
-  return { ...user, role: user.role as UserRole };
-}
-
-export async function logout(token: string): Promise<void> {
-  await getProductionPool().query("UPDATE sessions SET revoked_at = UTC_TIMESTAMP(6) WHERE token_hash = ? AND revoked_at IS NULL", [hashToken(token)]);
-}
+const sessionService = createSessionService();
+export const login = sessionService.login;
+export const getCurrentUser = sessionService.getCurrentUser;
+export const logout = sessionService.logout;

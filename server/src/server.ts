@@ -1,15 +1,17 @@
 import { createApp } from "./app.js";
 import { getEnvironment } from "./config/env.js";
+import { technicalLogger } from "./logging/technical-logger.js";
+import { once } from "node:events";
 
 async function start(): Promise<void> {
   const env = getEnvironment();
   const app = createApp();
-  app.listen(env.PORT, "0.0.0.0", () => {
-    console.info(`PARAUTOS API listening on port ${env.PORT}`);
-  });
+  const server = app.listen(env.PORT, "0.0.0.0");
+  await once(server, "listening");
+  technicalLogger.started(env.PORT);
 }
 
 start().catch((error: unknown) => {
-  console.error("PARAUTOS API could not start.", error);
+  technicalLogger.failure("startup_failed", error);
   process.exitCode = 1;
 });

@@ -1,0 +1,76 @@
+{
+  "fixedReliability": [
+    {
+      "key": "da9b0e25-dc46-42e0-9e50-b631b85abcd8",
+      "rule": "typescript:S6772",
+      "file": "client/src/app.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "afb0cb49-e6f0-42be-9f7a-be3730300898",
+      "rule": "typescript:S6847",
+      "file": "client/src/quote-editor.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "7664cee4-f4d6-4e4d-9572-c55bdade410d",
+      "rule": "typescript:S7503",
+      "file": "server/src/server.ts",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "4a2bd9fb-a0ce-4442-83cb-39d8c8454bac",
+      "rule": "typescript:S7781",
+      "file": "server/src/modules/attachments/local-storage.ts",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "201fbf1c-3a16-4c91-97b9-2d9d03585873",
+      "rule": "typescript:S6772",
+      "file": "client/src/new-order-data-step.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "3fc667e4-6c03-423d-be4a-07f4e886aa51",
+      "rule": "typescript:S6772",
+      "file": "client/src/new-order-media-steps.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "5dc3ebe1-e7bd-4a5f-9c27-2787642937cc",
+      "rule": "typescript:S6772",
+      "file": "client/src/new-order-media-steps.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "69dfcb67-f23a-4313-a60e-136b2d1165b2",
+      "rule": "typescript:S6772",
+      "file": "client/src/new-order-summary-step.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    },
+    {
+      "key": "9a627c16-c2fe-4cc1-91dc-8cca71d2d85b",
+      "rule": "typescript:S6772",
+      "file": "client/src/new-order-summary-step.tsx",
+      "status": "CLOSED",
+      "resolution": "FIXED"
+    }
+  ],
+  "remainingIssues": 472,
+  "newOpenIssueKeys": [],
+  "reliabilityIssues": 0,
+  "qualityGate": "OK",
+  "scannerExitCode": 0,
+  "testsPassed": 151,
+  "testFilesPassed": 55,
+  "buildPassed": true,
+  "temporaryTokenRevoked": true
+}

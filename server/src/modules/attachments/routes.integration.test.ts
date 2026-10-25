@@ -60,4 +60,14 @@ describe("private attachment HTTP access", () => {
     expect(Buffer.from(await response.arrayBuffer()).toString()).toBe("private-image");
     expect(storage.readStoredFile).toHaveBeenCalledWith("local", "2026/10/evidence.png");
   });
+
+  it("serves Unicode filenames safely without allowing header injection", async () => {
+    auth.getCurrentUser.mockResolvedValue({ id: 7, role: "ASESOR" });
+    database.pool.query.mockResolvedValue([{ objectKey: "evidence.png", storageProvider: "local", mimeType: "image/png", originalName: "評価\r\n.png" }]);
+    storage.readStoredFile.mockResolvedValue(Buffer.from("private-image"));
+    const response = await fetch(`${origin}/42/content`, { headers: { cookie: "parautos_session=valid-session" } });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toContain("inline;");
+    expect(response.headers.get("content-disposition")).toContain("filename*=UTF-8");
+  });
 });

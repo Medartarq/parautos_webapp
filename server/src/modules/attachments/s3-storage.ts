@@ -15,7 +15,12 @@ function configuration() {
 }
 
 function objectName(objectKey: string) {
-  const prefix = getEnvironment().S3_PREFIX.replace(/^\/+|\/+$/g, "");
+  const rawPrefix = getEnvironment().S3_PREFIX;
+  let start = 0;
+  let end = rawPrefix.length;
+  while (start < end && rawPrefix[start] === "/") start++;
+  while (end > start && rawPrefix[end - 1] === "/") end--;
+  const prefix = rawPrefix.slice(start, end);
   return prefix ? `${prefix}/${objectKey}` : objectKey;
 }
 
