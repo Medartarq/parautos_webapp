@@ -24,8 +24,8 @@ export function errorHandler(error: unknown, request: Request, response: Respons
     return;
   }
 
-  if (typeof error === "object" && error !== null && "sqlState" in error && (error as { sqlState?: string }).sqlState === "45000") {
-    const sqlError = error as { sqlMessage?: string; sqlState?: string; errno?: number };
+  if (typeof error === "object" && error !== null && "errno" in error && (error as { errno?: number }).errno === 30001) {
+    const sqlError = error as { sqlMessage?: string };
     response.status(409).json({
       error: {
         code: "ORDER_STATUS_TRANSITION_INVALID",
