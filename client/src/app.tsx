@@ -315,6 +315,7 @@ function Dashboard({
   const [operationalPending, setOperationalPending] = useState<OperationalPendingNotifications>(emptyPendingNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number>();
   const [selectedOrderTab, setSelectedOrderTab] = useState<DetailTab>();
   const [syncState, setSyncState] = useState<"loading" | "synced" | "error">(
@@ -399,6 +400,20 @@ function Dashboard({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
+
+  useEffect(() => {
+    const onClickOutside = (event: MouseEvent) => {
+      if (
+        profileOpen &&
+        !menuButton.current?.contains(event.target as Node) &&
+        !(event.target as Element).closest(".profile-dropdown")
+      ) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [profileOpen]);
   return (
     <div
       className={`app-shell ${compact ? "sidebar-collapsed" : ""} sidebar-${sidebarMode}`}
@@ -494,13 +509,39 @@ function Dashboard({
               <button className="bell" title="Pendientes operativos" aria-label={`${operationalPending.total} pendientes operativos`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><BellIcon />{operationalPending.total > 0 && <b>{operationalPending.total > 99 ? "99+" : operationalPending.total}</b>}</button>
               {notificationsOpen && <OperationalNotificationsPanel notifications={operationalPending} onClose={() => setNotificationsOpen(false)} onOpen={openPending} />}
             </div>
-            <span className="avatar">
-              {user.names
-                .split(" ")
-                .slice(0, 2)
-                .map((name) => name[0])
-                .join("")}
-            </span>
+            <div className="profile-dropdown">
+              <button
+                className="avatar-btn"
+                aria-label="Perfil de usuario"
+                aria-expanded={profileOpen}
+                onClick={() => setProfileOpen((open) => !open)}
+              >
+                <span className="avatar">
+                  {user.names
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((name) => name[0])
+                    .join("")}
+                </span>
+              </button>
+              {profileOpen && (
+                <div className="profile-menu">
+                  <div className="profile-menu-header">
+                    <strong>{user.names}</strong>
+                    <small>
+                      {user.role === "SUPERADMINISTRADOR"
+                        ? "Superadministrador"
+                        : user.role === "ADMINISTRADOR"
+                          ? "Administrador"
+                          : "Asesor"}
+                    </small>
+                  </div>
+                  <button className="profile-menu-item" type="button" onClick={onLogout}>
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <section className="app-content">
