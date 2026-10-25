@@ -25,6 +25,15 @@ beforeEach(async () => {
 afterEach(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); });
 
 describe("public tracking HTTP integration", () => {
+  it("does not reflect untrusted Origin headers", async () => {
+    limits.consumeRateLimit.mockResolvedValue({ attempts: 1, limited: false });
+    tracking.getPublicTracking.mockResolvedValue(null);
+
+    const response = await fetch(`${origin}/?plate=ABC123&code=123456`, { headers: { origin: "https://attacker.example" } });
+
+    expect(response.headers.get("access-control-allow-origin")).toBeNull();
+  });
+
   it("returns 429 before looking up a public case when the shared window is limited", async () => {
     limits.consumeRateLimit.mockResolvedValue({ attempts: 11, limited: true });
     const response = await fetch(`${origin}/?plate=ABC123&code=123456`);

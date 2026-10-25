@@ -84,6 +84,14 @@ eliminar bases temporales. `npm test` creará una base efímera, aplicará las 2
 migraciones y comprobará la migración de Superadministrador. Nunca use las
 credenciales de producción.
 
+## Análisis con SonarCloud
+
+El proyecto `Medartarq_parautos_webapp` usa el análisis automático de
+SonarCloud. No ejecute un escáner local ni guarde un token en el repositorio:
+SonarCloud analiza las actualizaciones recibidas desde el proveedor Git
+vinculado. Revise los resultados y el Quality Gate en
+`https://sonarcloud.io/project/overview?id=Medartarq_parautos_webapp`.
+
 ## Estructura
 
 - `client/`: React responsive.

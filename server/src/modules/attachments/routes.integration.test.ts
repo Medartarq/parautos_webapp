@@ -11,7 +11,7 @@ vi.mock("../auth/service.js", () => auth);
 vi.mock("../../db/pool.js", () => ({ getPool: () => database.pool }));
 vi.mock("./storage.js", () => storage);
 
-import { attachmentsRouter } from "./routes.js";
+import { attachmentsRouter, MAX_ATTACHMENT_BYTES } from "./routes.js";
 
 let server: Server;
 let origin: string;
@@ -26,6 +26,19 @@ beforeEach(async () => {
 afterEach(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); });
 
 describe("private attachment HTTP access", () => {
+  it("rejects an oversized image before it reaches storage", async () => {
+    auth.getCurrentUser.mockResolvedValue({ id: 7, names: "Asesor", username: "asesor", email: "asesor@parautos.pe", role: "ASESOR" });
+    const form = new FormData();
+    form.set("category", "RECEPCION");
+    form.set("file", new Blob([new Uint8Array(MAX_ATTACHMENT_BYTES + 1)], { type: "image/png" }), "evidencia.png");
+
+    const response = await fetch(`${origin}/orders/1`, { method: "POST", headers: { cookie: "parautos_session=valid-session" }, body: form });
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "FILE_TOO_LARGE" } });
+    expect(storage.storeFile).not.toHaveBeenCalled();
+  });
+
   it("rejects a direct attachment URL without a session before accessing storage", async () => {
     const response = await fetch(`${origin}/42/content`);
 

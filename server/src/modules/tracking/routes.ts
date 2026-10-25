@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import { AppError } from "../../errors/app-error.js";
-import { getEnvironment } from "../../config/env.js";
 import { getPublicTracking } from "./service.js";
 import { consumeRateLimit } from "./rate-limit.js";
 
@@ -11,17 +10,6 @@ const lookupSchema = z.object({
 });
 
 export const trackingRouter = Router();
-trackingRouter.use((request, response, next) => {
-  const origin = request.get("origin");
-  const environment = getEnvironment();
-  const host = origin ? new URL(origin).hostname : "";
-  const localNetworkHost = /^192\.168\.\d{1,3}\.\d{1,3}$/.test(host) || /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host) || /^172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(host);
-  if (environment.NODE_ENV === "development" && origin && new URL(origin).port === "5173" && localNetworkHost) {
-    response.set("Access-Control-Allow-Origin", origin);
-    response.set("Vary", "Origin");
-  }
-  next();
-});
 trackingRouter.get("/", async (request, response) => {
   response.set("Cache-Control", "no-store");
   const rate = await consumeRateLimit("public_tracking", request.ip || "unknown");

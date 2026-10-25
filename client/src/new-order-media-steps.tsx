@@ -45,7 +45,7 @@ export function EvidenceStep({ files, setFiles, openCamera, evidenceDeviceInput,
               <small>
                 {files.length >= 15
                   ? "Se alcanzó el máximo de 15 imágenes."
-                  : "JPG, PNG o WebP · máximo 10 MB por imagen"}
+                    : "JPG, PNG o WebP · máximo 5 MB por imagen"}
               </small>
               <div className="evidence-upload-actions">
                 <button type="button" className="btn small" disabled={files.length >= 15} onClick={() => openCamera("evidence")}>Tomar foto</button>
@@ -106,7 +106,7 @@ function EvaluationUpload({ diagnosisFile, setDiagnosisFile, setDiagnosisPreview
                 <div>
                   <strong>Fotografía de evaluación manuscrita</strong>
                   <small>
-                    Opcional, pero recomendada. JPG, PNG o WebP hasta 10 MB.
+                    Opcional, pero recomendada. JPG, PNG o WebP hasta 5 MB.
                   </small>
                 </div>
                 {diagnosisFile ? (

@@ -418,12 +418,12 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
       .filter(
         (file) =>
           ["image/jpeg", "image/png", "image/webp"].includes(file.type) &&
-          file.size <= 10 * 1024 * 1024,
+          file.size <= 5 * 1024 * 1024,
       )
       .slice(0, available);
     if (accepted.length !== selected.length)
       setMessage(
-        "Solo se admiten JPG, PNG o WebP de hasta 10 MB, con un máximo de 15 evidencias.",
+        "Solo se admiten JPG, PNG o WebP de hasta 5 MB, con un máximo de 15 evidencias.",
       );
     const evidence = await Promise.all(accepted.map(async (file) => ({ file, preview: await readImagePreview(file) })));
     setFiles((current) => [...current, ...evidence].slice(0, 15));
@@ -432,9 +432,9 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
     if (!file) return;
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
-      file.size > 10 * 1024 * 1024
+      file.size > 5 * 1024 * 1024
     ) {
-      setMessage("La evaluación debe ser JPG, PNG o WebP de hasta 10 MB.");
+      setMessage("La evaluación debe ser JPG, PNG o WebP de hasta 5 MB.");
       return;
     }
     try {
