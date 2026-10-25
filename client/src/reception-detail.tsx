@@ -1,21 +1,29 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { openAttachment } from "./api";
 import { downloadReceptionPdf } from "./reception-print";
+import { preloadReceptionPdfResources } from "./reception-svg";
 
 type ReceptionDetailOrder = {
   id: number; orderNumber: string; modality: string; claimNumber?: string; advisorName?: string; documentType: string; documentNumber: string;
   phone?: string; email?: string; year?: number; vin?: string; plate: string; brand: string; client: string; model: string; color: string;
   bodyCode?: string; bodyName: string; diagnosisPending: boolean;
   reception: null | { mileage?: number; fuelLevel?: number; considerations?: string[] | string; diagnosis?: string; diagnosisLegibility?: string; diagnosisReviewState?: string; acceptedTerms: boolean };
-  checklist: Array<{ category: string; name: string; answer: string; observation?: string }>;
+  checklist: Array<{ category: string; categoryOrder?: number; name: string; itemOrder?: number; answer: string; observation?: string }>;
   damages: Array<{ body: string; view: string; path: unknown[] }>;
   attachments: Array<{ id: number; category: string; originalName: string; mimeType: string; byteSize: number }>;
 };
 
 function DetailField({ label, value }: { label: string; value: string }) { return <div><small>{label}</small><strong>{value}</strong></div>; }
+const repairPersistedText = (value: string) => {
+  if (!/[ÃÂ]/.test(value)) return value;
+  try { return decodeURIComponent(escape(value)); } catch { return value; }
+};
 
 export function ReceptionDetail({ order, onRefresh }: { order: ReceptionDetailOrder; onRefresh: () => Promise<void> }) {
-  const considerations = Array.isArray(order.reception?.considerations) ? order.reception.considerations : [];
+  useEffect(() => {
+    preloadReceptionPdfResources(order.bodyCode || order.damages[0]?.body || "V3");
+  }, [order.bodyCode, order.damages]);
+  const considerations = Array.isArray(order.reception?.considerations) ? order.reception.considerations.map(repairPersistedText) : [];
   const categories = [...new Set(order.checklist.map((item) => item.category))];
   const diagnoses = order.attachments.filter((attachment) => attachment.category === "EVALUACION_MANUSCRITA");
   const [diagnosisPage, setDiagnosisPage] = useState(0);

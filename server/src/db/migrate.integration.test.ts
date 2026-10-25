@@ -40,8 +40,19 @@ let pool: Pool | undefined;
            OR (table_name = 'receptions' AND column_name = 'diagnosis_review_state'))`,
     );
 
-    expect(Number(migrations[0]?.total)).toBe(20);
+    const triggers = await pool!.query<{ total: number }[]>(
+      `SELECT COUNT(*) AS total FROM information_schema.triggers
+       WHERE trigger_schema = DATABASE()
+         AND trigger_name IN ('trg_service_orders_internal_status_before_update', 'trg_service_orders_public_status_before_update')`,
+    );
+    const directDeliveries = await pool!.query<{ total: number }[]>(
+      "SELECT COUNT(*) AS total FROM order_status_transitions WHERE from_status = 'COTIZACION_PENDIENTE' AND to_status = 'ENTREGADA'",
+    );
+
+    expect(Number(migrations[0]?.total)).toBe(23);
     expect(Number(columns[0]?.total)).toBe(2);
+    expect(Number(triggers[0]?.total)).toBe(2);
+    expect(Number(directDeliveries[0]?.total)).toBe(0);
   });
 
   it("reapplies migration 020 by promoting administrators and recording its audit event once", async () => {

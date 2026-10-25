@@ -17,15 +17,12 @@ type ChecklistProps = {
   openChecklistNotes: Record<number, boolean>;
   setOpenChecklistNotes: Dispatch<SetStateAction<Record<number, boolean>>>;
 };
-type ConsiderationsProps = { flagsSelected: string[]; setFlagsSelected: Dispatch<SetStateAction<string[]>> };
+type ConsiderationsProps = { flagsSelected: string[]; setFlagsSelected: Dispatch<SetStateAction<string[]>>; additionalConsideration: string; setAdditionalConsideration: (value: string) => void };
 
-const flags = [
+export const RECEPTION_CONSIDERATION_FLAGS = [
   "Vehículo presenta suciedad que impide la revisión eficaz",
-  "Interior con objetos personales que deben retirarse",
-  "Manchas de aceite en el piso inferior",
-  "Abolladuras con deformación de la plancha",
-  "Vidrios con grietas o impactos",
-  "Documentación incompleta o con datos que no coinciden",
+  "Pertenencias personales del interior retiradas",
+  "Ver evidencias fotográficas",
 ];
 function StepTitle({ n, title, text }: { n: string; title: string; text: string }) {
   return <div className="section-title"><span>{n}</span><div><h2>{title}</h2><small>{text}</small></div></div>;
@@ -50,7 +47,7 @@ export function ChecklistStep({ catalog, answers, setAnswers, notes, setNotes, o
   );
 }
 
-export function ConsiderationsStep({ flagsSelected, setFlagsSelected }: ConsiderationsProps) {
+export function ConsiderationsStep({ flagsSelected, setFlagsSelected, additionalConsideration, setAdditionalConsideration }: ConsiderationsProps) {
   return (
     <> <div className="considerations-step">
             <StepTitle
@@ -58,9 +55,9 @@ export function ConsiderationsStep({ flagsSelected, setFlagsSelected }: Consider
               title="Consideraciones de recepción"
               text="Opcionales; se conservarán en la constancia."
             />
-            <div className="considerations-hint"><strong>Inspección visual</strong><span>Marca únicamente los hallazgos presentes al recibir el vehículo.</span></div>
+            <div className="considerations-hint"><strong>Registro de ingreso</strong><span>Marca las condiciones aplicables al recibir el vehículo.</span></div>
             <div className="flags">
-              {flags.map((flag) => (
+              {RECEPTION_CONSIDERATION_FLAGS.map((flag) => (
                 <label key={flag}>
                   <input
                     type="checkbox"
@@ -68,7 +65,7 @@ export function ConsiderationsStep({ flagsSelected, setFlagsSelected }: Consider
                     onChange={(event) =>
                       setFlagsSelected(
                         event.target.checked
-                          ? [...flagsSelected, flag]
+                          ? [...new Set([...flagsSelected, flag])]
                           : flagsSelected.filter((value) => value !== flag),
                       )
                     }
@@ -77,6 +74,10 @@ export function ConsiderationsStep({ flagsSelected, setFlagsSelected }: Consider
                 </label>
               ))}
             </div>
+            <label className="consideration-additional">
+              <strong>Consideración adicional</strong>
+              <textarea value={additionalConsideration} onChange={(event) => setAdditionalConsideration(event.target.value)} placeholder="Agrega una consideración manual, si corresponde." maxLength={500} />
+            </label>
           </div>
     </>
   );

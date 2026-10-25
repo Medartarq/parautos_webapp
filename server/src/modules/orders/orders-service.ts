@@ -296,7 +296,7 @@ export async function getOrderDetail(orderId: number) {
   if (!reception) return { ...order, reception: null, checklist: [], damages: [], attachments: [] };
   const [checklist, damages, attachments, history] = await Promise.all([
     pool.query<any[]>(
-      `SELECT cc.name AS category, ci.name, ca.answer, ca.observation
+      `SELECT cc.name AS category, cc.display_order AS categoryOrder, ci.name, ci.display_order AS itemOrder, ca.answer, ca.observation
        FROM checklist_answers ca JOIN checklist_items ci ON ci.id = ca.item_id
        JOIN checklist_categories cc ON cc.id = ci.category_id
        WHERE ca.reception_id = ? ORDER BY cc.display_order, ci.display_order`,

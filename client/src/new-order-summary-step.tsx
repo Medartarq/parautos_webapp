@@ -18,14 +18,13 @@ type SummaryProps = {
   setReviewed: Dispatch<SetStateAction<boolean>>;
   accepted: boolean;
   setAccepted: Dispatch<SetStateAction<boolean>>;
-  printReception: () => void;
 };
 
 function StepTitle({ n, title, text }: { n: string; title: string; text: string }) {
   return <div className="section-title"><span>{n}</span><div><h2>{title}</h2><small>{text}</small></div></div>;
 }
 
-export function SummaryStep({ d, answers, files, damages, signatureCanvas, stroke, point, paint, finishSignature, setSignature, reviewed, setReviewed, accepted, setAccepted, printReception }: SummaryProps) {
+export function SummaryStep({ d, answers, files, damages, signatureCanvas, stroke, point, paint, finishSignature, setSignature, reviewed, setReviewed, accepted, setAccepted }: SummaryProps) {
   return (
     <> <div className="summary">
             <StepTitle
@@ -70,7 +69,6 @@ export function SummaryStep({ d, answers, files, damages, signatureCanvas, strok
             <section className="signature-panel">
               <header>
                 <div><h3>Firma de conformidad</h3><p>Solicite al cliente firmar dentro del recuadro.</p></div>
-                <button type="button" className="btn small" onClick={printReception}>Vista previa A4</button>
               </header>
               <div className="signature-surface">
                 <canvas

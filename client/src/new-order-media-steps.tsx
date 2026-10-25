@@ -7,28 +7,26 @@ type EvidenceProps = {
   openCamera: (target: "evidence" | "diagnosis") => void;
   evidenceDeviceInput: RefObject<HTMLInputElement | null>;
   addEvidence: (files: File[]) => Promise<void>;
-};
-type DiagnosisProps = {
-  d: Record<string, string>;
-  set: (key: string, value: string) => void;
   diagnosisFile?: File;
   setDiagnosisFile: Dispatch<SetStateAction<File | undefined>>;
   setDiagnosisPreview: Dispatch<SetStateAction<string>>;
   diagnosisPreview: string;
-  openCamera: (target: "evidence" | "diagnosis") => void;
+  openDiagnosisCamera: () => void;
   diagnosisDeviceInput: RefObject<HTMLInputElement | null>;
   selectDiagnosis: (file?: File) => Promise<void>;
   diagnosisLegibility: "PENDIENTE" | "LEGIBLE" | "ILEGIBLE";
   setDiagnosisLegibility: Dispatch<SetStateAction<"PENDIENTE" | "LEGIBLE" | "ILEGIBLE">>;
   diagnosisReviewState: "PENDIENTE_REVISION" | "REVISADA";
   setDiagnosisReviewState: Dispatch<SetStateAction<"PENDIENTE_REVISION" | "REVISADA">>;
+  diagnosisPending: boolean;
+  setDiagnosisPending: (value: boolean) => void;
 };
 
 function StepTitle({ n, title, text }: { n: string; title: string; text: string }) {
   return <div className="section-title"><span>{n}</span><div><h2>{title}</h2><small>{text}</small></div></div>;
 }
 
-export function EvidenceStep({ files, setFiles, openCamera, evidenceDeviceInput, addEvidence }: EvidenceProps) {
+export function EvidenceStep({ files, setFiles, openCamera, evidenceDeviceInput, addEvidence, ...evaluation }: EvidenceProps) {
   return (
     <> 
             <StepTitle
@@ -47,7 +45,7 @@ export function EvidenceStep({ files, setFiles, openCamera, evidenceDeviceInput,
               <small>
                 {files.length >= 15
                   ? "Se alcanzó el máximo de 15 imágenes."
-                  : "JPG, PNG o WebP · máximo 10 MB por imagen"}
+                    : "JPG, PNG o WebP · máximo 5 MB por imagen"}
               </small>
               <div className="evidence-upload-actions">
                 <button type="button" className="btn small" disabled={files.length >= 15} onClick={() => openCamera("evidence")}>Tomar foto</button>
@@ -95,35 +93,20 @@ export function EvidenceStep({ files, setFiles, openCamera, evidenceDeviceInput,
               <strong>Recomendación:</strong> documenta los daños principales.
               Puedes continuar sin completar las 15 fotografías.
             </div>
+            <EvaluationUpload {...evaluation} />
           
     </>
   );
 }
 
-export function DiagnosisStep({ d, set, diagnosisFile, setDiagnosisFile, setDiagnosisPreview, diagnosisPreview, openCamera, diagnosisDeviceInput, selectDiagnosis, diagnosisLegibility, setDiagnosisLegibility, diagnosisReviewState, setDiagnosisReviewState }: DiagnosisProps) {
+function EvaluationUpload({ diagnosisFile, setDiagnosisFile, setDiagnosisPreview, diagnosisPreview, openDiagnosisCamera, diagnosisDeviceInput, selectDiagnosis, diagnosisLegibility, setDiagnosisLegibility, diagnosisReviewState, setDiagnosisReviewState, diagnosisPending, setDiagnosisPending }: Omit<EvidenceProps, "files" | "setFiles" | "openCamera" | "evidenceDeviceInput" | "addEvidence">) {
   return (
-    <> <div className="diagnosis-step">
-            <StepTitle
-              n="⌁"
-              title="Diagnóstico"
-              text="La evaluación manuscrita es independiente de las evidencias."
-            />
-            <label className="diagnosis-field">
-              <span className="diagnosis-field-head"><span><b>Descripción del diagnóstico</b><small>Registra daños observados y trabajos sugeridos para cotización.</small></span><output>{(d.diagnosis || "").length}/4000</output></span>
-              <textarea
-                className="diagnosis"
-                value={d.diagnosis || ""}
-                onChange={(event) => set("diagnosis", event.target.value)}
-                placeholder="Daños observados y trabajos sugeridos..."
-                maxLength={4000}
-              />
-            </label>
-            <section className="diagnosis-upload">
+    <section className="diagnosis-upload">
               <header>
                 <div>
                   <strong>Fotografía de evaluación manuscrita</strong>
                   <small>
-                    Opcional, pero recomendada. JPG, PNG o WebP hasta 10 MB.
+                    Opcional, pero recomendada. JPG, PNG o WebP hasta 5 MB.
                   </small>
                 </div>
                 {diagnosisFile ? (
@@ -152,7 +135,7 @@ export function DiagnosisStep({ d, set, diagnosisFile, setDiagnosisFile, setDiag
                   <strong>Tomar o elegir fotografía</strong>
                   <small>Usa la cámara o selecciona un archivo desde este equipo.</small>
                   <div className="evidence-upload-actions">
-                    <button type="button" className="btn small" onClick={() => openCamera("diagnosis")}>Tomar foto</button>
+                    <button type="button" className="btn small" onClick={openDiagnosisCamera}>Tomar foto</button>
                     <button type="button" className="btn small" onClick={() => diagnosisDeviceInput.current?.click()}>Elegir del dispositivo</button>
                     <input ref={diagnosisDeviceInput} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { void selectDiagnosis(event.target.files?.[0]); event.currentTarget.value = ""; }} />
                   </div>
@@ -196,13 +179,11 @@ export function DiagnosisStep({ d, set, diagnosisFile, setDiagnosisFile, setDiag
               )}
               {!diagnosisFile && (
                 <label className="diagnosis-reminder">
-                  <input type="checkbox" checked={d.diagnosisPending === "true"} onChange={(event) => set("diagnosisPending", String(event.target.checked))} />
-                  <span>Crear recordatorio: diagnóstico manuscrito pendiente de cargar.</span>
+                  <input type="checkbox" checked={diagnosisPending} onChange={(event) => setDiagnosisPending(event.target.checked)} />
+                  <span>Crear recordatorio: evaluación manuscrita pendiente de cargar.</span>
                 </label>
               )}
-            </section>
-          </div>
-    </>
+    </section>
   );
 }
 

@@ -179,7 +179,7 @@ Reference: `documentos/prototipo/app.js` `wizard()`, `considerStep()`,
 
 ### Step 5 - Evidence
 
-- [x] Local authenticated image storage supports JPEG, PNG, and WEBP up to 10 MB.
+- [x] Local authenticated image storage supports JPEG, PNG, and WEBP up to 5 MB.
 - [x] Wizard supports camera/gallery, preview, individual removal, and maximum 15 images.
 - [x] Evidence is attached during the final order creation flow.
 - [x] Mobile presents separate **Tomar foto** and **Elegir del dispositivo**
@@ -474,7 +474,7 @@ not unresolved parity flows.
   credentials.
 - **2026-10-17 — Binary image validation:** attachment uploads now verify JPEG,
   PNG or WebP file signatures and require that they match the declared MIME
-  type, in addition to the existing one-file and 10 MB Multer limits. The server
+  type, in addition to the existing one-file and 5 MB Multer limits. The server
   test suite covers valid signatures, arbitrary bytes and MIME mismatches.
 - **2026-10-17 — Persistent public tracking limit:** migration
   `019_public_rate_limits.sql` was applied locally. Tracking uses MariaDB for a

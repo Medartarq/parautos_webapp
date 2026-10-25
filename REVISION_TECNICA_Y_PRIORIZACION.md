@@ -260,7 +260,7 @@ cierre y al registrar evidencia en `PROTOTYPE_PARITY.md` cuando aplique. Los
 - [x] **4.2 Validar contenido de imágenes.** Implementado el 2026-10-17:
   antes de persistir un adjunto, el servidor comprueba firmas binarias JPEG,
   PNG y WebP y exige coincidencia con el MIME declarado. Se conservan los
-  límites de Multer (un archivo, máximo 10 MB) y se rechazan bytes arbitrarios
+  límites de Multer (un archivo, máximo 5 MB) y se rechazan bytes arbitrarios
   o tipos falsificados; las pruebas cubren firmas válidas y discrepancias.
 - [x] **4.3 Revisar autorización por caso y adjunto.** Decisión de producto
   confirmada el 2026-10-17: el acceso operativo es global para Administrador y
