@@ -304,12 +304,8 @@ function Dashboard({
   const [route, setRoute] = useState<Route>("dashboard");
   const [dashboardFilter, setDashboardFilter] = useState<string>();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [sidebarMode, setSidebarMode] = useState<
-    "auto" | "expanded" | "compact"
-  >(
-    () =>
-      (localStorage.getItem("parautos-sidebar-mode") as
-        "auto" | "expanded" | "compact") || "auto",
+  const [sidebarMode, setSidebarMode] = useState<"expanded" | "compact">(
+    () => localStorage.getItem("parautos-sidebar-mode") === "compact" ? "compact" : "expanded",
   );
   const [pendingClaims, setPendingClaims] = useState(0);
   const [operationalPending, setOperationalPending] = useState<OperationalPendingNotifications>(emptyPendingNotifications);
@@ -440,12 +436,13 @@ function Dashboard({
           ))}
         </nav>
         <div className="sidebar-footer">
+          <span className="sidebar-mode-label">Tamaño del menú</span>
           <div
             className="sidebar-modes"
             role="group"
             aria-label="Modo del menú"
           >
-            {(["auto", "expanded", "compact"] as const).map((mode) => (
+            {(["expanded", "compact"] as const).map((mode) => (
               <button
                 type="button"
                 key={mode}
@@ -453,23 +450,10 @@ function Dashboard({
                 aria-pressed={sidebarMode === mode}
                 onClick={() => setSidebarMode(mode)}
               >
-                <b>{mode === "auto" ? "A" : mode === "expanded" ? "›" : "‹"}</b>
-                <span>
-                  {mode === "auto"
-                    ? "Auto"
-                    : mode === "expanded"
-                      ? "Expandido"
-                      : "Compacto"}
-                </span>
+                <b aria-hidden="true">{mode === "expanded" ? "▤" : "▥"}</b>
+                <span>{mode === "expanded" ? "Amplio" : "Compacto"}</span>
               </button>
             ))}
-          </div>
-          <div className="session-card">
-            <strong>{user.names}</strong>
-            <small>
-              {user.role === "SUPERADMINISTRADOR" ? "Superadministrador" : user.role === "ADMINISTRADOR" ? "Administrador" : "Asesor"}
-            </small>
-            <button onClick={onLogout}>Cerrar sesion</button>
           </div>
         </div>
       </aside>
@@ -525,20 +509,16 @@ function Dashboard({
                 </span>
               </button>
               {profileOpen && (
-                <div className="profile-menu">
+                <div className="profile-menu" role="dialog" aria-label="Perfil de usuario">
                   <div className="profile-menu-header">
-                    <strong>{user.names}</strong>
-                    <small>
-                      {user.role === "SUPERADMINISTRADOR"
-                        ? "Superadministrador"
-                        : user.role === "ADMINISTRADOR"
-                          ? "Administrador"
-                          : "Asesor"}
-                    </small>
+                    <span className="profile-menu-avatar" aria-hidden="true">{user.names.split(" ").slice(0, 2).map((name) => name[0]).join("")}</span>
+                    <div>
+                      <strong>{user.names}</strong>
+                      <small>{user.role === "SUPERADMINISTRADOR" ? "Superadministrador" : user.role === "ADMINISTRADOR" ? "Administrador" : "Asesor"}</small>
+                    </div>
                   </div>
-                  <button className="profile-menu-item" type="button" onClick={onLogout}>
-                    Cerrar sesión
-                  </button>
+                  <div className="profile-menu-details"><span>Cuenta activa</span><b>{user.email}</b></div>
+                  <button className="profile-menu-item" type="button" onClick={onLogout}>Cerrar sesión <span aria-hidden="true">→</span></button>
                 </div>
               )}
             </div>
