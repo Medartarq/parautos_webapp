@@ -723,12 +723,11 @@ function Metric({
   emptyLabel: string;
   onClick?: () => void;
 }) {
+  const content = <><small>{label}</small><strong>{value}</strong><em>{value === 0 ? emptyLabel : "Requiere seguimiento"}</em></>;
   return (
-    <article className={`card metric ${tone}${onClick ? " clickable" : ""}`} onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined}>
-      <small>{label}</small>
-      <strong>{value}</strong>
-      <em>{value === 0 ? emptyLabel : "Requiere seguimiento"}</em>
-    </article>
+    onClick
+      ? <button type="button" className={`card metric ${tone} clickable`} onClick={onClick}>{content}</button>
+      : <article className={`card metric ${tone}`}>{content}</article>
   );
 }
 function ModulePlaceholder({ route }: { route: Route }) {
