@@ -1,0 +1,24 @@
+{
+  "queue": [],
+  "current": {
+    "id": "194c90e3-26b0-4f13-b48b-4eac2e3ca886",
+    "type": "REPORT",
+    "componentId": "3408d328-73e6-47d3-84f8-7b9af09e5256",
+    "componentKey": "parautos-local-completo",
+    "componentName": "PARAUTOS analisis local completo",
+    "componentQualifier": "TRK",
+    "analysisId": "40e1b5a1-b53f-4aa9-b7dd-61c11197d626",
+    "status": "SUCCESS",
+    "submittedAt": "2026-10-25T18:18:59-05:00",
+    "submitterLogin": "admin",
+    "startedAt": "2026-10-25T18:19:00-05:00",
+    "executedAt": "2026-10-25T18:19:05-05:00",
+    "executionTimeMs": 4116,
+    "hasScannerContext": true,
+    "warningCount": 1,
+    "warnings": [
+      "The token used for this analysis will expire on: October 26, 2026\nAfter this date, the token can no longer be used to execute the analysis. Please consider generating a new token and updating it in the locations where it is in use."
+    ],
+    "infoMessages": []
+  }
+}

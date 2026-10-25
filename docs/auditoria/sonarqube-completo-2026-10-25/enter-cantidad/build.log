@@ -1,0 +1,46 @@
+
+> parautos-app-final@0.1.0 build:app
+> npm run build --workspace @parautos/shared && npm run build --workspace @parautos/server && npm run build --workspace @parautos/client
+
+
+> @parautos/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @parautos/server@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @parautos/client@0.1.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 407 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   0.60 kB │ gzip:   0.35 kB
+dist/assets/logo_parautos-Dh6v-OZ-.svg           65.80 kB │ gzip:  16.17 kB
+dist/assets/login-background-BCh1Xzlv.webp       78.46 kB
+dist/assets/index-hh2fvN8w.css                  144.47 kB │ gzip:  25.37 kB
+dist/assets/pdf-library-DnFsn9Eb.js               0.47 kB │ gzip:   0.31 kB
+dist/assets/rolldown-runtime-pP25SEvz.js          0.98 kB │ gzip:   0.56 kB
+dist/assets/audit-view-ODTIONoq.js                3.43 kB │ gzip:   1.44 kB
+dist/assets/users-view-sB5mXDUD.js                6.86 kB │ gzip:   2.36 kB
+dist/assets/reports-view-DIBua6sC.js             17.78 kB │ gzip:   5.28 kB
+dist/assets/purify.es-BZxk_wWO.js                29.02 kB │ gzip:  11.45 kB
+dist/assets/jspdf.plugin.autotable-2eOJeXl-.js   30.30 kB │ gzip:   9.65 kB
+dist/assets/order-detail-CEn3uHLN.js             70.35 kB │ gzip:  19.81 kB
+dist/assets/svg2pdf.es.min-BO1D5leS.js           86.19 kB │ gzip:  25.01 kB
+dist/assets/index.es-D2XbYbsn.js                151.43 kB │ gzip:  48.92 kB
+dist/assets/html2canvas-BYtb6F97.js             199.47 kB │ gzip:  46.77 kB
+dist/assets/jspdf.es.min-Bm55W9le.js            399.29 kB │ gzip: 129.75 kB
+dist/assets/index-eE9N-W8W.js                   437.74 kB │ gzip: 130.17 kB
+dist/assets/exceljs.min-iLYEDaNI.js             929.40 kB │ gzip: 256.38 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 859ms

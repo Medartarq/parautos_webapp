@@ -20,9 +20,9 @@ function Set-Auth([string]$password) {
     $script:headers = @{ Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('admin:' + $password)) }
 }
 function Api([string]$endpoint, [string]$method='Get', $body=$null) {
-    $args = @{ Uri = "$base/api/$endpoint"; Method=$method; Headers=$script:headers; TimeoutSec=60 }
-    if ($null -ne $body) { $args.Body=$body }
-    return Invoke-RestMethod @args
+    $requestParameters = @{ Uri = "$base/api/$endpoint"; Method=$method; Headers=$script:headers; TimeoutSec=60 }
+    if ($null -ne $body) { $requestParameters.Body=$body }
+    return Invoke-RestMethod @requestParameters
 }
 function Save-Json($value,[string]$name) {
     ConvertTo-Json -InputObject $value -Depth 40 | Set-Content -LiteralPath "$reportDir/$name" -Encoding UTF8

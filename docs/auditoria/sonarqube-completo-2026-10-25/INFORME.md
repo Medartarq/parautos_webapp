@@ -1,5 +1,7 @@
 # Análisis local ampliado de PARAUTOS — 25 de octubre de 2026
 
+> **Enter en cantidad:** función implementada y verificada; **155 pruebas aprobadas**, build aprobado y gate pendiente por cobertura, **0 avisos de confiabilidad y 472 de mantenibilidad pendientes**. [Detalle](ENTER-CANTIDAD.md).
+
 > **Corrección posterior de confiabilidad:** los nueve avisos LOW quedaron FIXED; ahora hay **0 avisos de confiabilidad y 472 de mantenibilidad pendientes**. Pasaron 151 pruebas y build:app. Véase el [detalle de correcciones](CORRECCIONES-CONFIABILIDAD.md). Los resultados siguientes son la línea base anterior.
 
 
