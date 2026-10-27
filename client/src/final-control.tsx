@@ -27,6 +27,65 @@ async function downloadConformityPdf(data: { orderNumber: string; client: string
   pdf.save(`Acta_de_Conformidad_${data.orderNumber}.pdf`);
 }
 type FinalControlData = { internalStatus: string; publicStatus: string; labor: Array<{ id: number; description: string; category?: "PLANCHADO" | "PINTURA" | "MECANICA"; quantity: number; verified: boolean }>; pendingParts: Array<{ id: number; description: string; quantity: number; receivedQuantity: number }>; record: null | { completedAt?: string; publishedAt?: string; publicationChannel?: string; publicationNote?: string; deliveredAt?: string; conformityAcknowledgedAt?: string } };
+
+function FinalControlLegacyStatus({ completed, delivered, onDownload }: { completed: boolean; delivered: boolean; onDownload: () => void }) {
+  const statusText = delivered ? "Entregada" : completed ? "Completado" : "Pendiente";
+  return (
+    <header className="control-card-header">
+      <h2>Control final obligatorio</h2>
+      <div className="control-header-actions">
+        <span className={`status ${completed ? "ready" : "amber"}`}>{statusText}</span>
+        {delivered && <button className="btn control-document-action" type="button" onClick={onDownload}>Descargar acta PDF</button>}
+      </div>
+    </header>
+  );
+}
+
+function FinalControlLegacyDelivered({ control, laborGroups, categoryLabels }: { control: FinalControlData; laborGroups: Record<string, FinalControlData["labor"]>; categoryLabels: Record<string, string> }) {
+  return (
+    <>
+      <div className="control-delivered-summary"><strong>Control final completado</strong><span>{control.labor.filter((line) => line.verified).length} de {control.labor.length} partidas verificadas · Orden entregada</span></div>
+      <p className="control-delivered-note">La orden fue entregada. Puede descargar el acta de conformidad.</p>
+      <details className="control-verified-details"><summary>Ver partidas verificadas <span>{control.labor.length}</span></summary><div className="control-verified-groups">{Object.entries(laborGroups).map(([category, lines]) => <section key={category}><h3>{categoryLabels[category] || "Otras partidas"}<small>{lines.length} verificadas</small></h3><div className="control-labor readonly">{lines.map((line) => <label key={line.id}><input type="checkbox" checked={line.verified} disabled /><span>{line.description}</span><small>Cant. {line.quantity}</small></label>)}</div></section>)}</div></details>
+    </>
+  );
+}
+
+function FinalControlLegacyPending({ control, blockers, busy, completed, toggle, act, reason, setReason, orderId }: { control: FinalControlData; blockers: string[]; busy: boolean; completed: boolean; toggle: (line: FinalControlData["labor"][number]) => void; act: (path: string, body?: unknown) => Promise<void>; reason: string; setReason: React.Dispatch<React.SetStateAction<string>>; orderId: number }) {
+  return (
+    <>
+      {blockers.length > 0 && !completed && <ul className="control-blockers">{blockers.map((blocker, index) => <li key={index}>{blocker}</li>)}</ul>}
+      {control.labor.length > 0 && <div className="control-labor">{control.labor.map((line) => <label key={line.id}><input type="checkbox" checked={line.verified} disabled={busy || completed} onChange={() => void toggle(line)} /><span>{line.description}</span><small>Cant. {line.quantity}</small></label>)}</div>}
+      <div className="control-actions">{completed ? <button className="btn" disabled={busy || !reason.trim()} onClick={() => void act(`/orders/${orderId}/final-control/reopen`, { reason })}>Reabrir control</button> : <button className="btn primary" disabled={busy || blockers.length > 0} onClick={() => void act(`/orders/${orderId}/final-control/complete`)}>Registrar control final</button>}</div>
+      {completed && <label className="control-form">Motivo para reabrir<input value={reason} onChange={(event) => setReason(event.target.value)} maxLength={1000} placeholder="Describa el motivo" /></label>}
+    </>
+  );
+}
+
+function FinalControlLegacyPublish({ completed, delivered, published, control, orderId, busy, channel, note, conformity, setChannel, setNote, setConformity, act }: { completed: boolean; delivered: boolean; published: boolean; control: FinalControlData; orderId: number; busy: boolean; channel: string; note: string; conformity: boolean; setChannel: React.Dispatch<React.SetStateAction<string>>; setNote: React.Dispatch<React.SetStateAction<string>>; setConformity: React.Dispatch<React.SetStateAction<boolean>>; act: (path: string, body?: unknown) => Promise<void> }) {
+  if (!completed || delivered) return null;
+  return (
+    <section className="card">
+      <header><h2>Publicación y entrega</h2><span className="status neutral">Público · {control.publicStatus.replaceAll("_", " ")}</span></header>
+      <div className="card-body control-form">
+        {!published ? (
+          <>
+            <label>Canal de aviso (opcional)<input value={channel} onChange={(event) => setChannel(event.target.value)} maxLength={80} placeholder="WhatsApp, llamada..." /></label>
+            <label>Nota (opcional)<textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={1000} /></label>
+            <div className="control-actions"><button className="btn primary" disabled={busy} onClick={() => void act(`/orders/${orderId}/final-control/publish`, { channel, note })}>Publicar lista para entrega</button></div>
+          </>
+        ) : (
+          <>
+            <p className="hint">Publicada{control.record?.publicationChannel ? ` por ${control.record.publicationChannel}` : ""}{control.record?.publicationNote ? `: ${control.record.publicationNote}` : "."}</p>
+            <label className="control-conformity"><input type="checkbox" checked={conformity} onChange={(event) => setConformity(event.target.checked)} />Confirmo la conformidad del cliente al momento de la entrega.</label>
+            <div className="control-actions"><button className="btn primary" disabled={busy || !conformity} onClick={() => void act(`/orders/${orderId}/final-control/deliver`, { conformityAcknowledged: true })}>Registrar entrega</button></div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function FinalControlLegacy({ orderId, order, onChanged }: { orderId: number; order: FinalControlOrder; onChanged: () => Promise<void> }) {
   const [control, setControl] = useState<FinalControlData>();
   const [message, setMessage] = useState<string>();
@@ -49,24 +108,10 @@ function FinalControlLegacy({ orderId, order, onChanged }: { orderId: number; or
   const laborGroups = control.labor.reduce<Record<string, FinalControlData["labor"]>>((groups, line) => { const category = line.category || "OTROS"; (groups[category] ||= []).push(line); return groups; }, {});
   return <section className="final-control">
     <section className="card final-control-card">
-      <header className="control-card-header">
-        <h2>Control final obligatorio</h2>
-        <div className="control-header-actions"><span className={`status ${completed ? "ready" : "amber"}`}>{delivered ? "Entregada" : completed ? "Completado" : "Pendiente"}</span>{delivered && <button className="btn control-document-action" type="button" onClick={downloadConformity}>Descargar acta PDF</button>}</div>
-      </header>
-      <div className="card-body">
-        {delivered ? <>
-          <div className="control-delivered-summary"><strong>Control final completado</strong><span>{control.labor.filter((line) => line.verified).length} de {control.labor.length} partidas verificadas · Orden entregada</span></div>
-          <p className="control-delivered-note">La orden fue entregada. Puede descargar el acta de conformidad.</p>
-          <details className="control-verified-details"><summary>Ver partidas verificadas <span>{control.labor.length}</span></summary><div className="control-verified-groups">{Object.entries(laborGroups).map(([category, lines]) => <section key={category}><h3>{categoryLabels[category] || "Otras partidas"}<small>{lines.length} verificadas</small></h3><div className="control-labor readonly">{lines.map((line) => <label key={line.id}><input type="checkbox" checked={line.verified} disabled /><span>{line.description}</span><small>Cant. {line.quantity}</small></label>)}</div></section>)}</div></details>
-        </> : <>
-          {blockers.length > 0 && !completed && <ul className="control-blockers">{blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul>}
-          {control.labor.length > 0 && <div className="control-labor">{control.labor.map((line) => <label key={line.id}><input type="checkbox" checked={line.verified} disabled={busy || completed} onChange={() => void toggle(line)} /><span>{line.description}</span><small>Cant. {line.quantity}</small></label>)}</div>}
-          <div className="control-actions">{completed ? <button className="btn" disabled={busy || !reason.trim()} onClick={() => void act(`/orders/${orderId}/final-control/reopen`, { reason })}>Reabrir control</button> : <button className="btn primary" disabled={busy || blockers.length > 0} onClick={() => void act(`/orders/${orderId}/final-control/complete`)}>Registrar control final</button>}</div>
-          {completed && <label className="control-form">Motivo para reabrir<input value={reason} onChange={(event) => setReason(event.target.value)} maxLength={1000} placeholder="Describa el motivo" /></label>}
-        </>}
-      </div>
+      <FinalControlLegacyStatus completed={completed} delivered={delivered} onDownload={downloadConformity} />
+      <div className="card-body">{delivered ? <FinalControlLegacyDelivered control={control} laborGroups={laborGroups} categoryLabels={categoryLabels} /> : <FinalControlLegacyPending control={control} blockers={blockers} busy={busy} completed={completed} toggle={toggle} act={act} reason={reason} setReason={setReason} orderId={orderId} />}</div>
     </section>
-    {completed && !delivered && <section className="card"><header><h2>Publicación y entrega</h2><span className="status neutral">Público · {control.publicStatus.replaceAll("_", " ")}</span></header><div className="card-body control-form">{!published ? <><label>Canal de aviso (opcional)<input value={channel} onChange={(event) => setChannel(event.target.value)} maxLength={80} placeholder="WhatsApp, llamada..." /></label><label>Nota (opcional)<textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={1000} /></label><div className="control-actions"><button className="btn primary" disabled={busy} onClick={() => void act(`/orders/${orderId}/final-control/publish`, { channel, note })}>Publicar lista para entrega</button></div></> : <><p className="hint">Publicada{control.record?.publicationChannel ? ` por ${control.record.publicationChannel}` : ""}{control.record?.publicationNote ? `: ${control.record.publicationNote}` : "."}</p><label className="control-conformity"><input type="checkbox" checked={conformity} onChange={(event) => setConformity(event.target.checked)} />Confirmo la conformidad del cliente al momento de la entrega.</label><div className="control-actions"><button className="btn primary" disabled={busy || !conformity} onClick={() => void act(`/orders/${orderId}/final-control/deliver`, { conformityAcknowledged: true })}>Registrar entrega</button></div></>}</div></section>}
+    <FinalControlLegacyPublish completed={completed} delivered={delivered} published={published} control={control} orderId={orderId} busy={busy} channel={channel} note={note} conformity={conformity} setChannel={setChannel} setNote={setNote} setConformity={setConformity} act={act} />
     {message && <p className="hint detail-message">{message}</p>}
   </section>;
 }
