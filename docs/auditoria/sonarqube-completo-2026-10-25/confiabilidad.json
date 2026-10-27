@@ -1,0 +1,438 @@
+[
+  {
+    "key": "da9b0e25-dc46-42e0-9e50-b631b85abcd8",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/app.tsx",
+    "project": "parautos-local-completo",
+    "line": 830,
+    "hash": "d92690318e4b3043c3fc403e29649b50",
+    "textRange": {
+      "startLine": 830,
+      "endLine": 830,
+      "startOffset": 0,
+      "endOffset": 126
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing after previous element input",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-25T16:40:21-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "afb0cb49-e6f0-42be-9f7a-be3730300898",
+    "rule": "typescript:S6847",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/quote-editor.tsx",
+    "project": "parautos-local-completo",
+    "line": 24,
+    "hash": "89760a6d48c447d63ebba6e32b81ffc2",
+    "textRange": {
+      "startLine": 24,
+      "endLine": 24,
+      "startOffset": 85,
+      "endOffset": 281
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "accessibility",
+      "react"
+    ],
+    "creationDate": "2026-10-25T16:40:21-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "7664cee4-f4d6-4e4d-9572-c55bdade410d",
+    "rule": "typescript:S7503",
+    "severity": "MINOR",
+    "component": "parautos-local-completo:server/src/server.ts",
+    "project": "parautos-local-completo",
+    "line": 5,
+    "hash": "137f31bcaea3107a34b49ac96775e425",
+    "textRange": {
+      "startLine": 5,
+      "endLine": 5,
+      "startOffset": 0,
+      "endOffset": 20
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Async function 'start' has no 'await' expression.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "",
+    "tags": [
+      "async",
+      "type-dependent"
+    ],
+    "creationDate": "2026-10-25T16:40:21-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "4a2bd9fb-a0ce-4442-83cb-39d8c8454bac",
+    "rule": "typescript:S7781",
+    "severity": "MINOR",
+    "component": "parautos-local-completo:server/src/modules/attachments/local-storage.ts",
+    "project": "parautos-local-completo",
+    "line": 10,
+    "hash": "51c40ada45133ee878df62cf608c95fb",
+    "textRange": {
+      "startLine": 10,
+      "endLine": 10,
+      "startOffset": 87,
+      "endOffset": 94
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "readability",
+      "editable-source",
+      "es2021"
+    ],
+    "creationDate": "2026-10-19T06:39:59-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": true,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "201fbf1c-3a16-4c91-97b9-2d9d03585873",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/new-order-data-step.tsx",
+    "project": "parautos-local-completo",
+    "line": 284,
+    "hash": "18f68d13217048286fcb813f5c627bc0",
+    "textRange": {
+      "startLine": 284,
+      "endLine": 284,
+      "startOffset": 0,
+      "endOffset": 14
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing after previous element input",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-19T04:14:46-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "3fc667e4-6c03-423d-be4a-07f4e886aa51",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/new-order-media-steps.tsx",
+    "project": "parautos-local-completo",
+    "line": 149,
+    "hash": "aece516c50753ef033ded35ef5969b26",
+    "textRange": {
+      "startLine": 149,
+      "endLine": 149,
+      "startOffset": 0,
+      "endOffset": 27
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing before next element select",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-19T04:14:46-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "5dc3ebe1-e7bd-4a5f-9c27-2787642937cc",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/new-order-media-steps.tsx",
+    "project": "parautos-local-completo",
+    "line": 165,
+    "hash": "aece516c50753ef033ded35ef5969b26",
+    "textRange": {
+      "startLine": 165,
+      "endLine": 165,
+      "startOffset": 0,
+      "endOffset": 27
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing before next element select",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-19T04:14:46-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "69dfcb67-f23a-4313-a60e-136b2d1165b2",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/new-order-summary-step.tsx",
+    "project": "parautos-local-completo",
+    "line": 97,
+    "hash": "18f68d13217048286fcb813f5c627bc0",
+    "textRange": {
+      "startLine": 97,
+      "endLine": 97,
+      "startOffset": 0,
+      "endOffset": 18
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing after previous element input",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-19T04:14:46-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  },
+  {
+    "key": "9a627c16-c2fe-4cc1-91dc-8cca71d2d85b",
+    "rule": "typescript:S6772",
+    "severity": "MAJOR",
+    "component": "parautos-local-completo:client/src/new-order-summary-step.tsx",
+    "project": "parautos-local-completo",
+    "line": 105,
+    "hash": "18f68d13217048286fcb813f5c627bc0",
+    "textRange": {
+      "startLine": 105,
+      "endLine": 105,
+      "startOffset": 0,
+      "endOffset": 18
+    },
+    "flows": [],
+    "status": "OPEN",
+    "message": "Ambiguous spacing after previous element input",
+    "effort": "5min",
+    "debt": "5min",
+    "author": "cesarparedes.1993@gmail.com",
+    "tags": [
+      "react"
+    ],
+    "creationDate": "2026-10-19T04:14:46-05:00",
+    "updateDate": "2026-10-25T16:40:21-05:00",
+    "type": "CODE_SMELL",
+    "scope": "MAIN",
+    "quickFixAvailable": false,
+    "messageFormattings": [],
+    "codeVariants": [],
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "RELIABILITY",
+        "severity": "LOW"
+      },
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ],
+    "issueStatus": "OPEN",
+    "prioritizedRule": false,
+    "fromSonarQubeUpdate": false,
+    "internalTags": [],
+    "linkedTicketStatus": "NOT_LINKED"
+  }
+]

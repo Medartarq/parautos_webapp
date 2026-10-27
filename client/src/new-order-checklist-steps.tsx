@@ -28,7 +28,7 @@ function StepTitle({ n, title, text }: { n: string; title: string; text: string 
   return <div className="section-title"><span>{n}</span><div><h2>{title}</h2><small>{text}</small></div></div>;
 }
 
-export function ChecklistStep({ catalog, answers, setAnswers, notes, setNotes, openChecklistCategory, setOpenChecklistCategory, checklistUndo, undoChecklistCategory, categories, markCategoryConforming, openChecklistNotes, setOpenChecklistNotes }: ChecklistProps) {
+export function ChecklistStep({ catalog, answers, setAnswers, notes, setNotes, openChecklistCategory, setOpenChecklistCategory, checklistUndo, undoChecklistCategory, categories, markCategoryConforming, setOpenChecklistNotes }: ChecklistProps) {
   return (
     <> 
             <StepTitle

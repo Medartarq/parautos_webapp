@@ -1,0 +1,10 @@
+[
+  "client/src/app.tsx",
+  "client/src/new-order-data-step.tsx",
+  "client/src/new-order-media-steps.tsx",
+  "client/src/new-order-summary-step.tsx",
+  "client/src/quote-editor.tsx",
+  "server/src/modules/attachments/local-storage.test.ts",
+  "server/src/modules/attachments/local-storage.ts",
+  "server/src/server.ts"
+]

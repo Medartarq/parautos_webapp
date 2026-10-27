@@ -1,4 +1,6 @@
+import { releaseConnection } from "../../db/release-connection.js";
 import { randomInt } from "node:crypto";
+import { captureReceptionSnapshot } from "./reception-snapshot.js";
 import {
   receptionStepOneSchema,
   type CreateOrderInput,
@@ -7,6 +9,11 @@ import {
 import { getPool } from "../../db/pool.js";
 import { AppError } from "../../errors/app-error.js";
 import { deleteStoredFile, storeSignature } from "../attachments/storage.js";
+import { mariaDbOrdersListRepository, type OrdersListRepository } from "./orders-list-repository.js";
+import { mariaDbOrderDetailRepository, type OrderDetailRepository } from "./order-detail-repository.js";
+import { mariaDbOrdersNavigationRepository, type OrdersNavigationRepository } from "./orders-navigation-repository.js";
+import { mariaDbReceptionDraftRepository, type ReceptionDraftInput, type ReceptionDraftRepository } from "./reception-draft-repository.js";
+import { mariaDbPendingClaimRepository, type PendingClaimRepository } from "./pending-claim-repository.js";
 
 export function generatePublicCode(): string {
   return String(randomInt(100_000, 1_000_000));
@@ -16,15 +23,9 @@ function normalizePlate(plate: string): string {
   return plate.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
-export async function getReceptionCatalog() {
-  const bodyTypes = await getPool().query<
-    { id: number; code: string; name: string }[]
-  >("SELECT id, code, name FROM body_types WHERE active = 1 ORDER BY code");
-  const checklist = await getPool().query<
-    { id: number; category: string; name: string }[]
-  >(
-    `SELECT i.id, c.name AS category, i.name FROM checklist_items i JOIN checklist_categories c ON c.id = i.category_id WHERE i.active = 1 AND c.active = 1 ORDER BY c.display_order, i.display_order`,
-  );
+export async function getReceptionCatalog(repository: OrdersListRepository = mariaDbOrdersListRepository) {
+  const bodyTypes = await repository.listBodyTypes();
+  const checklist = await repository.listChecklist();
   return { bodyTypes, checklist };
 }
 
@@ -86,6 +87,7 @@ export async function createOrder(
   const expected = new Set(activeChecklist.map((item) => Number(item.id)));
   const received = new Set(input.checklist.map((item) => item.itemId));
   if (
+    input.checklist.length !== expected.size ||
     expected.size !== received.size ||
     [...expected].some((id) => !received.has(id))
   ) {
@@ -156,7 +158,8 @@ export async function createOrder(
       [clientId, vehicleId],
     );
     const clientVehicleId = insertedId(clientVehicle, "vínculo cliente-vehículo");
-    // The vehicle upsert holds its row lock, serializing active-code checks for this plate.
+    // The vehicle upsert holds its row lock. Include closed orders too because
+    // public tracking still accepts their plate/code pair after delivery.
     let publicCode = "";
     for (let attempt = 0; attempt < 10; attempt += 1) {
       const candidate = generatePublicCode();
@@ -164,7 +167,6 @@ export async function createOrder(
         `SELECT o.id FROM service_orders o
          JOIN client_vehicles cv ON cv.id = o.client_vehicle_id
          WHERE cv.vehicle_id = ? AND o.public_code = ?
-           AND o.internal_status NOT IN ('ENTREGADA', 'CANCELADA')
          LIMIT 1`,
         [vehicleId, candidate],
       );
@@ -207,6 +209,7 @@ export async function createOrder(
       ],
     );
     const receptionId = Number(reception.insertId);
+    await captureReceptionSnapshot(connection, receptionId, orderId);
     const signatureBytes = Buffer.from(input.signature.slice("data:image/png;base64,".length), "base64");
     storedSignature = await storeSignature(signatureBytes);
     await connection.query(
@@ -246,80 +249,35 @@ export async function createOrder(
     failed = false;
     return { id: orderId, orderNumber, publicCode };
   } finally {
-    if (failed) await connection.rollback();
-    connection.release();
+    try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); }
     if (failed && storedSignature) await deleteStoredFile(storedSignature.provider, storedSignature.objectKey);
   }
 }
 
-export async function listOrders() {
-  return getPool().query(
-    `SELECT o.id, o.order_number AS orderNumber, o.internal_status AS status, o.modality, o.claim_pending_reminder AS claimPending, o.created_at AS createdAt, c.full_name AS client, v.plate, v.brand, v.model, v.color FROM service_orders o JOIN client_vehicles cv ON cv.id = o.client_vehicle_id JOIN clients c ON c.id = cv.client_id JOIN vehicles v ON v.id = cv.vehicle_id ORDER BY o.created_at DESC`,
-  );
+export async function listOrders(repository: OrdersListRepository = mariaDbOrdersListRepository) {
+  return repository.listOrders();
 }
 
-export async function getOperationalPendingNotifications() {
-  const pool = getPool();
-  const baseColumns = "o.id, o.order_number AS orderNumber, o.created_at AS createdAt, c.full_name AS client, v.plate, v.brand, v.model";
-  const joins = "FROM service_orders o JOIN client_vehicles cv ON cv.id = o.client_vehicle_id JOIN clients c ON c.id = cv.client_id JOIN vehicles v ON v.id = cv.vehicle_id";
-  const [diagnosisPending, quotePending] = await Promise.all([
-    pool.query<any[]>(`SELECT ${baseColumns} ${joins} WHERE o.diagnosis_pending_reminder = 1 AND o.internal_status NOT IN ('ENTREGADA', 'CANCELADA') ORDER BY o.created_at ASC`),
-    pool.query<any[]>(`SELECT ${baseColumns} ${joins} WHERE o.diagnosis_pending_reminder = 0 AND o.internal_status = 'COTIZACION_PENDIENTE' AND NOT EXISTS (SELECT 1 FROM quote_versions q WHERE q.order_id = o.id) ORDER BY o.created_at ASC`),
-  ]);
+export async function getOperationalPendingNotifications(repository: OrdersNavigationRepository = mariaDbOrdersNavigationRepository) {
+  const [diagnosisPending, quotePending] = await repository.pendingNotifications();
   return { total: diagnosisPending.length + quotePending.length, diagnosisPending, quotePending };
 }
 
-export async function getOrderDetail(orderId: number) {
-  const pool = getPool();
-  const rows = await pool.query<any[]>(
-    `SELECT o.id, o.order_number AS orderNumber, o.public_code AS publicCode, o.internal_status AS internalStatus, o.public_status AS publicStatus, o.modality, o.claim_number AS claimNumber, o.claim_pending_reminder AS claimPending, o.diagnosis_pending_reminder AS diagnosisPending, o.created_at AS createdAt, u.names AS advisorName, c.document_type AS documentType, c.document_number AS documentNumber, c.full_name AS client, c.phone, c.email, od.phone_override AS operationalPhone, od.email_override AS operationalEmail, od.updated_at AS operationalDataUpdatedAt, v.plate, v.brand, v.model, v.manufacture_year AS year, v.vin, v.color, v.color_type AS colorType, bt.code AS bodyCode, bt.name AS bodyName
-     FROM service_orders o
-     JOIN client_vehicles cv ON cv.id = o.client_vehicle_id
-     JOIN clients c ON c.id = cv.client_id
-     JOIN vehicles v ON v.id = cv.vehicle_id
-     JOIN body_types bt ON bt.id = v.body_type_id
-     LEFT JOIN users u ON u.id = o.advisor_user_id
-     LEFT JOIN order_operational_data od ON od.order_id = o.id
-     WHERE o.id = ?`,
-    [orderId],
-  );
-  const order = rows[0];
+export async function getOrderDetail(orderId: number, repository: OrderDetailRepository = mariaDbOrderDetailRepository) {
+
+  const order = await repository.findOrder(orderId);
   if (!order) return null;
   order.claimPending = Boolean(order.claimPending);
   order.diagnosisPending = Boolean(order.diagnosisPending);
-  const receptions = await pool.query<any[]>(
-    `SELECT id, mileage, fuel_level AS fuelLevel, considerations, diagnosis, diagnosis_legibility AS diagnosisLegibility, diagnosis_review_state AS diagnosisReviewState, accepted_terms AS acceptedTerms, checklist_reviewed_at AS checklistReviewedAt, created_at AS createdAt
-     FROM receptions WHERE order_id = ?`,
-    [orderId],
-  );
-  const reception = receptions[0];
+
+  const reception = await repository.findReception(orderId);
   if (!reception) return { ...order, reception: null, checklist: [], damages: [], attachments: [] };
-  const [checklist, damages, attachments, history] = await Promise.all([
-    pool.query<any[]>(
-      `SELECT cc.name AS category, cc.display_order AS categoryOrder, ci.name, ci.display_order AS itemOrder, ca.answer, ca.observation
-       FROM checklist_answers ca JOIN checklist_items ci ON ci.id = ca.item_id
-       JOIN checklist_categories cc ON cc.id = ci.category_id
-       WHERE ca.reception_id = ? ORDER BY cc.display_order, ci.display_order`,
-      [reception.id],
-    ),
-    pool.query<any[]>(
-      `SELECT body_code AS body, body_view AS view, path_data AS path, description
-       FROM damage_marks WHERE reception_id = ? ORDER BY id`,
-      [reception.id],
-    ),
-    pool.query<any[]>(
-      `SELECT id, category, original_name AS originalName, mime_type AS mimeType, byte_size AS byteSize, created_at AS createdAt
-       FROM attachments WHERE order_id = ? ORDER BY created_at DESC`,
-      [orderId],
-    ),
-    pool.query<any[]>(
-      `SELECT ae.action, ae.previous_data AS previousData, ae.new_data AS newData, ae.created_at AS createdAt, u.names AS actor
-       FROM audit_events ae LEFT JOIN users u ON u.id = ae.actor_user_id
-       WHERE ae.entity = 'service_order' AND ae.record_id = ? ORDER BY ae.created_at DESC`,
-      [String(orderId)],
-    ),
+
+  const [[checklist, damages, attachments, history], snapshot] = await Promise.all([
+    repository.findDetails(reception.id, orderId), repository.findSnapshot(reception.id),
   ]);
-  return { ...order, reception, checklist, damages, attachments, history };
+  const receptionSnapshot = snapshot ? { ...snapshot, payload: typeof snapshot.payload === "string" ? JSON.parse(snapshot.payload) : snapshot.payload } : null;
+  return { ...order, year: order.year == null ? undefined : Number(order.year), reception, checklist, damages, attachments, history, receptionSnapshot };
 }
 
 export async function correctOperationalData(
@@ -386,8 +344,7 @@ export async function correctOperationalData(
     await connection.commit();
     failed = false;
   } finally {
-    if (failed) await connection.rollback();
-    connection.release();
+    try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); }
   }
 }
 
@@ -397,69 +354,26 @@ export async function completePendingClaim(
   actorUserId: number,
   requestId: string,
   ipAddress?: string,
-  userAgent?: string,
+  userAgent?: string, repository: PendingClaimRepository = mariaDbPendingClaimRepository,
 ) {
-  const pool = getPool();
-  const connection = await pool.getConnection();
-  let failed = true;
-  try {
-    await connection.beginTransaction();
-    const rows = await connection.query<any[]>(
-      "SELECT modality, claim_number AS claimNumber, claim_pending_reminder AS claimPending FROM service_orders WHERE id = ? FOR UPDATE",
-      [orderId],
-    );
-    const order = rows[0];
-    if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "La orden no existe.");
-    if (order.modality === "PARTICULAR")
-      throw new AppError(400, "CLAIM_NOT_ALLOWED", "Las órdenes particulares no pueden registrar siniestro.");
-    if (order.claimNumber)
-      throw new AppError(409, "CLAIM_ALREADY_RECORDED", "El siniestro ya fue registrado para esta orden.");
-    await connection.query(
-      "UPDATE service_orders SET claim_number = ?, claim_pending_reminder = 0 WHERE id = ?",
-      [claimNumber, orderId],
-    );
-    await connection.query(
-      "INSERT INTO audit_events (actor_user_id, entity, record_id, action, previous_data, new_data, request_id, ip_address, user_agent) VALUES (?, 'service_order', ?, 'CLAIM_COMPLETED', JSON_OBJECT('claimPending', ?), JSON_OBJECT('claimNumber', ?, 'claimPending', false), ?, ?, ?)",
-      [actorUserId, String(orderId), order.claimPending ? true : false, claimNumber, requestId, ipAddress ?? null, userAgent ?? null],
-    );
-    await connection.commit();
-    failed = false;
-  } finally {
-    if (failed) await connection.rollback();
-    connection.release();
-  }
+  return repository.complete(orderId,claimNumber,actorUserId,requestId,ipAddress,userAgent);
 }
 
-export async function getReceptionDraft(userId: number) {
-  const row = (await getPool().query<any[]>("SELECT revision, current_step AS currentStep, payload, updated_at AS updatedAt FROM reception_drafts WHERE user_id = ?", [userId]))[0];
+export async function getReceptionDraft(userId: number, repository: ReceptionDraftRepository = mariaDbReceptionDraftRepository) {
+  const row = await repository.find(userId);
   if (!row) return undefined;
   return { ...row, payload: typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload };
 }
 
-export async function saveReceptionDraft(userId: number, input: { revision?: number; currentStep: number; payload: unknown }) {
-  const connection = await getPool().getConnection(); let failed = true;
-  try {
-    await connection.beginTransaction();
-    const current = (await connection.query<any[]>("SELECT revision FROM reception_drafts WHERE user_id = ? FOR UPDATE", [userId]))[0];
-    if (!current) {
-      if (input.revision !== undefined) throw new AppError(409, "RECEPTION_DRAFT_CONFLICT", "El borrador de recepción ya no está disponible. Recárguelo antes de guardar.");
-      await connection.query("INSERT INTO reception_drafts (user_id, revision, current_step, payload) VALUES (?, 1, ?, ?)", [userId, input.currentStep, JSON.stringify(input.payload)]);
-    } else {
-      if (input.revision !== Number(current.revision)) throw new AppError(409, "RECEPTION_DRAFT_CONFLICT", "El borrador fue actualizado desde otro dispositivo. Recárguelo antes de guardar.");
-      await connection.query("UPDATE reception_drafts SET revision = revision + 1, current_step = ?, payload = ? WHERE user_id = ?", [input.currentStep, JSON.stringify(input.payload), userId]);
-    }
-    await connection.commit(); failed = false;
-    return getReceptionDraft(userId);
-  } finally { if (failed) await connection.rollback(); connection.release(); }
+export async function saveReceptionDraft(userId: number, input: ReceptionDraftInput, repository: ReceptionDraftRepository = mariaDbReceptionDraftRepository) {
+  await repository.save(userId,input); return getReceptionDraft(userId,repository);
 }
 
-export async function deleteReceptionDraft(userId: number) {
-  await getPool().query("DELETE FROM reception_drafts WHERE user_id = ?", [userId]);
+export async function deleteReceptionDraft(userId: number, repository: ReceptionDraftRepository = mariaDbReceptionDraftRepository) {
+  await repository.delete(userId);
 }
 
-export async function getNavigationSummary() {
-  const rows = await getPool().query<{ pendingClaims: number }[]>(
-    "SELECT COUNT(*) AS pendingClaims FROM service_orders WHERE claim_pending_reminder = 1 AND internal_status NOT IN ('ENTREGADA', 'CANCELADA')",
-  );
+export async function getNavigationSummary(repository: OrdersNavigationRepository = mariaDbOrdersNavigationRepository) {
+  const rows = await repository.pendingClaims();
   return { pendingClaims: Number(rows[0]?.pendingClaims || 0) };
 }

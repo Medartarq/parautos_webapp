@@ -1,0 +1,1564 @@
+[
+  {
+    "key": "css:S4666",
+    "repo": "css",
+    "name": "Selectors should not be duplicated",
+    "createdAt": "2026-10-25T15:52:37-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [],
+    "lang": "css",
+    "langName": "CSS",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "1min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "1min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>In CSS, when selectors are duplicated, the browser applies them in cascade. This means that if two selectors are identical, the second one takes\nprecedence. However, if the declarations within the selectors are not conflicting, they will be combined.</p>\n<p>This behavior can lead to unexpected results and make debugging more difficult, especially in larger stylesheets. Therefore, it’s generally\nrecommended to avoid duplicating selectors.</p>\n<p>The rule detects the following kinds of duplications:</p>\n<ul>\n  <li>within a list of selectors in a single rule set,</li>\n  <li>for duplicated selectors in different rule sets within a single stylesheet.</li>\n</ul>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN - <a href=\"https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors\">CSS selectors</a></li>\n  <li>MDN - <a href=\"https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Cascade_and_inheritance\">Cascade, specificity, and\n  inheritance</a></li>\n</ul>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>To fix your code, either remove the duplicated selector or merge all declarations.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\np {\n  color: blue;\n  font-size: 16px;\n}\n\np { /* Noncompliant: duplicated selector 'p', overwrites property 'color' */\n  color: red;\n}\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\np {\n  color: red;\n  font-size: 16px;\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:37-05:00",
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "css:S7924",
+    "repo": "css",
+    "name": "Text and background colors should have sufficient contrast",
+    "createdAt": "2026-10-25T15:52:37-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "css",
+      "accessibility",
+      "wcag",
+      "contrast"
+    ],
+    "lang": "css",
+    "langName": "CSS",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://webaim.org/resources/contrastchecker\">Color contrast checker</a></li>\n  <li>WCAG 2.2 Contrast (Minimum) - <a href=\"https://www.w3.org/TR/WCAG22/#contrast-minimum\">Official WCAG guidelines for minimum color contrast\n  requirements</a></li>\n  <li>WebAIM Contrast Checker - <a href=\"https://webaim.org/resources/contrastchecker/\">Online tool to check color contrast ratios and WCAG\n  compliance</a></li>\n  <li>MDN Color Contrast - <a href=\"https://developer.mozilla.org/en-US/docs/Web/Accessibility/Understanding_WCAG/Perceivable/Color_contrast\">Mozilla\n  documentation on color contrast for web accessibility</a></li>\n</ul>\n<h3>Standards</h3>\n<ul>\n  <li>WCAG 2.2 - 1.4.3 Contrast (Minimum) - <a href=\"https://www.w3.org/TR/WCAG22/#contrast-minimum\">Web Content Accessibility Guidelines for minimum\n  color contrast</a></li>\n  <li>WCAG 2.2 - 1.4.6 Contrast (Enhanced) - <a href=\"https://www.w3.org/TR/WCAG22/#contrast-enhanced\">Enhanced contrast requirements for WCAG AAA\n  compliance</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Color contrast is essential for web accessibility. When text doesn’t have enough contrast against its background, it becomes difficult or\nimpossible for users to read.</p>\n<p>Users with visual impairments, including color blindness, low vision, or age-related vision changes, rely on sufficient contrast to distinguish\ntext from backgrounds. Poor contrast also affects readability in challenging conditions like bright sunlight or low-quality displays.</p>\n<p>The Web Content Accessibility Guidelines (WCAG) define minimum contrast ratios to ensure content is accessible to the widest possible audience.\nWCAG AA compliance requires:</p>\n<ul>\n  <li>Normal text: minimum 4.5:1 contrast ratio</li>\n  <li>Large text (18pt or larger, or 14pt bold or larger): minimum 3.1 contrast ratio</li>\n</ul>\n<p>These ratios are calculated using the relative luminance of colors, which accounts for how the human eye perceives different colors'\nbrightness.</p>\n<h3>What is the potential impact?</h3>\n<p>Poor color contrast creates barriers for users with visual impairments and can make your application non-compliant with accessibility standards\nlike WCAG AA. This may result in legal issues in jurisdictions with accessibility requirements, exclude users from accessing your content, and create\na poor user experience for everyone in suboptimal viewing conditions.</p>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>Increase the contrast by using darker text on light backgrounds or lighter text on dark backgrounds. Use online contrast checkers to verify your\ncolor combinations meet WCAG standards. To check your contrast as you make your color choices, use a tool such as WebAIM’s <a\nhref=\"https://webaim.org/resources/contrastchecker/\">Color Contrast Checker</a>.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\n.text {\n  color: #777777; /* Light gray text */\n  background-color: #ffffff; /* White background */\n  /* Contrast ratio: 4.48:1 - fails WCAG AA for normal text */ // Noncompliant\n}\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\n.text {\n  color: #595959; /* Darker gray text */\n  background-color: #ffffff; /* White background */\n  /* Contrast ratio: 7.0:1 - passes WCAG AA */\n}\n</pre>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when text elements have a color contrast ratio below WCAG AA standards: less than 4.5:1 for normal text or less than 3:1\nfor large text (18pt+ or 14pt+ bold).</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:37-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "javascript:S1788",
+    "repo": "javascript",
+    "name": "Function parameters with default values should be last",
+    "createdAt": "2026-10-25T15:52:40-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "es2015"
+    ],
+    "lang": "js",
+    "langName": "JavaScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "20min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "20min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Default parameter values allow callers to specify as many or as few arguments as they want while getting the same functionality and minimizing\nboilerplate, wrapper code, making a function easier to use.</p>\n<p>All function parameters with default values should be declared after the function parameters without default values. Otherwise, it makes it\nimpossible for callers to take advantage of defaults; they must re-specify the defaulted values or pass <code>undefined</code> to be able to specify\nthe non-default parameters.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nfunction multiply(a = 1, b) { // Noncompliant: parameter with default value should be last\n  return a*b;\n}\n\nlet x = multiply(1, 42); // Cannot benefit from default value\n</pre>\n<p>Reorder the function parameters so that the ones with default values come after the ones without default values.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nfunction multiply(b, a = 1) {\n  return a*b;\n}\n\nlet x = multiply(42);\n</pre>\n<h3>Exceptions</h3>\n<p>When writing Redux reducers, there is a convention to use default argument syntax to provide initial state (first argument), while action (second\nargument) is mandatory. A reducer may be called with <code>undefined</code> as the state value when the application is being initialized. The action\nparameter may be named <code>action</code> or destructured inline as long as <code>type</code> is one of the destructured properties.</p>\n<pre>\n// Named action parameter\nexport default function appReducer(state = initialState, action) {\n  switch (action.type) {\n    default:\n      return state;\n  }\n}\n\n// Destructured action parameter\nexport const isLoading = (state = true, { type }) =&gt; {\n  switch (type) {\n    default:\n      return state;\n  }\n};\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://typescript-eslint.io/\">typescript-eslint</a> - Rule <a\n  href=\"https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/default-param-last.mdx\">default-param-last</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters\">Default\n  parameters</a></li>\n  <li>Redux Documentation - <a href=\"https://redux.js.org/tutorials/fundamentals/part-3-state-actions-reducers#writing-reducers\">Writing\n  Reducers</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:40-05:00",
+    "cleanCodeAttribute": "FOCUSED",
+    "cleanCodeAttributeCategory": "ADAPTABLE",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "javascript:S3358",
+    "repo": "javascript",
+    "name": "Ternary operators should not be nested",
+    "createdAt": "2026-10-25T15:52:40-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "confusing"
+    ],
+    "lang": "js",
+    "langName": "JavaScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Articles &amp; blog posts</h3>\n<ul>\n  <li>Sonar - <a href=\"https://www.sonarsource.com/blog/stop-nesting-ternaries-javascript/\">Stop nesting ternaries in JavaScript</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Nested ternaries are hard to read and can make the order of operations complex to understand.</p>\n<pre>\nfunction getReadableStatus(job) {\n  return job.isRunning() ? \"Running\" : job.hasErrors() ? \"Failed\" : \"Succeeded \";  // Noncompliant\n}\n</pre>\n<p>Instead, use another line to express the nested operation in a separate statement.</p>\n<pre>\nfunction getReadableStatus(job) {\n  if (job.isRunning()) {\n    return \"Running\";\n  }\n  return job.hasErrors() ? \"Failed\" : \"Succeeded\";\n}\n</pre>\n<h3>Exceptions</h3>\n<p>This rule does not apply in JSX expressions to support conditional rendering and conditional attributes as long as the nesting happens in separate\nJSX expression containers, i.e. JSX elements embedding JavaScript code, as shown below:</p>\n<pre>\nreturn (\n&lt;&gt;\n  {isLoading ? (\n    &lt;Loader active /&gt;\n  ) : (\n    &lt;Panel label={isEditing ? 'Open' : 'Not open'}&gt;\n      &lt;a&gt;{isEditing ? 'Close now' : 'Start now'}&lt;/a&gt;\n      &lt;Checkbox onClick={!saving ? setSaving(saving =&gt; !saving) : null} /&gt;\n    &lt;/Panel&gt;\n  )}\n&lt;/&gt;\n);\n</pre>\n<p>If you have nested ternaries in the same JSX expression container, refactor your logic into a separate function like that:</p>\n<pre>\nfunction myComponent(condition) {\n  if (condition &lt; 0) {\n    return '&lt;DownSign&gt;it is negative&lt;/DownSign&gt;';\n  } else if (condition &gt; 0) {\n    return '&lt;UpSign&gt;it is positive&lt;/UpSign&gt;';\n  } else {\n    return '&lt;BarSign&gt;it is zero&lt;/BarSign&gt;';\n  }\n}\n\nreturn (\n  {myComponent(foo)}\n);\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:40-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "javascript:S4043",
+    "repo": "javascript",
+    "name": "Array-mutating methods should not be used misleadingly",
+    "createdAt": "2026-10-25T15:52:40-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "type-dependent"
+    ],
+    "lang": "js",
+    "langName": "JavaScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#copying_methods_and_mutating_methods\">Array copying\n  methods and mutating methods</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse\">Array.prototype.reverse()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort\">Array.prototype.sort()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toReversed\">Array.prototype.toReversed()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted\">Array.prototype.toSorted()</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax\">Spread syntax\n  (<code>...</code>)</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice\">Array.prototype.slice()</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>In JavaScript, some <code>Array</code> methods do not mutate the existing array that the method was called on, but instead return a new array.\nOther methods mutate the array, and their return value differs depending on the method.</p>\n<p><code>reverse</code> and <code>sort</code> are mutating methods and, in addition, return the altered version. This rule raises an issue when the\nreturn values of these methods are assigned, which could lead maintainers to overlook the fact that the original array has been modified.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst reversed = a.reverse(); // Noncompliant: mutating method, no need to assign return value\nconst sorted = b.sort(); // Noncompliant: mutating method, no need to assign return value\n</pre>\n<p>Remove the assignment, so that the intent of mutating the original array is clear.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\na.reverse();\nb.sort();\n</pre>\n<p>Or use non-mutating alternatives <code>toReversed</code> and <code>toSorted</code>.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = a.toReversed();\nconst sorted = b.toSorted();\n</pre>\n<p>Alternatively, change a mutating method into a non-mutating alternative using the spread syntax (<code>…​</code>).</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = [...a].reverse();\nconst sorted = [...b].sort();\n</pre>\n<p>Or <code>slice()</code> to create a copy first.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = a.slice().reverse();\nconst sorted = b.slice().sort();\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:40-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "javascript:S4624",
+    "repo": "javascript",
+    "name": "Template literals should not be nested",
+    "createdAt": "2026-10-25T15:52:40-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "es2015",
+      "brain-overload",
+      "editable-source",
+      "confusing"
+    ],
+    "lang": "js",
+    "langName": "JavaScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "10min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "10min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Template literals, also known as template strings, allow for string interpolation and multiline strings in JavaScript. They provide a more\nconvenient and flexible way to work with strings compared to traditional string concatenation or manipulation.</p>\n<p>Template literals are delimited with the backtick <code>(`)</code> character. They are a convenient way to include variables or expressions within\na string using placeholders <code>`${expression}`</code> in the string and evaluate them dynamically.</p>\n<p>However, nesting template literals can make the code less readable. With each nested template literal, the code becomes more complex and harder to\nunderstand. It can be challenging to keep track of the opening and closing backticks and properly escape characters if needed.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst color = \"red\";\nconst count = 3;\nconst message = `I have ${color ? `${count} ${color}` : count} apples`; // Noncompliant: nested template strings not easy to read\n</pre>\n<p>In such situations, moving the nested template into a separate statement is preferable.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst color = \"red\";\nconst count = 3;\nconst apples = color ? `${count} ${color}` : count;\nconst message = `I have ${apples} apples`;\n</pre>\n<p>The rule makes an exception for nested template literals spanning multiple lines. It allows you to visually separate different sections and gives\nyou more freedom in formatting your text, including line breaks, indentation, and other formatting elements, enhancing readability.</p>\n<pre>\nconst name = 'John';\nconst age = 42;\n\nconst message = `Hello ${name}!\nYou are ${age} years old.\n${`This is a nested template literal.`}\nIt can span multiple lines.`;\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals\">Template literals (Template\n  strings)</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:40-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "javascript:S9382",
+    "repo": "javascript",
+    "name": "Promises should not be awaited sequentially in a loop",
+    "createdAt": "2026-10-25T15:52:40-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "async",
+      "performance",
+      "es2017",
+      "promise"
+    ],
+    "lang": "js",
+    "langName": "JavaScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p><code>async</code>/<code>await</code> lets asynchronous operations run concurrently: multiple promises can be created and left pending while other\nwork proceeds, then resolved together once they have all settled.</p>\n<p>Awaiting a promise inside a loop breaks this benefit. Each iteration blocks until the previous <code>await</code> resolves, so independent\nasynchronous operations that could run at the same time are instead executed strictly one after another. For <code>n</code> iterations that each take\nroughly the same amount of time, this multiplies the total waiting time by <code>n</code> instead of running the operations concurrently.</p>\n<p>This pattern also compounds the impact of failures: if an early iteration’s operation fails, none of the later, independent operations even get\nstarted, even though they don’t depend on the failed one.</p>\n<p>Instead of awaiting each operation before starting the next, start every asynchronous operation first and await them together, for example with\n<code>Promise.all()</code>. This lets the independent operations run concurrently while still giving a single point to retrieve every result or handle\na failure.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nasync function fetchAll(urls) {\n  const responses = [];\n  for (const url of urls) {\n    const response = await fetch(url); // Noncompliant: each fetch waits for the previous one to finish\n    responses.push(response);\n  }\n  return responses;\n}\n</pre>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nasync function fetchAll(urls) {\n  const responses = await Promise.all(urls.map(url =&gt; fetch(url)));\n  return responses;\n}\n</pre>\n<h3>Exceptions</h3>\n<p>This rule does not apply to <code>for await…​of</code> loops, since consuming an asynchronous iterator one item at a time is the explicit purpose\nof that construct.</p>\n<p>Sequential awaiting is also the correct choice, and an issue raised by this rule can be safely dismissed, when the iterations are not actually\nindependent, for example when:</p>\n<ul>\n  <li>the operation in one iteration needs the result of the previous one,</li>\n  <li>the loop retries an asynchronous operation until it succeeds,</li>\n  <li>the number of concurrent operations must be capped, e.g. to respect a rate limit or avoid exhausting a resource,</li>\n  <li>an external resource must be updated one step at a time and in order.</li>\n</ul>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://eslint.org\">eslint</a> - Rule <a href=\"https://eslint.org/docs/latest/rules/no-await-in-loop\">no-await-in-loop</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all\">Promise.all()</a></li>\n</ul>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when a <code>Promise</code> is awaited inside a loop body, forcing each iteration’s asynchronous operation to complete\nbefore the next one starts.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:40-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S107",
+    "repo": "typescript",
+    "name": "Functions should not have too many parameters",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "brain-overload",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [
+      {
+        "key": "maximumFunctionParameters",
+        "htmlDesc": "The maximum authorized number of parameters",
+        "defaultValue": "7",
+        "type": "INTEGER"
+      }
+    ],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "20min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "20min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://eslint.org\">eslint</a> - Rule <a href=\"https://eslint.org/docs/latest/rules/max-params\">max-params</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Functions with a long parameter list are difficult to use because maintainers must figure out the role of each parameter and keep track of their\nposition.</p>\n<pre>\nfunction setCoordinates(x1, y1, z1, x2, y2, z2) { // Noncompliant\n    // ...\n}\n</pre>\n<p>The solution can be to:</p>\n<ul>\n  <li>Split the function into smaller ones</li>\n</ul>\n<pre>\n// Each function does a part of what the original setCoordinates function was doing, so confusion risks are lower\nfunction setOrigin(x, y, z) {\n   // ...\n}\n\nfunction setSize(width, height, depth) {\n   // ...\n}\n</pre>\n<ul>\n  <li>Find a better data structure for the parameters that group data in a way that makes sense for the specific application domain</li>\n</ul>\n<pre>\n// In geometry, Point is a logical structure to group data\nlet point1 = { x: x1, y: y1, z: z1};\nlet point2 = { x: x1, y: y1, z: z1};\nsetCoordinates(point1, point2);\n\nfunction setCoordinates(p1, p2) {\n   // ...\n}\n</pre>\n<p>This rule raises an issue when a function has more parameters than the provided threshold.</p>\n<h3>Exceptions</h3>\n<p>The rule ignores TypeScript parameter properties when counting parameters:</p>\n<pre>\nclass C {\n  constructor(\n    private param1: number,     // ignored\n    param2: boolean,            // counted\n    public param3: string,      // ignored\n    readonly param4: string[],  // ignored\n    param5: number | string     // counted\n  ) {} // Compliant by exception\n}\n</pre>\n<p>The rule also ignores Angular component constructors:</p>\n<pre>\nimport { Component } from '@angular/core';\n\n@Component({/* ... */})\nclass Component {\n  constructor(p1, p2, p3, p4, p5) {} // Compliant by exception\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "FOCUSED",
+    "cleanCodeAttributeCategory": "ADAPTABLE",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S1121",
+    "repo": "typescript",
+    "name": "Assignments should not be made from within sub-expressions",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "cwe",
+      "suspicious"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>A common code smell that can hinder the clarity of source code is making assignments within sub-expressions. This practice involves assigning a\nvalue to a variable inside a larger expression, such as within a loop or a conditional statement.</p>\n<p>This practice essentially gives a side-effect to a larger expression, thus making it less readable. This often leads to confusion and potential\nerrors.</p>\n<p>Moreover, using chained assignments in declarations is also dangerous because one may accidentally create global variables. Consider the following\ncode snippet: <code>let x = y = 1;</code>. If <code>y</code> is not declared, it will be hoisted as global.</p>\n<h3>Exceptions</h3>\n<p>The rule does not raise issues for the following patterns:</p>\n<ul>\n  <li>chained assignments: <code>a = b = c = 0;</code></li>\n  <li>relational assignments: <code>(a = 0) != b</code></li>\n  <li>sequential assignments: <code>a = 0, b = 1, c = 2</code></li>\n  <li>assignments in lambda body: <code>() =&gt; a = 0</code></li>\n  <li>conditional assignment idiom: <code>a || (a = 0)</code></li>\n  <li>assignments in (do-)while conditions: <code>while (a = 0);</code></li>\n</ul>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>Making assignments within sub-expressions can hinder the clarity of source code.</p>\n<p>This practice essentially gives a side-effect to a larger expression, thus making it less readable. This often leads to confusion and potential\nerrors.</p>\n<p>Extracting assignments into separate statements is encouraged to keep the code clear and straightforward.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nif (val = value() &amp;&amp; check()) { // Noncompliant\n  // ...\n}\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nval = value();\nif (val &amp;&amp; check()) {\n  // ...\n}\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<ul>\n  <li>CWE - <a href=\"https://cwe.mitre.org/data/definitions/481\">CWE-481 - Assigning instead of Comparing</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S1874",
+    "repo": "typescript",
+    "name": "Deprecated APIs should not be used",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "cwe",
+      "type-dependent",
+      "obsolete"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "15min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "15min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Code is sometimes annotated as deprecated by developers maintaining libraries or APIs to indicate that the method, class, or other programming\nelement is no longer recommended for use. This is typically due to the introduction of a newer or more effective alternative. For example, when a\nbetter solution has been identified, or when the existing code presents potential errors or security risks.</p>\n<p>Deprecation is a good practice because it helps to phase out obsolete code in a controlled manner, without breaking existing software that may\nstill depend on it. It is a way to warn other developers not to use the deprecated element in new code, and to replace it in existing code when\npossible.</p>\n<p>Deprecated classes, interfaces, and their members should not be used, inherited or extended because they will eventually be removed. The\ndeprecation period allows you to make a smooth transition away from the aging, soon-to-be-retired technology.</p>\n<p>Check the documentation or the deprecation message to understand why the code was deprecated and what the recommended alternative is.</p>\n<pre>\n/**\n * @deprecated Use newFunction instead.\n */\nfunction oldFunction() {\n  console.log(\"This is the old function.\");\n}\n\nfunction newFunction() {\n  console.log(\"This is the new function.\");\n}\noldFunction(); // Noncompliant: \"oldFunction is deprecated\"\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>CWE - <a href=\"https://cwe.mitre.org/data/definitions/477\">CWE-477 - Use of Obsolete Functions</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S2681",
+    "repo": "typescript",
+    "name": "Multiline blocks should be enclosed in curly braces",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "cwe",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<ul>\n  <li>CWE - <a href=\"https://cwe.mitre.org/data/definitions/483\">CWE-483 - Incorrect Block Delimitation</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Having inconsistent indentation and omitting curly braces from a control structure, such as an <code>if</code> statement or <code>for</code> loop,\nis misleading and can induce bugs.</p>\n<p>This rule raises an issue when the indentation of the lines after a control structure indicates an intent to include those lines in the block, but\nthe omission of curly braces means the lines will be unconditionally executed once.</p>\n<p>The following patterns are recognized:</p>\n<pre>\nif (condition)\n  firstActionInBlock();\n  secondAction();  // Noncompliant: secondAction is executed unconditionally\nthirdAction();\n</pre>\n<pre>\nif (condition) firstActionInBlock(); secondAction();  // Noncompliant: secondAction is executed unconditionally\n</pre>\n<pre>\nif (condition) firstActionInBlock();  // Noncompliant\n  secondAction();  // Executed unconditionally\n</pre>\n<pre>\nif (condition); secondAction();  // Noncompliant: secondAction is executed unconditionally\n</pre>\n<pre>\nlet str = undefined;\nfor (let i = 0; i &lt; array.length; i++)\n  str = array[i];\n  doTheThing(str);  // Noncompliant: executed only on the last element\n</pre>\n<p>Note that this rule considers tab characters to be equivalent to 1 space. When mixing spaces and tabs, a code may look fine in one editor but be\nconfusing in another configured differently.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "FORMATTED",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S3358",
+    "repo": "typescript",
+    "name": "Ternary operators should not be nested",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "confusing"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Articles &amp; blog posts</h3>\n<ul>\n  <li>Sonar - <a href=\"https://www.sonarsource.com/blog/stop-nesting-ternaries-javascript/\">Stop nesting ternaries in JavaScript</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Nested ternaries are hard to read and can make the order of operations complex to understand.</p>\n<pre>\nfunction getReadableStatus(job) {\n  return job.isRunning() ? \"Running\" : job.hasErrors() ? \"Failed\" : \"Succeeded \";  // Noncompliant\n}\n</pre>\n<p>Instead, use another line to express the nested operation in a separate statement.</p>\n<pre>\nfunction getReadableStatus(job) {\n  if (job.isRunning()) {\n    return \"Running\";\n  }\n  return job.hasErrors() ? \"Failed\" : \"Succeeded\";\n}\n</pre>\n<h3>Exceptions</h3>\n<p>This rule does not apply in JSX expressions to support conditional rendering and conditional attributes as long as the nesting happens in separate\nJSX expression containers, i.e. JSX elements embedding JavaScript code, as shown below:</p>\n<pre>\nreturn (\n&lt;&gt;\n  {isLoading ? (\n    &lt;Loader active /&gt;\n  ) : (\n    &lt;Panel label={isEditing ? 'Open' : 'Not open'}&gt;\n      &lt;a&gt;{isEditing ? 'Close now' : 'Start now'}&lt;/a&gt;\n      &lt;Checkbox onClick={!saving ? setSaving(saving =&gt; !saving) : null} /&gt;\n    &lt;/Panel&gt;\n  )}\n&lt;/&gt;\n);\n</pre>\n<p>If you have nested ternaries in the same JSX expression container, refactor your logic into a separate function like that:</p>\n<pre>\nfunction myComponent(condition) {\n  if (condition &lt; 0) {\n    return '&lt;DownSign&gt;it is negative&lt;/DownSign&gt;';\n  } else if (condition &gt; 0) {\n    return '&lt;UpSign&gt;it is positive&lt;/UpSign&gt;';\n  } else {\n    return '&lt;BarSign&gt;it is zero&lt;/BarSign&gt;';\n  }\n}\n\nreturn (\n  {myComponent(foo)}\n);\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S3776",
+    "repo": "typescript",
+    "name": "Cognitive Complexity of functions should not be too high",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "CRITICAL",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "brain-overload",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [
+      {
+        "key": "threshold",
+        "htmlDesc": "The maximum authorized complexity.",
+        "defaultValue": "15",
+        "type": "INTEGER"
+      }
+    ],
+    "defaultDebtRemFnType": "LINEAR_OFFSET",
+    "debtRemFnType": "LINEAR_OFFSET",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "LINEAR_OFFSET",
+    "defaultRemFnGapMultiplier": "1min",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "LINEAR_OFFSET",
+    "remFnGapMultiplier": "1min",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "gapDescription": "per complexity point over the threshold",
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Cognitive Complexity is a measure of how hard it is to understand the control flow of a unit of code. Code with high cognitive complexity is hard\nto read, understand, test, and modify.</p>\n<p>As a rule of thumb, high cognitive complexity is a sign that the code should be refactored into smaller, easier-to-manage pieces.</p>\n<h3>Which syntax in code does impact cognitive complexity score?</h3>\n<p>Here are the core concepts:</p>\n<ul>\n  <li><strong>Cognitive complexity is incremented each time the code breaks the normal linear reading flow.</strong>\n    <br>\n    This concerns, for example, loop structures, conditionals, catches, switches, jumps to labels, and conditions mixing multiple operators.</li>\n  <li><strong>Each nesting level increases complexity.</strong>\n    <br>\n    During code reading, the deeper you go through nested layers, the harder it becomes to keep the context in mind.</li>\n  <li><strong>Method calls are free</strong>\n    <br>\n    A well-picked method name is a summary of multiple lines of code. A reader can first explore a high-level view of what the code is performing then\n    go deeper and deeper by looking at called functions content.\n    <br>\n    <em>Note:</em> This does not apply to recursive calls, those will increment cognitive score.</li>\n</ul>\n<p>The method of computation is fully detailed in the pdf linked in the resources.</p>\n<p>Note that the calculation of cognitive complexity at function level deviates from the documented process. Given the functional nature of\nJavaScript, nesting functions is a prevalent practice, especially within frameworks like React.js. Consequently, the cognitive complexity of functions\nremains independent from one another. This means that the complexity of a nesting function does not increase with the complexity of nested\nfunctions.</p>\n<h3>What is the potential impact?</h3>\n<p>Developers spend more time reading and understanding code than writing it. High cognitive complexity slows down changes and increases the cost of\nmaintenance.</p>\n<h3>Exceptions</h3>\n<p>Cognitive complexity calculations exclude logical expressions using the <code>||</code> and <code>??</code> operators.</p>\n<pre>\nfunction greet(name) {\n    name = name || 'Guest';\n    console.log('Hello, ' + name + '!');\n}\n</pre>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>Reducing cognitive complexity can be challenging.\n  <br>\n  Here are a few suggestions:</p>\n<ul>\n  <li><strong>Extract complex conditions in a new function.</strong>\n    <br>\n    Mixed operators in condition will increase complexity. Extracting the condition in a new function with an appropriate name will reduce cognitive\n    load.</li>\n  <li><strong>Break down large functions.</strong>\n    <br>\n    Large functions can be hard to understand and maintain. If a function is doing too many things, consider breaking it down into smaller, more\n    manageable functions. Each function should have a single responsibility.</li>\n  <li><strong>Avoid deep nesting by returning early.</strong>\n    <br>\n    To avoid the nesting of conditions, process exceptional cases first and return early.</li>\n  <li><strong>Use null-safe operations (if available in the language).</strong>\n    <br>\n    When available the <code>.?</code> or <code>??</code> operator replaces multiple tests and simplifies the flow.</li>\n</ul>\n\n<p><strong>Extraction of a complex condition in a new function.</strong></p>\n<h4>Noncompliant code example</h4>\n<p>The code is using a complex condition and has a cognitive cost of 3.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nfunction calculateFinalPrice(user, cart) {\n  let total = calculateTotal(cart);\n  if (user.hasMembership                       // +1 (if)\n    &amp;&amp; user.orders &gt; 10                        // +1 (more than one condition)\n    &amp;&amp; user.accountActive\n    &amp;&amp; !user.hasDiscount\n    || user.orders === 1) {                    // +1 (change of operator in condition)\n      total = applyDiscount(user, total);\n  }\n  return total;\n}\n</pre>\n<h4>Compliant solution</h4>\n<p>Even if the cognitive complexity of the whole program did not change, it is easier for a reader to understand the code of the\n<code>calculateFinalPrice</code> function, which now only has a cognitive cost of 1.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nfunction calculateFinalPrice(user, cart) {\n  let total = calculateTotal(cart);\n  if (isEligibleForDiscount(user)) {       // +1 (if)\n    total = applyDiscount(user, total);\n  }\n  return total;\n}\n\nfunction isEligibleForDiscount(user) {\n  return user.hasMembership\n    &amp;&amp; user.orders &gt; 10                     // +1 (more than one condition)\n    &amp;&amp; user.accountActive\n    &amp;&amp; !user.hasDiscount\n    || user.orders === 1                    // +1 (change of operator in condition)\n}\n</pre>\n<p><strong>Break down large functions.</strong></p>\n<h4>Noncompliant code example</h4>\n<p>For example, consider a function that calculates the total price of a shopping cart, including sales tax and shipping.\n  <br>\n  <em>Note:</em> The code is simplified here, to illustrate the purpose. Please imagine there is more happening in the <code>for</code> loops.</p>\n<pre data-diff-id=\"3\" data-diff-type=\"noncompliant\">\nfunction calculateTotal(cart) {\n  let total = 0;\n  for (let i = 0; i &lt; cart.length; i++) {       // +1 (for)\n    total += cart[i].price;\n  }\n\n  // calculateSalesTax\n  for (let i = 0; i &lt; cart.length; i++) {       // +1 (for)\n    total += 0.2 * cart[i].price;\n  }\n\n  //calculateShipping\n  total += 5 * cart.length;\n\n  return total;\n}\n</pre>\n<p>This function could be refactored into smaller functions: The complexity is spread over multiple functions and the complex\n<code>calculateTotal</code> has now a complexity score of zero.</p>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"3\" data-diff-type=\"compliant\">\nfunction calculateTotal(cart) {\n  let total = calculateSubtotal(cart);\n  total += calculateSalesTax(cart);\n  total += calculateShipping(cart);\n  return total;\n}\n\nfunction calculateSubtotal(cart) {\n  let subTotal = 0;\n  for (const item of cart) {        // +1 (for)\n    subTotal += item.price;\n  }\n  return subTotal;\n}\n\nfunction calculateSalesTax(cart) {\n  let salesTax = 0;\n  for (const item of cart) {        // +1 (for)\n    salesTax += 0.2 * item.price;\n  }\n  return salesTax;\n}\n\nfunction calculateShipping(cart) {\n  return 5 * cart.length;\n}\n</pre>\n<p><strong>Avoid deep nesting by returning early.</strong></p>\n<h4>Noncompliant code example</h4>\n<p>The below code has a cognitive complexity of 6.</p>\n<pre data-diff-id=\"4\" data-diff-type=\"noncompliant\">\nfunction calculateDiscount(price, user) {\n  if (isEligibleForDiscount(user)) {  // +1 ( if )\n    if (user?.hasMembership) {        // +2 ( nested if )\n      return price * 0.9;\n  } else if (user?.orders === 1 ) {   // +1 ( else )\n          return price * 0.95;\n    } else {                          // +1 ( else )\n      return price;\n    }\n  } else {                            // +1 ( else )\n    return price;\n  }\n}\n</pre>\n<h4>Compliant solution</h4>\n<p>Checking for the edge case first flattens the <code>if</code> statements and reduces the cognitive complexity to 3.</p>\n<pre data-diff-id=\"4\" data-diff-type=\"compliant\">\nfunction calculateDiscount(price, user) {\n    if (!isEligibleForDiscount(user)) {  // +1 ( if )\n      return price;\n    }\n    if (user?.hasMembership) {           // +1 ( if )\n      return price * 0.9;\n    }\n    if (user?.orders === 1) {            // +1 ( if )\n      return price * 0.95;\n    }\n    return price;\n}\n</pre>\n<p><strong>Use the optional chaining operator to access data.</strong></p>\n<p>In the below code, the cognitive complexity is increased due to the multiple checks required to access the manufacturer’s name. This can be\nsimplified using the optional chaining operator.</p>\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"noncompliant\">\nlet manufacturerName = null;\n\nif (product &amp;&amp; product.details &amp;&amp; product.details.manufacturer) { // +1 (if) +1 (multiple condition)\n    manufacturerName = product.details.manufacturer.name;\n}\nif (manufacturerName) { // +1 (if)\n  console.log(manufacturerName);\n} else {\n  console.log('Manufacturer name not found');\n}\n</pre>\n<h4>Compliant solution</h4>\n<p>The optional chaining operator will return <code>undefined</code> if any reference in the chain is <code>undefined</code> or <code>null</code>,\navoiding multiple checks:</p>\n<pre data-diff-id=\"2\" data-diff-type=\"compliant\">\nlet manufacturerName = product?.details?.manufacturer?.name;\n\nif (manufacturerName) { // +1 (if)\n  console.log(manufacturerName);\n} else {\n  console.log('Manufacturer name not found');\n}\n</pre>\n<h3>Pitfalls</h3>\n<p>As this code is complex, ensure that you have unit tests that cover the code before refactoring.</p>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when the code cognitive complexity of a function is above a certain threshold.</p>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>Sonar - <a href=\"https://www.sonarsource.com/docs/CognitiveComplexity.pdf\">Cognitive Complexity</a></li>\n</ul>\n<h3>Articles &amp; blog posts</h3>\n<ul>\n  <li>Sonar Blog - <a href=\"https://www.sonarsource.com/blog/5-clean-code-tips-for-reducing-cognitive-complexity/\">5 Clean Code Tips for Reducing\n  Cognitive Complexity</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "FOCUSED",
+    "cleanCodeAttributeCategory": "ADAPTABLE",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "HIGH"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S4043",
+    "repo": "typescript",
+    "name": "Array-mutating methods should not be used misleadingly",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "type-dependent"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#copying_methods_and_mutating_methods\">Array copying\n  methods and mutating methods</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse\">Array.prototype.reverse()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort\">Array.prototype.sort()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toReversed\">Array.prototype.toReversed()</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted\">Array.prototype.toSorted()</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax\">Spread syntax\n  (<code>...</code>)</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice\">Array.prototype.slice()</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>In JavaScript, some <code>Array</code> methods do not mutate the existing array that the method was called on, but instead return a new array.\nOther methods mutate the array, and their return value differs depending on the method.</p>\n<p><code>reverse</code> and <code>sort</code> are mutating methods and, in addition, return the altered version. This rule raises an issue when the\nreturn values of these methods are assigned, which could lead maintainers to overlook the fact that the original array has been modified.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst reversed = a.reverse(); // Noncompliant: mutating method, no need to assign return value\nconst sorted = b.sort(); // Noncompliant: mutating method, no need to assign return value\n</pre>\n<p>Remove the assignment, so that the intent of mutating the original array is clear.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\na.reverse();\nb.sort();\n</pre>\n<p>Or use non-mutating alternatives <code>toReversed</code> and <code>toSorted</code>.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = a.toReversed();\nconst sorted = b.toSorted();\n</pre>\n<p>Alternatively, change a mutating method into a non-mutating alternative using the spread syntax (<code>…​</code>).</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = [...a].reverse();\nconst sorted = [...b].sort();\n</pre>\n<p>Or <code>slice()</code> to create a copy first.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst reversed = a.slice().reverse();\nconst sorted = b.slice().sort();\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S4624",
+    "repo": "typescript",
+    "name": "Template literals should not be nested",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "es2015",
+      "brain-overload",
+      "editable-source",
+      "confusing"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "10min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "10min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Template literals, also known as template strings, allow for string interpolation and multiline strings in JavaScript. They provide a more\nconvenient and flexible way to work with strings compared to traditional string concatenation or manipulation.</p>\n<p>Template literals are delimited with the backtick <code>(`)</code> character. They are a convenient way to include variables or expressions within\na string using placeholders <code>`${expression}`</code> in the string and evaluate them dynamically.</p>\n<p>However, nesting template literals can make the code less readable. With each nested template literal, the code becomes more complex and harder to\nunderstand. It can be challenging to keep track of the opening and closing backticks and properly escape characters if needed.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst color = \"red\";\nconst count = 3;\nconst message = `I have ${color ? `${count} ${color}` : count} apples`; // Noncompliant: nested template strings not easy to read\n</pre>\n<p>In such situations, moving the nested template into a separate statement is preferable.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst color = \"red\";\nconst count = 3;\nconst apples = color ? `${count} ${color}` : count;\nconst message = `I have ${apples} apples`;\n</pre>\n<p>The rule makes an exception for nested template literals spanning multiple lines. It allows you to visually separate different sections and gives\nyou more freedom in formatting your text, including line breaks, indentation, and other formatting elements, enhancing readability.</p>\n<pre>\nconst name = 'John';\nconst age = 42;\n\nconst message = `Hello ${name}!\nYou are ${age} years old.\n${`This is a nested template literal.`}\nIt can span multiple lines.`;\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals\">Template literals (Template\n  strings)</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6479",
+    "repo": "typescript",
+    "name": "JSX list components should not use array indexes as key",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "performance",
+      "react",
+      "jsx"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>React uses keys to preserve the identity of list items between renders. When a list item is inserted, removed, or reordered, using the array index\nas the key can make React associate the wrong DOM node or component instance with an item. This can mix up input values, focus, and component-local\nstate.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nfunction Blog(props) {\n  return (\n    &lt;ul&gt;\n      {props.posts.map((post, index) =&gt;\n        &lt;li key={index}&gt; &lt;!-- Noncompliant: Reordering 'posts' can preserve the wrong state on the wrong item --&gt;\n          {post.title}\n        &lt;/li&gt;\n      )}\n    &lt;/ul&gt;\n  );\n}\n</pre>\n<p>To fix it, use a string or a number derived from the data that identifies the item. The key must be stable across renders and unique among\nsiblings.</p>\n<p>If the data comes from a database, database IDs are usually the best option. Otherwise, create the ID when the item is created and store it with\nthe data. Do not generate a new key while rendering.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nfunction Blog(props) {\n  return (\n    &lt;ul&gt;\n      {props.posts.map((post) =&gt;\n        &lt;li key={post.id}&gt;\n          {post.title}\n        &lt;/li&gt;\n      )}\n    &lt;/ul&gt;\n  );\n}\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/jsx-eslint/eslint-plugin-react\">eslint-plugin-react</a> - Rule <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-react/blob/HEAD/docs/rules/no-array-index-key.md\">no-array-index-key</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/learn/rendering-lists#rules-of-keys\">Rendering lists</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/learn/preserving-and-resetting-state\">Preserving and resetting state</a></li>\n</ul>\n<h3>Related rules</h3>\n<ul>\n  <li><a href='/coding_rules#rule_key=javascript%3AS6477'>S6477</a> - JSX list components should have a key property</li>\n  <li><a href='/coding_rules#rule_key=javascript%3AS6486'>S6486</a> - JSX list components keys should match up between renders</li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6481",
+    "repo": "typescript",
+    "name": "React Context Provider values should have stable identities",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "performance",
+      "react",
+      "jsx"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/jsx-eslint/eslint-plugin-react\">eslint-plugin-react</a> - Rule <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-react/blob/HEAD/docs/rules/jsx-no-constructed-context-values.md\">jsx-no-constructed-context-values</a></li>\n  <li>React Documentation - <a href=\"https://reactjs.org/docs/context.html#caveats\">Context Caveats</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/learn/passing-data-deeply-with-context\">Passing Data Deeply with Context</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/reference/react/useCallback\"><code>useCallback</code> hook</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/reference/react/useMemo\"><code>useMemo</code> hook</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Whenever the <code>value</code> property of React context changes, React will rerender the context and all its child nodes and consumers. In\nJavaScript, things like object literals or function expressions will create a new identity every time they are evaluated. Such constructions should\nnot be directly used as context <code>value</code> because React will always consider they have changed. This can significantly impact\nperformance.</p>\n<pre>\nfunction Component() {\n  return (\n    &lt;SomeContext.Provider value={{foo: 'bar'}}&gt; { /* Noncompliant: value is an object literal */ }\n      &lt;SomeComponent /&gt;\n    &lt;/SomeContext.Provider&gt;\n  );\n}\n</pre>\n<p>To avoid additional rerenders wrap the value in a <code>useMemo</code> hook. Use the <code>useCallback()</code> hook if the value is a\nfunction.</p>\n<pre>\nfunction Component() {\n  const obj = useMemo(() =&gt; ({foo: 'bar'}), []); // value is cached by useMemo\n  return (\n    &lt;SomeContext.Provider value={obj}&gt; { /* Compliant */ }\n      &lt;SomeComponent /&gt;\n    &lt;/SomeContext.Provider&gt;\n  );\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6551",
+    "repo": "typescript",
+    "name": "Objects and classes converted or coerced to strings should define a \"toString()\" method",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "string",
+      "type-dependent",
+      "object"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "introduction",
+        "content": "<p>When calling <code>toString()</code> or coercing into a string an object that doesn’t implement its own <code>toString</code> method, it returns\n<code>[object Object]</code> which is often not what was intended.</p>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://typescript-eslint.io/\">typescript-eslint</a> - Rule <a\n  href=\"https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/no-base-to-string.mdx\">no-base-to-string</a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString\"><code>Object.prototype.toString()</code></a></li>\n</ul>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>You can simply define a <code>toString()</code> method for the object or class.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nclass Foo {};\nconst foo = new Foo();\n\nfoo + ''; // Noncompliant - evaluates to \"[object Object]\"\n`Foo: ${foo}`; // Noncompliant - evaluates to \"Foo: [object Object]\"\nfoo.toString(); // Noncompliant - evaluates to \"[object Object]\"\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nclass Foo {\n  toString() {\n    return 'Foo';\n  }\n}\nconst foo = new Foo();\n\nfoo + '';\n`Foo: ${foo}`;\nfoo.toString();\n</pre>\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"noncompliant\">\nconst foo = {};\nfoo + ''; // Noncompliant - evaluates to \"[object Object]\"\n`Foo: ${foo}`; // Noncompliant - evaluates to \"Foo: [object Object]\"\nfoo.toString(); // Noncompliant - evaluates to \"[object Object]\"\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"compliant\">\nconst foo = {\n  toString: () =&gt; {\n    return 'Foo';\n  }\n}\nfoo + '';\n`Foo: ${foo}`;\nfoo.toString();\n</pre>\n<h2>Exceptions</h2>\n<p>This rule does not raise an issue when a direct <code>toString()</code> call is the first statement in a branch that checks the same object against\n<code>Object.prototype.toString</code>.</p>\n<pre>\nfunction render(value) {\n  if (value.toString !== Object.prototype.toString) {\n    return value.toString();\n  }\n\n  return undefined;\n}\n\nfunction renderOrFallback(value, fallback) {\n  if (value.toString === Object.prototype.toString) {\n    return fallback;\n  } else {\n    return value.toString();\n  }\n}\n</pre>\n<p>This rule also does not raise an issue when the result of a direct <code>toString()</code> call is stored in a constant, immediately checked\nagainst <code>[object Object]</code>, and only the non-default result is used. The same applies when the default result is handled in the\n<code>if</code> branch and the validated value is used in <code>else</code>.</p>\n<pre>\nfunction pretty(data) {\n  if (data &amp;&amp; typeof data === 'object' &amp;&amp; typeof data.toString === 'function') {\n    const rendered = data.toString();\n    if (rendered !== '[object Object]') {\n      return rendered;\n    }\n  }\n\n  return data;\n}\n</pre>\n<p>This rule also does not raise an issue when a value is used in a string context inside a branch where <code>typeof</code> checks prove that the\nvalue cannot be an object. This includes branches that accept only primitive values and <code>else</code> branches reached after handling the object\ncase.</p>\n<pre>\nfunction renderValue(value) {\n  if (\n    typeof value === 'string' ||\n    typeof value === 'number' ||\n    typeof value === 'bigint'\n  ) {\n    return 'value=' + value;\n  }\n\n  return undefined;\n}\n\nfunction renderFallback(value) {\n  if (typeof value === 'object') {\n    return '';\n  } else {\n    return `Unexpected value: ${value}`;\n  }\n}\n</pre>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>When using an object in a string context, a developer wants to get the string representation of the state of an object, so obtaining <code>[object\nObject]</code> is probably not the intended behaviour and might even denote a bug.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "LOGICAL",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6571",
+    "repo": "typescript",
+    "name": "Type constituents of unions and intersections should not be redundant",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "type-dependent",
+      "redundant"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>When defining a union or intersection in TypeScript, it is possible to mistakenly include type constituents that encompass other constituents, that\ndon’t have any effect, or that are more restrictive. For instance,</p>\n<ul>\n  <li>The type <code>something</code> in <code>any | something</code> is redundant because <code>any</code> covers all possible types, whatever\n  <code>something</code> is.</li>\n  <li>The types <code>never</code> in unions like <code>never | something</code> or <code>unknown</code> in intersections like <code>unknown &amp;\n  something</code> are effectless.</li>\n  <li>More restrictive types in intersections like the literal type <code>1</code> in <code>1 &amp; number</code> reduce the set of possible values to\n  specific ones.</li>\n</ul>\n<p>Eliminating redundant types from a union or intersection type simplifies the code and enhances its readability. Moreover, it provides a clearer\nrepresentation of the actual values that a variable can hold.</p>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>The redundant and overridden types should be removed.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\ntype UnionWithAny = any | 'redundant'; // Noncompliant\ntype UnionWithNever = never | 'override'; // Noncompliant\ntype UnionWithLiteral = number | 1; // Noncompliant\n\ntype IntersectionWithAny = any &amp; 'redundant'; // Noncompliant\ntype IntersectionWithUnknown = string &amp; unknown; // Noncompliant\ntype IntersectionWithLiteral = string &amp; 'override'; // Noncompliant\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\ntype UnionWithAny = any;\ntype UnionWithNever = never;\ntype UnionWithLiteral = number;\n\ntype IntersectionWithAny = any;\ntype IntersectionWithUnknown = string;\ntype IntersectionWithLiteral = 'override';\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://typescript-eslint.io/\">typescript-eslint</a> - Rule <a\n  href=\"https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/no-redundant-type-constituents.mdx\">no-redundant-type-constituents</a></li>\n  <li>TypeScript Documentation - <a href=\"https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types\">Union Types</a></li>\n  <li>TypeScript Documentation - <a href=\"https://www.typescriptlang.org/docs/handbook/2/objects.html#intersection-types\">Intersection Types</a></li>\n</ul>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>In unions and intersections, redundant types should not be used.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6582",
+    "repo": "typescript",
+    "name": "Optional chaining should be preferred",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "type-dependent",
+      "es2020"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Optional chaining allows to safely access nested properties or methods of an object without having to check for the existence of each intermediate\nproperty manually. It provides a concise and safe way to access nested properties or methods without having to write complex and error-prone\n<code>null</code>/<code>undefined</code> checks.</p>\n<p>This rule flags logical operations that can be safely replaced with the <code>?.</code> optional chaining operator.</p>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://typescript-eslint.io/\">typescript-eslint</a> - Rule <a\n  href=\"https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/prefer-optional-chain.mdx\">prefer-optional-chain</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining\">Optional\n  chaining</a></li>\n</ul>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<p>Replace with <code>?.</code> optional chaining the logical expression that checks for <code>null</code>/<code>undefined</code> before accessing the\nproperty of an object, the element of an array, or calling a function.</p>\n\n<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nfunction foo(obj, arr, fn) {\n    if (obj &amp;&amp; obj.value) {}\n    if (arr &amp;&amp; arr[0])    {}\n    if (fn &amp;&amp; fn(42))     {}\n}\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nfunction foo(obj, arr, fn) {\n    if (obj?.value) {}\n    if (arr?.[0])   {}\n    if (fn?.(42))   {}\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6594",
+    "repo": "typescript",
+    "name": "\"RegExp.exec()\" should be preferred over \"String.match()\"",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "regex",
+      "editable-source",
+      "type-dependent"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p><code>String.match()</code> behaves the same way as <code>RegExp.exec()</code> when the regular expression does not include the global flag\n<code>g</code>. While they work the same, <code>RegExp.exec()</code> can be slightly faster than <code>String.match()</code>. Therefore, it should be\npreferred for better performance.</p>\n<p>The rule reports an issue on a call to <code>String.match()</code> whenever it can be replaced with semantically equivalent\n<code>RegExp.exec()</code>.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\n'foo'.match(/bar/);\n</pre>\n<p>Rewrite the pattern matching from <code>string.match(regex)</code> to <code>regex.exec(string)</code>.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\n/bar/.exec('foo');\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/String/match\"><code>String.prototype.match()</code></a></li>\n  <li>MDN web docs - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec\"><code>RegExp.prototype.exec()</code></a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6644",
+    "repo": "typescript",
+    "name": "Ternary operator should not be used instead of simpler alternatives",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Ternary operator should not be used to select between two boolean values, or instead of a logical <code>OR</code> operation. Ternary expressions\nare often difficult to read, so if a simpler syntax exists, it should be used instead of a ternary expression. This happens when</p>\n<ul>\n  <li>the expression returns two boolean values</li>\n</ul>\n<pre>\nlet isGood = value &gt; 0 ? true : false; // Non-compliant, replace with value &gt; 0\nlet isBad = value &gt; 0 ? false : true; // Non-compliant, replace with !(value &gt; 0)\n</pre>\n<ul>\n  <li>the same value is used for both the conditional test and the consequent</li>\n</ul>\n<pre>\nlet a = x ? x : y;  // Non-compliant, replace with x || y\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://eslint.org\">eslint</a> - Rule <a href=\"https://eslint.org/docs/latest/rules/no-unneeded-ternary\">no-unneeded-ternary</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator\">Ternary\n  operator</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT\">Logical NOT (!)</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR\">Logical OR (||)</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6754",
+    "repo": "typescript",
+    "name": "The return value of \"useState\" should be destructured and named symmetrically",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "react"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/jsx-eslint/eslint-plugin-react\">eslint-plugin-react</a> - Rule <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-react/blob/HEAD/docs/rules/hook-use-state.md\">hook-use-state</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/reference/react/useState\">useState</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>In React, <code>useState</code> is a hook that allows functional components to manage and update state in a manner similar to class components.\nWhen you use the <code>useState</code> hook, it returns an array with two values: the current state value and a function to update that state\nvalue.</p>\n<p>Destructuring these values and naming them symmetrically (i.e., using consistent variable names for both the current state and the update function)\nis a recommended best practice:</p>\n<ul>\n  <li>When you destructure and name the values symmetrically, it makes your code more readable and self-explanatory. Other developers can quickly\n  understand the purpose of each variable without needing to refer back to the <code>useState</code> function call.</li>\n  <li>Following a naming convention where the state variable and its corresponding update function have similar names is a common practice in the\n  React community. It helps maintain consistency and makes it easier for others to understand your code.</li>\n  <li>If you don’t name the variables symmetrically, it can lead to confusion, especially in larger components or when multiple state variables are\n  involved. You might accidentally use the wrong variable when updating the state, which can result in bugs that are hard to track down.</li>\n</ul>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nimport { useState } from 'react';\nfunction MyComponent() {\n  const [count, update] = useState(0); // Noncompliant\n  return &lt;div onClick={() =&gt; update(count + 1)}&gt;{count}&lt;/div&gt;\n}\n</pre>\n<p>You should destructure the return value of <code>useState</code> calls in terms of the current state and a function to update that state and name\nthem symmetrically.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nimport { useState } from 'react';\nfunction MyComponent() {\n  const [count, setCount] = useState(0);\n  return &lt;div onClick={() =&gt; setCount(count + 1)}&gt;{count}&lt;/div&gt;\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "IDENTIFIABLE",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6759",
+    "repo": "typescript",
+    "name": "React props should be read-only",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "type-dependent",
+      "react"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li>React Documentation - <a href=\"https://react.dev/learn/passing-props-to-a-component\">Passing Props to a Component</a></li>\n  <li>TypeScript Documentation - <a href=\"https://www.typescriptlang.org/docs/handbook/utility-types.html#readonlytype\">Readonly&lt;Type&gt;</a></li>\n  <li>TypeScript Documentation - <a href=\"https://www.typescriptlang.org/docs/handbook/2/classes.html#readonly\">readonly</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>React props should be read-only because it helps to enforce the principle of immutability in React functional components. By making props\nread-only, you ensure that the data passed from a parent component to a child component cannot be modified directly by the child component. This helps\nmaintain a clear data flow and prevents unexpected side effects.</p>\n<p>If props were mutable, child components could modify the props directly, leading to unpredictable behavior and making it harder to track down bugs.\nBy enforcing read-only props, React promotes a more predictable and maintainable codebase. Additionally, read-only props enable performance\noptimizations in React’s rendering process by avoiding unnecessary re-renders of components.</p>\n<p>Overall, enforcing read-only props in React helps improve code reliability, maintainability, and performance.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\ninterface Props {\n  name: string;\n}\n\nfunction Welcome(props: Props) { // Noncompliant: The component props are not read-only\n  return &lt;div&gt;Hello {props.name}&lt;/div&gt;;\n}\n</pre>\n<p>You should use TypeScript’s utility type <code>Readonly</code> to make your functional component props read-only.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\ninterface Props {\n  name: string;\n}\n\nfunction Welcome(props: Readonly&lt;Props&gt;) {\n  return &lt;div&gt;Hello {props.name}&lt;/div&gt;;\n}\n</pre>\n<p>Alternatively, you can use TypeScript’s modifier <code>readonly</code> to mark all the props of your functional component individually as\nread-only.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\ninterface Props {\n  readonly name: string;\n}\n\nfunction Welcome(props: Props) {\n  return &lt;div&gt;Hello {props.name}&lt;/div&gt;;\n}\n</pre>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6767",
+    "repo": "typescript",
+    "name": "Unused React typed props should be removed",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "editable-source",
+      "type-dependent",
+      "react"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "how_to_fix",
+        "content": "<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"noncompliant\">\nimport React from 'react';\n\ntype Props = {\n  name: string;\n}\n\nclass Hello extends React.Component&lt;Props&gt; {\n  render() {\n    return &lt;div&gt;Hello&lt;/div&gt;;\n  }\n}\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"compliant\">\nimport React from 'react';\n\ntype Props = {\n  name: string;\n};\n\nclass Hello extends React.Component&lt;Props&gt; {\n  render() {\n    return &lt;div&gt;Hello {this.props.name}&lt;/div&gt;;\n  }\n}\n</pre>\n<h4>Compliant solution — props consumed via helper delegation</h4>\n<pre>\nimport React from 'react';\nimport { getStyle } from './helpers';\n\ntype BarProps = {\n  barOffset?: number[];\n  barRatio?: number;\n};\n\nclass Bar extends React.Component&lt;BarProps&gt; {\n  render() {\n    const style = getStyle(this.props); // props consumed inside helper\n    return &lt;path style={style} /&gt;;\n  }\n}\n</pre>\n<h4>Compliant solution — props consumed via typed decorator factory callbacks</h4>\n<pre>\nimport React from 'react';\n\ndeclare function track&lt;P&gt;(\n  mapper: (props: P) =&gt; Record&lt;string, unknown&gt;,\n): &lt;TComponent&gt;(target: TComponent) =&gt; TComponent;\n\ntype TrackingProps = {\n  contextModule: string;\n  userId: string;\n};\n\nfunction TrackedPanel(props: TrackingProps) {\n  return &lt;div /&gt;;\n}\n\ntrack((trackedProps: TrackingProps) =&gt; ({\n  context_module: trackedProps.contextModule,\n  user_id: trackedProps.userId,\n}))(TrackedPanel);\n</pre>",
+        "context": {
+          "displayName": "TypeScript",
+          "key": "typescript"
+        }
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/jsx-eslint/eslint-plugin-react\">eslint-plugin-react</a> - Rule <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-react/blob/HEAD/docs/rules/no-unused-prop-types.md\">no-unused-prop-types</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/learn/passing-props-to-a-component\">Passing Props to a Component</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/reference/react/Component#static-proptypes\">static propTypes</a></li>\n  <li>React Documentation - <a href=\"https://react.dev/learn/typescript#typescript-with-react-components\">TypeScript with React Components</a></li>\n  <li>ESLint React Plugin Known Limitations - <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md#known-issueslimitations\">https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md#known-issueslimitations</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>Leaving unused props in a React component can make the code harder to understand and maintain. Other developers may wonder why certain props are\npassed to a component if they are not used. Unused props can also increase the size of the component’s memory footprint and impact performance. This\nis especially true if the unused props are large objects or arrays. Furthermore, if a prop is unused, it may indicate that the developer did not\ncomplete the implementation as he intended initially or made a mistake while writing the component.</p>\n<p>To avoid these issues, you should remove any unused props from React components. This helps keep the codebase clean, improves performance, and\nenhances code readability.</p>\n<h3>Known Issues/Limitations</h3>\n<dl>\n  <dt>False Positives SFC</dt>\n  <dd>\n    <p>Stateless Function Components (SFCs) accept props as an argument and return a JSX expression. Even if the function gets called from a\n    component, the props that are only used inside the component are not be considered used by a component. See references for more details.</p>\n  </dd>\n  <dt>Props consumed inside helper functions</dt>\n  <dd>\n    <p>When the entire <code>this.props</code> or <code>props</code> object is passed as an argument to a helper function (e.g.,\n    <code>getStyle(this.props)</code>), individual props consumed inside that function are considered used and will not be reported.</p>\n  </dd>\n  <dt>Props consumed by typed decorator factory callbacks</dt>\n  <dd>\n    <p>In TypeScript, when a component is passed to the result of a decorator factory call and the callback takes the component props as its first\n    typed parameter (for example, <code>trackprops: Props) ⇒ ({ user_id: props.userId }(Component)</code>), props read inside that callback, or\n    forwarded from it to a helper function, are considered used and will not be reported.</p>\n  </dd>\n</dl>"
+      },
+      {
+        "key": "how_to_fix",
+        "content": "<h4>Noncompliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nimport PropTypes from 'prop-types';\nimport React from 'react';\n\nclass Hello extends React.Component {\n  render() {\n    return (\n      &lt;h1&gt;Hello&lt;/h1&gt;\n    );\n  }\n}\n\nHello.propTypes = {\n  name: PropTypes.string\n};\n</pre>\n<h4>Compliant solution</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nimport PropTypes from 'prop-types';\nimport React from 'react';\n\nclass Hello extends React.Component {\n  render() {\n    return (\n      &lt;h1&gt;Hello {this.props.name}&lt;/h1&gt;\n    );\n  }\n}\n\nHello.propTypes = {\n  name: PropTypes.string\n};\n</pre>",
+        "context": {
+          "displayName": "PropTypes",
+          "key": "proptypes"
+        }
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S6819",
+    "repo": "typescript",
+    "name": "Prefer tag over ARIA role",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "accessibility",
+      "react"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>ARIA (Accessible Rich Internet Applications) roles can make custom user interface patterns more accessible, but they should not be used to recreate\nsemantics that HTML already provides. When a native HTML element already matches the intended semantics and behavior, prefer that element over adding\na role to a generic container.</p>\n<p>For example, instead of using a div element with a button role (<code>&lt;div role=\"button\"&gt;Click me&lt;/div&gt;</code>), use a button element\n(<code>&lt;button&gt;Click me&lt;/button&gt;</code>).</p>\n<p>Using the native element preserves built-in semantics, browser behavior, keyboard interaction, and assistive technology support with less code to\nmaintain. ARIA is still appropriate when no suitable HTML element exists for the pattern you need, or when the available HTML elements do not fit the\ncomponent’s structure or behavior.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\n&lt;div role=\"button\" onClick={handleClick} /* Noncompliant */&gt;Click me&lt;/div&gt;\n</pre>\n<p>Replace the ARIA role with an appropriate HTML tag.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\n&lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;\n</pre>\n<table>\n  <tbody>\n    <tr>\n      <td>Note</td>\n      <td>\n        <p>The suggested replacement is generated from a role-to-tag mapping. For roles such as <code>group</code>, <code>dialog</code>, or a named\n        <code>region</code>, check that the suggested tag matches the intended semantics before applying it mechanically.</p>\n      </td>\n    </tr>\n  </tbody>\n</table>\n<h2>Exceptions</h2>\n<p>Some valid ARIA patterns are intentionally ignored when there is no direct native replacement, for example custom components, inline SVG icons, and\nstructural roles used inside composite widgets. Composite widget containers are ignored when their related child roles are rendered as part of the\nsame widget.</p>\n<p>Inline SVG elements with <code>role=\"img\"</code> are not raised when they already expose an accessible name through a non-empty\n<code>aria-label</code>, <code>aria-labelledby</code>, or direct <code>&lt;title&gt;</code> child. This is a valid icon pattern when the SVG needs to\nstay inline.</p>\n<pre>\n&lt;svg role=\"img\" aria-label=\"Settings\" viewBox=\"0 0 24 24\"&gt;\n  &lt;path d=\"M10 10\" /&gt;\n&lt;/svg&gt;\n\n&lt;span id=\"arrow-label\" hidden&gt;Arrow Down&lt;/span&gt;\n&lt;svg role=\"img\" aria-labelledby=\"arrow-label\" viewBox=\"0 0 24 24\"&gt;\n  &lt;path d=\"M12 4v16\" /&gt;\n&lt;/svg&gt;\n\n&lt;svg role=\"img\" viewBox=\"0 0 24 24\"&gt;\n  &lt;title&gt;Arrow Down&lt;/title&gt;\n  &lt;path d=\"M12 4v16\" /&gt;\n&lt;/svg&gt;\n</pre>\n<p>Generic containers with <code>role=\"group\"</code> are not raised when they represent a control cluster or a structural subgroup inside a composite\nwidget. For grouped listboxes, the group must be inside a <code>listbox</code> and must render <code>option</code> descendants that are not owned by a\nnested <code>listbox</code>. The rule keeps reporting when several form controls share one accessible name and <code>&lt;fieldset&gt;</code> is the\ncloser semantic alternative.</p>\n<pre>\n&lt;form&gt;\n  &lt;div role=\"group\" aria-label=\"View mode\"&gt;\n    &lt;button type=\"button\"&gt;Grid&lt;/button&gt;\n    &lt;button type=\"button\"&gt;List&lt;/button&gt;\n  &lt;/div&gt;\n&lt;/form&gt;\n\n&lt;div role=\"listbox\"&gt;\n  &lt;div role=\"group\" aria-label=\"Cities\"&gt;\n    {cities.map(city =&gt; (\n      &lt;div role=\"option\" key={city}&gt;\n        {city}\n      &lt;/div&gt;\n    ))}\n  &lt;/div&gt;\n&lt;/div&gt;\n</pre>"
+      },
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/jsx-eslint/eslint-plugin-jsx-a11y\">eslint-plugin-jsx-a11y</a> - Rule <a\n  href=\"https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/HEAD/docs/rules/prefer-tag-over-role.md\">prefer-tag-over-role</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques\">Using ARIA: Roles, states, and\n  properties</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles\">ARIA roles (Reference)</a></li>\n</ul>\n<h3>Standards</h3>\n<ul>\n  <li>W3C - <a href=\"https://www.w3.org/TR/wai-aria-1.2/\">Accessible Rich Internet Applications (WAI-ARIA) 1.2</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S7750",
+    "repo": "typescript",
+    "name": "Array methods \".find()\" and \".findLast()\" should be preferred over \".filter()\" for single element retrieval",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "readability",
+      "performance",
+      "es2015",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "root_cause",
+        "content": "<p>Using <code>.filter()</code> to find a single element is inefficient and unclear in intent.</p>\n<p>The <code>.filter()</code> method processes the entire array and creates a new array containing all matching elements. When you only need the first\nor last matching element, this approach has several problems:</p>\n<ul>\n  <li><strong>Performance overhead</strong>: <code>.filter()</code> continues processing even after finding matches, while <code>.find()</code> stops\n  immediately upon finding the first match</li>\n  <li><strong>Memory waste</strong>: An intermediate array is created unnecessarily</li>\n  <li><strong>Unclear intent</strong>: The code suggests you want multiple elements when you actually want just one</li>\n</ul>\n<p>The <code>.find()</code> method is specifically designed for finding the first matching element, and <code>.findLast()</code> for finding the last\nmatching element. Both methods:</p>\n<ul>\n  <li>Stop execution as soon as they find a match (or reach the end)</li>\n  <li>Return the element directly, not wrapped in an array</li>\n  <li>Make the code’s intent crystal clear</li>\n</ul>\n<p>This pattern is especially problematic in performance-critical code or when working with large arrays, where the unnecessary processing can become\na bottleneck.</p>\n<h3>What is the potential impact?</h3>\n<p>Using <code>.filter()</code> instead of <code>.find()</code> or <code>.findLast()</code> can lead to unnecessary performance overhead, especially\nwith large arrays. The code also becomes less readable and maintainable, as the intent to find a single element is obscured by the filtering\noperation.</p>\n<h3>How to fix?</h3>\n<p>Replace <code>.filter()</code> followed by <code>[0]</code> or <code>.shift()</code> with <code>.find()</code> to get the first matching element\nmore efficiently.</p>\n<h4>Non-compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst item = array.filter(x =&gt; isUnicorn(x))[0]; // Noncompliant\nconst item2 = array.filter(x =&gt; isUnicorn(x)).shift(); // Noncompliant\n</pre>\n<h4>Compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst item = array.find(x =&gt; isUnicorn(x));\nconst item2 = array.find(x =&gt; isUnicorn(x));\n</pre>\n<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/sindresorhus/eslint-plugin-unicorn#readme\">eslint-plugin-unicorn</a> - Rule <a\n  href=\"https://github.com/sindresorhus/eslint-plugin-unicorn/blob/HEAD/docs/rules/prefer-array-find.md\">prefer-array-find</a></li>\n  <li>MDN - Array.prototype.find() - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find\">Official\n  documentation for the Array.find() method</a></li>\n  <li>MDN - Array.prototype.findLast() - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findLast\">Official documentation for the\n  Array.findLast() method</a></li>\n  <li>MDN - Array.prototype.filter() - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter\">Official documentation for the Array.filter()\n  method</a></li>\n</ul>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>This is an issue when using <code>.filter()</code> followed by array access methods like <code>[0]</code>, <code>.at(-1)</code>,\n<code>.shift()</code>, <code>.pop()</code>, or destructuring to get a single element from an array.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S7754",
+    "repo": "typescript",
+    "name": "Use \".some()\" instead of \".filter().length\" checks or \".find()\" for existence testing",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "readability",
+      "performance",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when checking if any array element matches a condition using <code>.filter().length</code>, <code>.find()</code>,\n<code>.findLast()</code>, <code>.findIndex()</code>, or <code>.findLastIndex()</code> instead of the more appropriate <code>.some()</code> method.</p>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>JavaScript’s <code>Array.prototype.some()</code> method is specifically designed to test whether at least one element in an array passes a provided\ntest function. Using other array methods for this purpose creates several problems:</p>\n<p><strong>Semantic clarity</strong>: Methods like <code>.filter().length &gt; 0</code> or <code>.find() !== undefined</code> obscure the intent. When\nyou read <code>.some(condition)</code>, it’s immediately clear that you’re checking for existence. Other patterns require mental parsing to understand\nthe purpose.</p>\n<p><strong>Performance implications</strong>: <code>.filter()</code> processes the entire array and creates a new array, even when you only need to\nknow if one element matches. <code>.some()</code> short-circuits and stops as soon as it finds the first matching element, making it more efficient\nfor large arrays.</p>\n<p><strong>Code maintainability</strong>: Using the wrong method for the job makes code harder to understand and maintain. Future developers\n(including yourself) need to spend extra time understanding why a more complex pattern was chosen over the straightforward <code>.some()</code>\nmethod.</p>\n<p><strong>Consistency</strong>: Using the semantically correct method makes your codebase more consistent and follows JavaScript best practices,\nimproving overall code quality.</p>\n<h3>What is the potential impact?</h3>\n<p>Using inappropriate array methods for existence checking reduces code readability and can impact performance, especially with large arrays. While\nnot a security issue, it makes code harder to maintain and understand, potentially leading to bugs during refactoring or when other developers work\nwith the code.</p>\n<h3>How to fix?</h3>\n<p>Replace <code>.filter().length</code> checks with <code>.some()</code> to test for element existence. This is more readable and efficient since\n<code>.some()</code> stops at the first match.</p>\n<h4>Non-compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst hasUnicorn = array.filter(element =&gt; isUnicorn(element)).length &gt; 0; // Noncompliant\nconst hasMatch = items.filter(item =&gt; item.active).length !== 0; // Noncompliant\n</pre>\n<h4>Compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst hasUnicorn = array.some(element =&gt; isUnicorn(element));\nconst hasMatch = items.some(item =&gt; item.active);\n</pre>\n<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/sindresorhus/eslint-plugin-unicorn#readme\">eslint-plugin-unicorn</a> - Rule <a\n  href=\"https://github.com/sindresorhus/eslint-plugin-unicorn/blob/HEAD/docs/rules/prefer-array-some.md\">prefer-array-some</a></li>\n  <li>MDN - Array.prototype.some() - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some\">Official\n  documentation for the Array.some() method</a></li>\n  <li>MDN - Array.prototype.filter() - <a\n  href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter\">Official documentation for the Array.filter()\n  method</a></li>\n  <li>MDN - Array.prototype.find() - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find\">Official\n  documentation for the Array.find() method</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S7780",
+    "repo": "typescript",
+    "name": "String literals with escaped backslashes should use `String.raw` template literals",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "readability",
+      "es2015",
+      "editable-source"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "introduction",
+        "content": "<p>An issue is raised when a string literal contains escaped backslashes (<code>\\\\</code>) that could be simplified using <code>String.raw</code>\ntemplate literals.</p>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>String literals with escaped backslashes can be difficult to read and maintain. Each backslash character must be escaped with another backslash,\ncreating sequences like <code>\\\\</code> that are hard to interpret at a glance.</p>\n<p>This problem is particularly common when working with:</p>\n<ul>\n  <li>File paths on Windows systems</li>\n  <li>Regular expression patterns</li>\n  <li>LaTeX or other markup that uses backslashes</li>\n  <li>Any string content that naturally contains backslash characters</li>\n</ul>\n<p>The <code>String.raw</code> template literal provides a cleaner alternative. It treats backslashes literally without requiring escaping, making the\ncode more readable and less error-prone. The intent becomes clearer, and there’s less chance of accidentally missing or adding extra backslashes\nduring maintenance.</p>\n<h3>What is the potential impact?</h3>\n<p>Using escaped backslashes instead of <code>String.raw</code> reduces code readability and increases the likelihood of errors when maintaining\nstring literals. While this doesn’t cause runtime issues, it makes the codebase harder to understand and modify correctly.</p>\n<h3>How to fix?</h3>\n<p>Replace string literals containing escaped backslashes with <code>String.raw</code> template literals. The backslashes inside the template literal\ndon’t need to be escaped.</p>\n<h4>Non-compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nconst filePath = \"C:\\\\Users\\\\Documents\\\\file.txt\"; // Noncompliant\n</pre>\n<h4>Compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nconst filePath = String.raw`C:\\Users\\Documents\\file.txt`;\n</pre>\n<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/sindresorhus/eslint-plugin-unicorn#readme\">eslint-plugin-unicorn</a> - Rule <a\n  href=\"https://github.com/sindresorhus/eslint-plugin-unicorn/blob/HEAD/docs/rules/prefer-string-raw.md\">prefer-string-raw</a></li>\n  <li>String.raw - MDN Web Docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/raw\">Official\n  documentation for the String.raw template literal tag</a></li>\n  <li>Template literals - MDN Web Docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals\">Comprehensive\n  guide to template literals in JavaScript</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CLEAR",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S7785",
+    "repo": "typescript",
+    "name": "Top-level await should be preferred over promise chains and async wrappers",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MAJOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "async",
+      "editable-source",
+      "type-dependent",
+      "es2022",
+      "esm-only",
+      "modernize"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when async operations are wrapped in immediately invoked function expressions, promise chains, or async functions that\nare called immediately at the top level.</p>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p>JavaScript’s top-level await feature allows you to use <code>await</code> directly at the module level without wrapping async operations in\nfunctions. This makes code cleaner and more readable.</p>\n<p>When you wrap async operations in immediately invoked function expressions (IIFEs) or create async functions just to call them immediately, you add\nunnecessary boilerplate code. This pattern was common before top-level await was available, but is no longer needed in modern JavaScript\nenvironments.</p>\n<p>The same applies to top-level promise chains such as <code>task().then(…​).catch(…​)</code>, which can be rewritten more directly with top-level\n<code>await</code> and <code>try</code>/<code>catch</code>.</p>\n<p>Using wrapper patterns can also make error handling more complex and may lead to unhandled promise rejections if not properly managed. Top-level\nawait provides a more straightforward approach to handling async operations at the module level.</p>\n<h3>What is the potential impact?</h3>\n<p>Using wrapper patterns or promise chains instead of top-level await reduces code readability and maintainability. It adds unnecessary complexity\nand boilerplate code that makes the intent less clear. In some cases, improper error handling in wrapper patterns can lead to unhandled promise\nrejections.</p>\n<h3>How to fix?</h3>\n<p>Replace immediately invoked async function expressions or top-level promise chains with top-level await.</p>\n<h4>Non-compliant code example</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"noncompliant\">\nfetch('config.json')\n  .then(response =&gt; response.json())\n  .then(config =&gt; applyConfig(config))\n  .catch(logError); // Noncompliant\n</pre>\n<h4>Compliant code example</h4>\n<pre data-diff-id=\"2\" data-diff-type=\"compliant\">\ntry {\n  const response = await fetch('config.json');\n  const config = await response.json();\n  applyConfig(config);\n} catch (error) {\n  logError(error);\n}\n</pre>\n<h4>Non-compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\n(async () =&gt; {\n  try {\n    await run();\n  } catch (error) {\n    console.error(error);\n    process.exit(1);\n  }\n})(); // Noncompliant\n</pre>\n<h4>Compliant code example</h4>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\ntry {\n  await run();\n} catch (error) {\n  console.error(error);\n  process.exit(1);\n}\n</pre>\n<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://github.com/sindresorhus/eslint-plugin-unicorn#readme\">eslint-plugin-unicorn</a> - Rule <a\n  href=\"https://github.com/sindresorhus/eslint-plugin-unicorn/blob/HEAD/docs/rules/prefer-top-level-await.md\">prefer-top-level-await</a></li>\n  <li>MDN - Top-level await - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await\">Official\n  documentation for JavaScript’s top-level await feature</a></li>\n  <li>TC39 - Top-level await proposal - <a href=\"https://github.com/tc39/proposal-top-level-await\">The official ECMAScript proposal for top-level\n  await</a></li>\n</ul>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "CONVENTIONAL",
+    "cleanCodeAttributeCategory": "CONSISTENT",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "MEDIUM"
+      }
+    ]
+  },
+  {
+    "key": "typescript:S9382",
+    "repo": "typescript",
+    "name": "Promises should not be awaited sequentially in a loop",
+    "createdAt": "2026-10-25T15:52:41-05:00",
+    "severity": "MINOR",
+    "status": "READY",
+    "isTemplate": false,
+    "tags": [],
+    "sysTags": [
+      "async",
+      "performance",
+      "es2017",
+      "promise"
+    ],
+    "lang": "ts",
+    "langName": "TypeScript",
+    "params": [],
+    "defaultDebtRemFnType": "CONSTANT_ISSUE",
+    "debtRemFnType": "CONSTANT_ISSUE",
+    "type": "CODE_SMELL",
+    "defaultRemFnType": "CONSTANT_ISSUE",
+    "defaultRemFnBaseEffort": "5min",
+    "remFnType": "CONSTANT_ISSUE",
+    "remFnBaseEffort": "5min",
+    "remFnOverloaded": false,
+    "scope": "MAIN",
+    "isExternal": false,
+    "descriptionSections": [
+      {
+        "key": "resources",
+        "content": "<h3>Documentation</h3>\n<ul>\n  <li><a href=\"https://eslint.org\">eslint</a> - Rule <a href=\"https://eslint.org/docs/latest/rules/no-await-in-loop\">no-await-in-loop</a></li>\n  <li>MDN web docs - <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all\">Promise.all()</a></li>\n</ul>"
+      },
+      {
+        "key": "root_cause",
+        "content": "<p><code>async</code>/<code>await</code> lets asynchronous operations run concurrently: multiple promises can be created and left pending while other\nwork proceeds, then resolved together once they have all settled.</p>\n<p>Awaiting a promise inside a loop breaks this benefit. Each iteration blocks until the previous <code>await</code> resolves, so independent\nasynchronous operations that could run at the same time are instead executed strictly one after another. For <code>n</code> iterations that each take\nroughly the same amount of time, this multiplies the total waiting time by <code>n</code> instead of running the operations concurrently.</p>\n<p>This pattern also compounds the impact of failures: if an early iteration’s operation fails, none of the later, independent operations even get\nstarted, even though they don’t depend on the failed one.</p>\n<p>Instead of awaiting each operation before starting the next, start every asynchronous operation first and await them together, for example with\n<code>Promise.all()</code>. This lets the independent operations run concurrently while still giving a single point to retrieve every result or handle\na failure.</p>\n<pre data-diff-id=\"1\" data-diff-type=\"noncompliant\">\nasync function fetchAll(urls) {\n  const responses = [];\n  for (const url of urls) {\n    const response = await fetch(url); // Noncompliant: each fetch waits for the previous one to finish\n    responses.push(response);\n  }\n  return responses;\n}\n</pre>\n<pre data-diff-id=\"1\" data-diff-type=\"compliant\">\nasync function fetchAll(urls) {\n  const responses = await Promise.all(urls.map(url =&gt; fetch(url)));\n  return responses;\n}\n</pre>\n<h3>Exceptions</h3>\n<p>This rule does not apply to <code>for await…​of</code> loops, since consuming an asynchronous iterator one item at a time is the explicit purpose\nof that construct.</p>\n<p>Sequential awaiting is also the correct choice, and an issue raised by this rule can be safely dismissed, when the iterations are not actually\nindependent, for example when:</p>\n<ul>\n  <li>the operation in one iteration needs the result of the previous one,</li>\n  <li>the loop retries an asynchronous operation until it succeeds,</li>\n  <li>the number of concurrent operations must be capped, e.g. to respect a rate limit or avoid exhausting a resource,</li>\n  <li>an external resource must be updated one step at a time and in order.</li>\n</ul>"
+      },
+      {
+        "key": "introduction",
+        "content": "<p>This rule raises an issue when a <code>Promise</code> is awaited inside a loop body, forcing each iteration’s asynchronous operation to complete\nbefore the next one starts.</p>"
+      }
+    ],
+    "educationPrinciples": [],
+    "updatedAt": "2026-10-25T15:52:41-05:00",
+    "cleanCodeAttribute": "EFFICIENT",
+    "cleanCodeAttributeCategory": "INTENTIONAL",
+    "impacts": [
+      {
+        "softwareQuality": "MAINTAINABILITY",
+        "severity": "LOW"
+      }
+    ]
+  }
+]

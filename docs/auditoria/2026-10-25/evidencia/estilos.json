@@ -1,0 +1,137 @@
+[
+  {
+    "file": "client/src/final-control.css",
+    "rules": 51,
+    "declarations": 162,
+    "important": 1,
+    "media": [
+      "(max-width:600px)"
+    ],
+    "focusSelectors": [],
+    "repeatedSelectors": 8
+  },
+  {
+    "file": "client/src/full-new-order.css",
+    "rules": 243,
+    "declarations": 819,
+    "important": 3,
+    "media": [
+      "(max-height: 500px) and (orientation: landscape)",
+      "(max-width: 700px)",
+      "(min-width: 701px)",
+      "(orientation: portrait) and (max-width: 700px)",
+      "(max-width: 520px)",
+      "(max-width:700px)",
+      "(max-width:640px)"
+    ],
+    "focusSelectors": [
+      ".check-category > h3:focus-visible",
+      ".diagnosis-field .diagnosis:focus",
+      ".diagnosis-picker:hover,.diagnosis-picker:focus-within",
+      ".consideration-additional textarea:focus"
+    ],
+    "repeatedSelectors": 46
+  },
+  {
+    "file": "client/src/orders.css",
+    "rules": 107,
+    "declarations": 324,
+    "important": 16,
+    "media": [
+      "(max-width:700px)",
+      "(max-width:850px)",
+      "(max-width:1050px)"
+    ],
+    "focusSelectors": [
+      ".order-row:focus-visible"
+    ],
+    "repeatedSelectors": 24
+  },
+  {
+    "file": "client/src/parts-workbench.css",
+    "rules": 82,
+    "declarations": 184,
+    "important": 4,
+    "media": [
+      "(max-width:700px)",
+      "(max-width:900px)",
+      "(max-width:520px)"
+    ],
+    "focusSelectors": [],
+    "repeatedSelectors": 22
+  },
+  {
+    "file": "client/src/public-tracking.css",
+    "rules": 48,
+    "declarations": 143,
+    "important": 1,
+    "media": [
+      "(max-width:620px)"
+    ],
+    "focusSelectors": [
+      ".tracking-fields input:focus"
+    ],
+    "repeatedSelectors": 10
+  },
+  {
+    "file": "client/src/reception.css",
+    "rules": 88,
+    "declarations": 263,
+    "important": 2,
+    "media": [
+      "(max-width: 700px)",
+      "(max-width:700px)"
+    ],
+    "focusSelectors": [],
+    "repeatedSelectors": 24
+  },
+  {
+    "file": "client/src/styles.css",
+    "rules": 1252,
+    "declarations": 3529,
+    "important": 113,
+    "media": [
+      "(max-width:700px)",
+      "(max-width:1050px)",
+      "(max-width: 700px)",
+      "(max-width:900px)",
+      "(max-width:560px)",
+      "(max-width:1200px)",
+      "(max-width:760px)",
+      "(max-width:480px)",
+      "print",
+      "(max-width:1180px)",
+      "(max-width:1080px)",
+      "(max-width:800px)",
+      "(max-width:850px)",
+      "(max-width:520px)"
+    ],
+    "focusSelectors": [
+      ".field-control input:focus",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:focus-within",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .sidebar-brand img,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .sidebar-brand\r\n  img",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover nav button,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:focus-within nav button",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover nav span,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:focus-within nav span,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .session-card strong,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .session-card\r\n  strong,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .session-card small,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .session-card\r\n  small,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .session-card button,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .session-card\r\n  button",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .sidebar-modes,\r\n.app-shell.sidebar-auto.sidebar-collapsed .sidebar:focus-within .sidebar-modes",
+      ".app-shell.sidebar-auto.sidebar-collapsed .sidebar:hover .sidebar-modes button,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .sidebar-modes\r\n  button",
+      ".app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:hover\r\n  .sidebar-modes\r\n  button\r\n  span,\r\n.app-shell.sidebar-auto.sidebar-collapsed\r\n  .sidebar:focus-within\r\n  .sidebar-modes\r\n  button\r\n  span",
+      ".diagnosis-file .btn:focus-visible",
+      ".diagnosis-late-upload:focus-within::before,.diagnosis-late-upload:hover::before",
+      ".diagnosis-late-upload:hover::before,.diagnosis-late-upload:focus-within::before",
+      ".bell:focus-visible",
+      ".users-form-grid input:focus,.users-form-grid select:focus,.users-search input:focus"
+    ],
+    "repeatedSelectors": 244
+  },
+  {
+    "file": "final-control.css",
+    "rules": 25,
+    "declarations": 72,
+    "important": 0,
+    "media": [
+      "(max-width:600px)"
+    ],
+    "focusSelectors": [],
+    "repeatedSelectors": 4
+  }
+]

@@ -1,0 +1,37 @@
+
+> parautos-app-final@0.1.0 test
+> npm run build --workspace @parautos/shared && npm run test --workspace @parautos/server && npm run test --workspace @parautos/client
+
+
+> @parautos/shared@0.1.0 build
+> tsc -p tsconfig.json
+
+
+> @parautos/server@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.4 D:/Parautos/app-final/server
+
+
+ Test Files  47 passed (47)
+      Tests  130 passed (130)
+   Start at  16:19:44
+   Duration  15.12s (import 51%, tests 45%, transform 2%, worker 2%)
+
+    Isolate  47 workers spawned · ~339ms startup each (spawn + environment, per file)
+             at least ~1.94s faster with isolate: false — reuses workers across files instead of one per file
+
+
+> @parautos/client@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.4 D:/Parautos/app-final/client
+
+
+ Test Files  7 passed (7)
+      Tests  17 passed (17)
+   Start at  16:20:01
+   Duration  785ms (tests 50%, import 39%, transform 7%, worker 4%)
+

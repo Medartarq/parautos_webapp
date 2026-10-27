@@ -1,3 +1,5 @@
+import { releaseConnection } from "./release-connection.js";
+import { technicalLogger } from "../logging/technical-logger.js";
 import { readdir, readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,6 +93,13 @@ export function splitMigrationStatements(sql: string): string[] {
   return statements;
 }
 
+// Migration prefixes use an ordinal order independent of the host locale.
+export function compareMigrationNames(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
 export async function applyMigrations(pool: Pool, directory = migrationDirectory): Promise<void> {
   await pool.query(`CREATE TABLE IF NOT EXISTS schema_migrations (
     version VARCHAR(255) PRIMARY KEY,
@@ -99,7 +108,7 @@ export async function applyMigrations(pool: Pool, directory = migrationDirectory
 
   const appliedRows = await pool.query<{ version: string }[]>("SELECT version FROM schema_migrations");
   const applied = new Set(appliedRows.map((row) => row.version));
-  const files = (await readdir(directory)).filter((file) => file.endsWith(".sql")).sort();
+  const files = (await readdir(directory)).filter((file) => file.endsWith(".sql")).sort(compareMigrationNames);
 
   for (const file of files) {
     if (applied.has(file)) continue;
@@ -118,7 +127,7 @@ export async function applyMigrations(pool: Pool, directory = migrationDirectory
       await connection.rollback();
       throw error;
     } finally {
-      connection.release();
+      await releaseConnection(connection);
     }
   }
 }
@@ -129,7 +138,7 @@ async function migrate(): Promise<void> {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   migrate().then(() => closePool()).catch(async (error: unknown) => {
-    console.error(error);
+    technicalLogger.failure("database_task_failed", error);
     await closePool();
     process.exitCode = 1;
   });

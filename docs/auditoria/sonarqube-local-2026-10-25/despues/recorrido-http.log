@@ -1,0 +1,55 @@
+Applied migration 001_identity_and_audit.sql
+Applied migration 002_cases_and_reception.sql
+Applied migration 003_reception_media.sql
+Applied migration 004_checklist_text_parity.sql
+Applied migration 005_damage_body_type.sql
+Applied migration 006_diagnosis_review_states.sql
+Applied migration 007_quotes.sql
+Applied migration 008_diagnosis_reminder.sql
+Applied migration 009_parts_management.sql
+Applied migration 010_backfill_approved_parts.sql
+Applied migration 011_partial_parts_receipt.sql
+Applied migration 012_final_control_delivery.sql
+Applied migration 013_public_tracking_lookup.sql
+Applied migration 014_plaintext_public_tracking_code.sql
+Applied migration 015_remove_legacy_public_code_hash_requirement.sql
+Applied migration 016_order_operational_data.sql
+Applied migration 017_quote_drafts.sql
+Applied migration 018_reception_drafts.sql
+Applied migration 019_public_rate_limits.sql
+Applied migration 020_superadministrator_role.sql
+Applied migration 021_user_retention.sql
+Applied migration 022_add_qualitas_modality.sql
+Applied migration 023_add_order_status_triggers.sql
+Applied migration 024_protect_role_deletion.sql
+Applied migration 025_reception_snapshots.sql
+Applied migration 001_identity_and_audit.sql
+Applied migration 002_cases_and_reception.sql
+Applied migration 003_reception_media.sql
+Applied migration 004_checklist_text_parity.sql
+Applied migration 005_damage_body_type.sql
+Applied migration 006_diagnosis_review_states.sql
+Applied migration 007_quotes.sql
+Applied migration 008_diagnosis_reminder.sql
+Applied migration 009_parts_management.sql
+Applied migration 010_backfill_approved_parts.sql
+Applied migration 011_partial_parts_receipt.sql
+Applied migration 012_final_control_delivery.sql
+Applied migration 013_public_tracking_lookup.sql
+Applied migration 014_plaintext_public_tracking_code.sql
+Applied migration 015_remove_legacy_public_code_hash_requirement.sql
+Applied migration 016_order_operational_data.sql
+Applied migration 017_quote_drafts.sql
+Applied migration 018_reception_drafts.sql
+Applied migration 019_public_rate_limits.sql
+Applied migration 020_superadministrator_role.sql
+Applied migration 021_user_retention.sql
+Applied migration 022_add_qualitas_modality.sql
+Applied migration 023_add_order_status_triggers.sql
+Applied migration 024_protect_role_deletion.sql
+Applied migration 025_reception_snapshots.sql
+Demo creada: OS-2026-00003 · DEM-101
+Demo creada: OS-2026-00004 · DEM-202
+Demo creada: OS-2026-00005 · DEM-303
+Demo creada: OS-2026-00006 · DEM-404
+AUDIT_OK: 67 HTTP checks; isolated MariaDB and local storage.

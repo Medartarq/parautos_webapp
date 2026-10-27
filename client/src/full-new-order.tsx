@@ -3,7 +3,6 @@ import {
   useRef,
   useState,
   type PointerEvent,
-  type RefObject,
 } from "react";
 import {
   isRecognizedPlate,
@@ -20,6 +19,8 @@ import { ChecklistStep, ConsiderationsStep, RECEPTION_CONSIDERATION_FLAGS } from
 import { EvidenceStep } from "./new-order-media-steps";
 import { SummaryStep } from "./new-order-summary-step";
 import { clearLocalReceptionDraft, clearLocalReceptionMedia, localReceptionDraft, localReceptionMedia } from "./reception-draft-storage";
+import { startCamera } from "./camera-stream";
+import { api } from "./api";
 
 type Catalog = {
   bodyTypes: Array<{ id: number; code: DamageBody; name: string }>;
@@ -47,7 +48,6 @@ type ReceptionDraftPayload = {
   accepted: boolean;
 };
 type StoredReceptionDraft = { revision?: number; currentStep: number; payload: ReceptionDraftPayload };
-type StoredReceptionMedia = { files: File[]; diagnosisFile?: File };
 type ClientLookup = { documentType: "DNI" | "RUC"; documentNumber: string; fullName: string; phone?: string; email?: string };
 type VehicleLookup = { plate: string; brand: string; model: string; color: string; colorType: "CATALOGO" | "PERSONALIZADO"; year?: number; vin?: string; bodyTypeId?: number };
 const steps = [
@@ -58,22 +58,6 @@ const steps = [
   "Evidencias",
   "Resumen",
 ];
-async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/v1${path}`, {
-    credentials: "include",
-    ...options,
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => undefined)) as {
-      error?: { message?: string };
-    };
-    const error = new Error(body?.error?.message ?? "No fue posible completar la operación.") as Error & { status?: number };
-    error.status = response.status;
-    throw error;
-  }
-  return response.json();
-}
-
 function readImagePreview(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -83,7 +67,7 @@ function readImagePreview(file: File) {
   });
 }
 
-export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; advisorName: string }) {
+export function NewOrder({ onCreated, draftScope }: { onCreated: () => void; advisorName: string; draftScope: string }) {
   const [catalog, setCatalog] = useState<Catalog>();
   const [step, setStep] = useState(0);
   const [d, setD] = useState<Record<string, string>>({
@@ -98,7 +82,7 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
   const [checklistUndo, setChecklistUndo] = useState<{ category: string; answers: Record<number, "SI" | "NO" | undefined>; notes: Record<number, string | undefined> }>();
   const [flagsSelected, setFlagsSelected] = useState<string[]>([]);
   const [damages, setDamages] = useState<Damage[]>([]);
-  const [undoneDamages, setUndoneDamages] = useState<Damage[]>([]);
+  const [, setUndoneDamages] = useState<Damage[]>([]);
   const [view, setView] = useState<Damage["view"]>("01");
   const [damageExpanded, setDamageExpanded] = useState(false);
   const [files, setFiles] = useState<Evidence[]>([]);
@@ -213,7 +197,7 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
   useEffect(() => {
     let active = true;
     const restore = async () => {
-      const [local, localMedia] = await Promise.all([localReceptionDraft(true), localReceptionMedia(true)]);
+      const [local, localMedia] = await Promise.all([localReceptionDraft(true, undefined, draftScope), localReceptionMedia(true, undefined, draftScope)]);
       try {
         const result = await api<{ draft?: StoredReceptionDraft }>("/orders/reception-draft");
         const draft = result.draft;
@@ -223,7 +207,7 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
           setDiagnosisLegibility(draft.payload.diagnosisLegibility || "PENDIENTE"); setDiagnosisReviewState(draft.payload.diagnosisReviewState || "PENDIENTE_REVISION");
           setSignature(draft.payload.signature || ""); setReviewed(Boolean(draft.payload.reviewed)); setAccepted(Boolean(draft.payload.accepted));
           setStep(Math.min(draft.currentStep || 0, steps.length - 1)); setDraftRevision(draft.revision); setSyncState("saved");
-          void localReceptionDraft(false, draft);
+          void localReceptionDraft(false, draft, draftScope);
         } else if (active) setSyncState("saved");
       } catch {
         if (active && local) {
@@ -254,19 +238,19 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
     if (!draftReady) return;
     const snapshot = JSON.parse(serializedReceptionDraft) as Omit<StoredReceptionDraft, "revision">;
     if (skipInitialDraftSave.current) { skipInitialDraftSave.current = false; return; }
-    void localReceptionDraft(false, { ...snapshot, revision: draftRevision });
+    void localReceptionDraft(false, { ...snapshot, revision: draftRevision }, draftScope);
     if (!navigator.onLine) { setSyncState("offline"); return; }
     const timer = window.setTimeout(() => {
       setSyncState("saving");
       api<{ draft: StoredReceptionDraft }>("/orders/reception-draft", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...snapshot, revision: draftRevision }) })
-        .then(({ draft }) => { setDraftRevision(draft.revision); setSyncState("saved"); void localReceptionDraft(false, draft); })
+        .then(({ draft }) => { setDraftRevision(draft.revision); setSyncState("saved"); void localReceptionDraft(false, draft, draftScope); })
         .catch((error: Error & { status?: number }) => setSyncState(error.status === 409 ? "conflict" : "offline"));
     }, 900);
     return () => window.clearTimeout(timer);
   }, [serializedReceptionDraft, draftReady, syncRetry]);
   useEffect(() => {
     if (!draftReady) return;
-    void localReceptionMedia(false, { files: files.map((evidence) => evidence.file), diagnosisFile });
+    void localReceptionMedia(false, { files: files.map((evidence) => evidence.file), diagnosisFile }, draftScope);
   }, [files, diagnosisFile, draftReady]);
   const selectedDamageBody =
     catalog?.bodyTypes.find((item) => item.id === Number(d.body))?.code || "V3";
@@ -653,8 +637,8 @@ export function NewOrder({ onCreated, advisorName }: { onCreated: () => void; ad
       }
       await uploadPendingFiles(order);
       await api("/orders/reception-draft", { method: "DELETE" }).catch(() => undefined);
-      await clearLocalReceptionDraft();
-      await clearLocalReceptionMedia();
+      await clearLocalReceptionDraft(draftScope);
+      await clearLocalReceptionMedia(draftScope);
       setMessage(`Orden ${order.orderNumber} creada correctamente.`);
       setTimeout(onCreated, 800);
     } catch (error) {
@@ -871,15 +855,8 @@ function CameraCapture({ target, onCancel, onCapture }: { target: "evidence" | "
   const video = useRef<HTMLVideoElement>(null);
   const [message, setMessage] = useState("Abriendo cámara…");
   useEffect(() => {
-    let stream: MediaStream | undefined;
-    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" } } }).then((activeStream) => {
-      stream = activeStream;
-      if (!video.current) return;
-      video.current.srcObject = activeStream;
-      void video.current.play();
-      setMessage("");
-    }).catch(() => setMessage("No fue posible usar la cámara. Revise el permiso del navegador o elija una imagen del dispositivo."));
-    return () => stream?.getTracks().forEach((track) => track.stop());
+    if (!video.current) return;
+    return startCamera(video.current, () => setMessage(""), () => setMessage("No fue posible usar la cámara. Revise el permiso del navegador o elija una imagen del dispositivo."));
   }, []);
   const takePhoto = () => {
     const source = video.current;
@@ -889,17 +866,5 @@ function CameraCapture({ target, onCancel, onCapture }: { target: "evidence" | "
     canvas.getContext("2d")?.drawImage(source, 0, 0);
     canvas.toBlob((blob) => { if (blob) onCapture(new File([blob], `${target}-${new Date().toISOString().replaceAll(":", "-")}.jpg`, { type: "image/jpeg" })); }, "image/jpeg", 0.9);
   };
-  return <div className="camera-capture" role="dialog" aria-modal="true" aria-label="Cámara"><div className="camera-capture-card"><header><strong>{target === "evidence" ? "Fotografía de evidencia" : "Fotografía de evaluación"}</strong><button type="button" className="btn small" onClick={onCancel}>Cerrar</button></header>{message ? <p className="hint">{message}</p> : <video ref={video} autoPlay playsInline muted />}{!message && <button type="button" className="btn primary" onClick={takePhoto}>Capturar fotografía</button>}</div></div>;
-}
-
-function Title({ n, title, text }: { n: string; title: string; text: string }) {
-  return (
-    <div className="section-title">
-      <span>{n}</span>
-      <div>
-        <h2>{title}</h2>
-        <small>{text}</small>
-      </div>
-    </div>
-  );
+  return <div className="camera-capture" role="dialog" aria-modal="true" aria-label="Cámara"><div className="camera-capture-card"><header><strong>{target === "evidence" ? "Fotografía de evidencia" : "Fotografía de evaluación"}</strong><button type="button" className="btn small" onClick={onCancel}>Cerrar</button></header>{message && <p className="hint">{message}</p>}<video ref={video} autoPlay playsInline muted hidden={Boolean(message)} />{!message && <button type="button" className="btn primary" onClick={takePhoto}>Capturar fotografía</button>}</div></div>;
 }

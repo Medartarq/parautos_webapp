@@ -1,3 +1,4 @@
+import { technicalLogger } from "../logging/technical-logger.js";
 import { closePool, getPool } from "./pool.js";
 
 const demoDocuments = ["70123451", "70123452", "70123453", "70123454"];
@@ -19,4 +20,4 @@ async function seedReportAnalytics() {
   }
   console.info(`Escenario de analítica actualizado para ${orders.length} órdenes demo y ${advisors.length} asesores.`);
 }
-seedReportAnalytics().then(() => closePool()).catch(async (error: unknown) => { console.error(error); await closePool(); process.exitCode = 1; });
+seedReportAnalytics().then(() => closePool()).catch(async (error: unknown) => { technicalLogger.failure("database_task_failed", error); await closePool(); process.exitCode = 1; });

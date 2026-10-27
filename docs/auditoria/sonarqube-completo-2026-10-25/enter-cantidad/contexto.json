@@ -1,0 +1,14 @@
+{
+  "version": "26.10.0.133078",
+  "serverImage": "[\"sonarqube@sha256:0b3408443fb6a311253de27941b10977c9b977fd53be2265947bfe14161308b8\"]",
+  "scannerImage": "[\"sonarsource/sonar-scanner-cli@sha256:47956b669bf486bdad919e1cbd0533223515aa0b6d1d31763e5a3754942df6d7\"]",
+  "head": "e280677e97d0e7ab03c3734c67f0fbc8d3529233",
+  "branch": "master",
+  "capturedAt": "2026-10-25T18:16:26.0796174-05:00",
+  "workingTree": [
+    " D client/reliability-check.html",
+    " D client/reliability-check.tsx",
+    "?? docs/auditoria/sonarqube-completo-2026-10-25/enter-cantidad/"
+  ],
+  "scope": "Codigo local con cambios sin commit. Perfil comprehensive y cobertura LCOV importada de todas las fuentes TS/TSX de producto."
+}

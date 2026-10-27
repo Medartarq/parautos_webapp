@@ -5,19 +5,27 @@ const aws = vi.hoisted(() => {
   class Command { constructor(readonly input: Record<string, unknown>) {} }
   return { send, S3Client: class { send = send; }, PutObjectCommand: Command, GetObjectCommand: Command, DeleteObjectCommand: Command };
 });
+const environment = vi.hoisted(() => ({ prefix: "production/parautos" }));
 
 vi.mock("@aws-sdk/client-s3", () => aws);
 vi.mock("../../config/env.js", () => ({
   getEnvironment: () => ({
     STORAGE_PROVIDER: "s3", S3_BUCKET: "parautos-files", S3_ACCESS_KEY_ID: "key", S3_SECRET_ACCESS_KEY: "secret",
-    S3_REGION: "auto", S3_ENDPOINT: "https://account.r2.cloudflarestorage.com", S3_PREFIX: "production/parautos", S3_FORCE_PATH_STYLE: false,
+    S3_REGION: "auto", S3_ENDPOINT: "https://account.r2.cloudflarestorage.com", S3_PREFIX: environment.prefix, S3_FORCE_PATH_STYLE: false,
   }),
 }));
 
 import { deleteS3File, readS3File, storeS3Buffer } from "./s3-storage.js";
 
 describe("S3-compatible attachment storage", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); environment.prefix = "production/parautos"; });
+
+  it.each([["", "file.png"], ["////", "file.png"], ["/prod//parautos///", "prod//parautos/file.png"]])("preserves S3 prefix semantics for %s", async (prefix, expected) => {
+    environment.prefix = prefix;
+    aws.send.mockResolvedValue({ Body: { transformToByteArray: async () => new Uint8Array([1]) } });
+    await readS3File("file.png");
+    expect(aws.send).toHaveBeenCalledWith(expect.objectContaining({ input: expect.objectContaining({ Key: expected }) }));
+  });
 
   it("writes to the configured bucket and prefix with a checksum", async () => {
     aws.send.mockResolvedValue({});

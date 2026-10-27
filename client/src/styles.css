@@ -502,6 +502,8 @@ a:visited {
   text-transform: uppercase;
 }
 .sidebar-modes {
+  min-width: 0;
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 3px;
@@ -791,11 +793,12 @@ a:visited {
 /* Centro de pendientes operativos */
 .notification-center{position:relative}
 .bell span{font-size:19px;line-height:1}
-.notifications-panel{position:absolute;z-index:20;top:52px;right:0;width:min(390px,calc(100vw - 28px));overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 16px 34px #17202b2b}
+.notifications-panel{position:absolute;z-index:20;top:52px;right:0;left:auto;margin:0;padding:0;color:inherit;width:min(390px,calc(100vw - 28px));overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 16px 34px #17202b2b}
+.operational-reminder::backdrop{background:#17212b66}
 .notifications-panel header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;border-bottom:1px solid var(--line)}
 .notifications-panel header strong,.notifications-panel header small{display:block}.notifications-panel header small{margin-top:2px;color:var(--muted);font-size:12px}
 .notifications-list{max-height:440px;overflow:auto}.notification-item{display:grid;width:100%;gap:3px;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left}.notification-item:hover{background:#f8fafc}.notification-item strong{font-size:13px}.notification-item span,.notification-item small{color:var(--muted);font-size:12px}.notification-item.operational-diagnosis strong{color:#a16207}.notification-item.operational-quote strong{color:#b4232a}.notification-empty{margin:0;padding:18px;color:var(--muted);font-size:13px}
-.operational-reminder-backdrop{position:fixed;z-index:30;inset:0;display:grid;place-items:center;padding:20px;background:#17212b66}.operational-reminder{width:min(440px,100%);padding:28px;border-radius:14px;background:#fff;box-shadow:0 20px 48px #17202b50;text-align:center}.reminder-icon{display:grid;width:46px;height:46px;place-items:center;margin:0 auto 11px;border-radius:50%;background:#fff4d8;font-size:23px}.operational-reminder h2{margin:0;font-size:20px}.operational-reminder p{margin:9px 0 20px;color:var(--muted);line-height:1.45}.operational-reminder div{display:flex;justify-content:center;gap:9px}
+.operational-reminder{width:min(440px,100%);max-width:calc(100vw - 40px);padding:28px;border:0;border-radius:14px;background:#fff;color:inherit;box-shadow:0 20px 48px #17202b50;text-align:center}.reminder-icon{display:grid;width:46px;height:46px;place-items:center;margin:0 auto 11px;border-radius:50%;background:#fff4d8;font-size:23px}.operational-reminder h2{margin:0;font-size:20px}.operational-reminder p{margin:9px 0 20px;color:var(--muted);line-height:1.45}.operational-reminder div{display:flex;justify-content:center;gap:9px}
 .dashboard-operational-pending{margin:-4px 0 16px}.dashboard-operational-pending header{display:flex;align-items:center;justify-content:space-between;gap:12px}.dashboard-operational-pending header h2{margin:0}.dashboard-operational-pending header small{display:block;margin-top:3px;color:var(--muted);font-size:12px}.dashboard-pending-item{display:grid;grid-template-columns:auto minmax(130px,1fr) minmax(180px,1fr);align-items:center;gap:12px;width:100%;padding:11px 16px;border:0;border-top:1px solid var(--line);background:#fff;text-align:left}.dashboard-pending-item:hover{background:#f8fafc}.dashboard-pending-item span{width:max-content;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:700}.dashboard-pending-item span.operational-diagnosis{background:#fff4d8;color:#a16207}.dashboard-pending-item span.operational-quote{background:#fff0f0;color:#b4232a}.dashboard-pending-item small{color:var(--muted);font-size:12px}
 @media(max-width:700px){.notifications-panel{position:fixed;top:64px;right:14px}.operational-reminder{padding:24px 18px}.operational-reminder div{flex-direction:column-reverse}.operational-reminder .btn{width:100%}.dashboard-pending-item{grid-template-columns:1fr;gap:5px}.dashboard-operational-pending header{align-items:flex-start}}
 /* Campana SVG: evita dependencias de codificación o tipografía emoji. */
@@ -856,6 +859,10 @@ a:visited {
 .profile-dropdown { position: relative; display: inline-block; }
 .avatar-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
 .profile-menu {
+  margin: 0;
+  padding: 0;
+  left: auto;
+  color: inherit;
   position: absolute;
   right: 0;
   top: 48px;

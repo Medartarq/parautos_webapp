@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const database = vi.hoisted(() => {
-  const connection = { beginTransaction: vi.fn(), commit: vi.fn(), rollback: vi.fn(), release: vi.fn(), query: vi.fn() };
+  const connection = { beginTransaction: vi.fn(), commit: vi.fn(), rollback: vi.fn(), release: vi.fn(), destroy: vi.fn(), query: vi.fn() };
   return { connection, pool: { query: vi.fn(), getConnection: vi.fn(async () => connection) } };
 });
 const storage = vi.hoisted(() => ({
@@ -46,6 +46,42 @@ function configureSuccessfulCreation() {
 describe("order creation signature persistence", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("does not complete a committed reception before its connection is released", async () => {
+    configureSuccessfulCreation();
+    let finish!: () => void;
+    const releasing = new Promise<void>((resolve) => { finish = resolve; });
+    database.connection.release.mockImplementationOnce(() => releasing);
+    let completed = false;
+    const pending = createOrder(structuredClone(input), 3, "release-wait").then(() => { completed = true; });
+    await vi.waitFor(() => expect(database.connection.release).toHaveBeenCalledOnce());
+    expect(completed).toBe(false);
+    finish();
+    await pending;
+    expect(completed).toBe(true);
+    expect(storage.deleteStoredFile).not.toHaveBeenCalled();
+  });
+
+  it("preserves persistence errors and removes stored signatures even if release fails", async () => {
+    configureSuccessfulCreation();
+    const original = new Error("attachment persistence failure");
+    const successfulQuery = database.connection.query.getMockImplementation()!;
+    database.connection.query.mockImplementation(async (...args) => {
+      if (String(args[0]).includes("INSERT INTO attachments")) throw original;
+      return successfulQuery(...args);
+    });
+    database.connection.release.mockRejectedValueOnce(new Error("release failure"));
+    await expect(createOrder(structuredClone(input), 3, "release-failure")).rejects.toBe(original);
+    expect(database.connection.rollback).toHaveBeenCalledOnce();
+    expect(database.connection.destroy).toHaveBeenCalledOnce();
+    expect(storage.deleteStoredFile).toHaveBeenCalledWith("local", "2026-10-17/signature.png");
+  });
+
+  it("rejects duplicate checklist answers before opening a transaction", async () => {
+    configureSuccessfulCreation();
+    await expect(createOrder({ ...structuredClone(input), checklist: [input.checklist[0], input.checklist[0]] }, 3, "duplicate-test")).rejects.toMatchObject({ code: "CHECKLIST_INCOMPLETE" });
+    expect(database.pool.getConnection).not.toHaveBeenCalled();
+  });
+
   it("persists the required signature attachment inside the order transaction", async () => {
     configureSuccessfulCreation();
 
@@ -57,6 +93,7 @@ describe("order creation signature persistence", () => {
       [14, 15, 3, "local", "2026-10-17/signature.png", 67, "a".repeat(64)],
     );
     expect(database.connection.commit).toHaveBeenCalledOnce();
+    expect(database.connection.query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO reception_snapshots"), [15, 14]);
     expect(storage.deleteStoredFile).not.toHaveBeenCalled();
   });
 

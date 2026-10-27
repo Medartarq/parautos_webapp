@@ -1,0 +1,34 @@
+{
+  "categories": [
+    {
+      "category": "Planchado",
+      "rows": 2,
+      "quantity": "2.5",
+      "focus": true,
+      "saves": "0"
+    },
+    {
+      "category": "Pintura",
+      "rows": 2,
+      "quantity": "2.5",
+      "focus": true,
+      "saves": "0"
+    },
+    {
+      "category": "Mecánica",
+      "rows": 2,
+      "quantity": "2.5",
+      "focus": true,
+      "saves": "0"
+    },
+    {
+      "category": "Repuestos",
+      "rows": 2,
+      "quantity": "2.5",
+      "focus": true,
+      "saves": "0"
+    }
+  ],
+  "priceSaveCount": "0",
+  "saveAfterButton": "1"
+}

@@ -1,0 +1,801 @@
+{
+  "paging": {
+    "pageIndex": 1,
+    "pageSize": 500,
+    "total": 112
+  },
+  "baseComponent": {
+    "key": "parautos-local-completo",
+    "name": "PARAUTOS analisis local completo",
+    "qualifier": "TRK",
+    "tags": [],
+    "visibility": "private",
+    "isAiCodeFixEnabled": false
+  },
+  "components": [
+    {
+      "key": "parautos-local-completo:client/src/api.ts",
+      "name": "api.ts",
+      "qualifier": "FIL",
+      "path": "client/src/api.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/errors/app-error.ts",
+      "name": "app-error.ts",
+      "qualifier": "FIL",
+      "path": "server/src/errors/app-error.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/app.ts",
+      "name": "app.ts",
+      "qualifier": "FIL",
+      "path": "server/src/app.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/app.tsx",
+      "name": "app.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/app.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/attachment-repository.ts",
+      "name": "attachment-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/attachment-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/attachment-service.ts",
+      "name": "attachment-service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/attachment-service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:scripts/audit-local.mjs",
+      "name": "audit-local.mjs",
+      "qualifier": "FIL",
+      "path": "scripts/audit-local.mjs",
+      "language": "js"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/audit/audit-repository.ts",
+      "name": "audit-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/audit/audit-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/audit-view.tsx",
+      "name": "audit-view.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/audit-view.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/audit/audit-writer.ts",
+      "name": "audit-writer.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/audit/audit-writer.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/middleware/auth.ts",
+      "name": "auth.ts",
+      "qualifier": "FIL",
+      "path": "server/src/middleware/auth.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/body-type-suggestion.ts",
+      "name": "body-type-suggestion.ts",
+      "qualifier": "FIL",
+      "path": "client/src/body-type-suggestion.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/camera-stream.ts",
+      "name": "camera-stream.ts",
+      "qualifier": "FIL",
+      "path": "client/src/camera-stream.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/checklist-parity.ts",
+      "name": "checklist-parity.ts",
+      "qualifier": "FIL",
+      "path": "client/src/checklist-parity.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/middleware/demo-context.ts",
+      "name": "demo-context.ts",
+      "qualifier": "FIL",
+      "path": "server/src/middleware/demo-context.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/demo-fill.ts",
+      "name": "demo-fill.ts",
+      "qualifier": "FIL",
+      "path": "client/src/demo-fill.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/config/env.ts",
+      "name": "env.ts",
+      "qualifier": "FIL",
+      "path": "server/src/config/env.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/middleware/error-handler.ts",
+      "name": "error-handler.ts",
+      "qualifier": "FIL",
+      "path": "server/src/middleware/error-handler.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/final-control-completion-repository.ts",
+      "name": "final-control-completion-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/final-control-completion-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/final-control-delivery-repository.ts",
+      "name": "final-control-delivery-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/final-control-delivery-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/final-control-query-repository.ts",
+      "name": "final-control-query-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/final-control-query-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/final-control-reopen-repository.ts",
+      "name": "final-control-reopen-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/final-control-reopen-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/final-control-service.ts",
+      "name": "final-control-service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/final-control-service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/final-control.css",
+      "name": "final-control.css",
+      "qualifier": "FIL",
+      "path": "client/src/final-control.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:final-control.css",
+      "name": "final-control.css",
+      "qualifier": "FIL",
+      "path": "final-control.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:client/src/final-control.tsx",
+      "name": "final-control.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/final-control.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/full-new-order.css",
+      "name": "full-new-order.css",
+      "qualifier": "FIL",
+      "path": "client/src/full-new-order.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:client/src/full-new-order.tsx",
+      "name": "full-new-order.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/full-new-order.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/image-validation.ts",
+      "name": "image-validation.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/image-validation.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/index.html",
+      "name": "index.html",
+      "qualifier": "FIL",
+      "path": "client/index.html",
+      "language": "web"
+    },
+    {
+      "key": "parautos-local-completo:shared/src/index.ts",
+      "name": "index.ts",
+      "qualifier": "FIL",
+      "path": "shared/src/index.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/labor-verification-repository.ts",
+      "name": "labor-verification-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/labor-verification-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/local-storage.ts",
+      "name": "local-storage.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/local-storage.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/main.tsx",
+      "name": "main.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/main.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/migrate-demo.ts",
+      "name": "migrate-demo.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/migrate-demo.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/migrate.ts",
+      "name": "migrate.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/migrate.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/new-order-checklist-steps.tsx",
+      "name": "new-order-checklist-steps.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/new-order-checklist-steps.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/new-order-damage-step.tsx",
+      "name": "new-order-damage-step.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/new-order-damage-step.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/new-order-data-step.tsx",
+      "name": "new-order-data-step.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/new-order-data-step.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/new-order-media-steps.tsx",
+      "name": "new-order-media-steps.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/new-order-media-steps.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/new-order-summary-step.tsx",
+      "name": "new-order-summary-step.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/new-order-summary-step.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/order-detail-repository.ts",
+      "name": "order-detail-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/order-detail-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/order-detail.tsx",
+      "name": "order-detail.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/order-detail.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/orders-list-repository.ts",
+      "name": "orders-list-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/orders-list-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/orders-navigation-repository.ts",
+      "name": "orders-navigation-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/orders-navigation-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/orders-service.ts",
+      "name": "orders-service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/orders-service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/orders.css",
+      "name": "orders.css",
+      "qualifier": "FIL",
+      "path": "client/src/orders.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/parts-mutation-repository.ts",
+      "name": "parts-mutation-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/parts-mutation-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/parts-order-workbench.tsx",
+      "name": "parts-order-workbench.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/parts-order-workbench.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/parts-query-repository.ts",
+      "name": "parts-query-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/parts-query-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/parts-service.ts",
+      "name": "parts-service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/parts-service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/parts-workbench.css",
+      "name": "parts-workbench.css",
+      "qualifier": "FIL",
+      "path": "client/src/parts-workbench.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:client/src/pdf-library.ts",
+      "name": "pdf-library.ts",
+      "qualifier": "FIL",
+      "path": "client/src/pdf-library.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/pending-claim-repository.ts",
+      "name": "pending-claim-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/pending-claim-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/pool.ts",
+      "name": "pool.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/pool.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/public-tracking.css",
+      "name": "public-tracking.css",
+      "qualifier": "FIL",
+      "path": "client/src/public-tracking.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:client/src/public-tracking.tsx",
+      "name": "public-tracking.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/public-tracking.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/query-client.ts",
+      "name": "query-client.ts",
+      "qualifier": "FIL",
+      "path": "client/src/query-client.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-creation-repository.ts",
+      "name": "quote-creation-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-creation-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-draft-repository.ts",
+      "name": "quote-draft-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-draft-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/quote-editor.tsx",
+      "name": "quote-editor.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/quote-editor.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/quote-export-toolbar.tsx",
+      "name": "quote-export-toolbar.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/quote-export-toolbar.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-mutation-repository.ts",
+      "name": "quote-mutation-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-mutation-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-query-repository.ts",
+      "name": "quote-query-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-query-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-service.ts",
+      "name": "quote-service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/quote-transition-repository.ts",
+      "name": "quote-transition-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/quote-transition-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/tracking/rate-limit.ts",
+      "name": "rate-limit.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/tracking/rate-limit.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception-detail.tsx",
+      "name": "reception-detail.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/reception-detail.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/reception-draft-repository.ts",
+      "name": "reception-draft-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/reception-draft-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception-draft-storage.ts",
+      "name": "reception-draft-storage.ts",
+      "qualifier": "FIL",
+      "path": "client/src/reception-draft-storage.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception-print.ts",
+      "name": "reception-print.ts",
+      "qualifier": "FIL",
+      "path": "client/src/reception-print.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/reception-snapshot.ts",
+      "name": "reception-snapshot.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/reception-snapshot.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception-svg-body.ts",
+      "name": "reception-svg-body.ts",
+      "qualifier": "FIL",
+      "path": "client/src/reception-svg-body.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception-svg.ts",
+      "name": "reception-svg.ts",
+      "qualifier": "FIL",
+      "path": "client/src/reception-svg.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reception.css",
+      "name": "reception.css",
+      "qualifier": "FIL",
+      "path": "client/src/reception.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/release-connection.ts",
+      "name": "release-connection.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/release-connection.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/reports-view.tsx",
+      "name": "reports-view.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/reports-view.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/middleware/request-id.ts",
+      "name": "request-id.ts",
+      "qualifier": "FIL",
+      "path": "server/src/middleware/request-id.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/middleware/request-log.ts",
+      "name": "request-log.ts",
+      "qualifier": "FIL",
+      "path": "server/src/middleware/request-log.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/users/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/users/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/tracking/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/tracking/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/demo/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/demo/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/lookups/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/lookups/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/audit/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/audit/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/auth/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/auth/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/reports/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/reports/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/setup/routes.ts",
+      "name": "routes.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/setup/routes.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:scripts/run-deploy-migrations.mjs",
+      "name": "run-deploy-migrations.mjs",
+      "qualifier": "FIL",
+      "path": "scripts/run-deploy-migrations.mjs",
+      "language": "js"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/s3-storage.ts",
+      "name": "s3-storage.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/s3-storage.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/scoped-query.tsx",
+      "name": "scoped-query.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/scoped-query.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/auth/security.ts",
+      "name": "security.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/auth/security.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/seed-demo-environment.ts",
+      "name": "seed-demo-environment.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/seed-demo-environment.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/seed-demo.ts",
+      "name": "seed-demo.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/seed-demo.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/db/seed-report-analytics.ts",
+      "name": "seed-report-analytics.ts",
+      "qualifier": "FIL",
+      "path": "server/src/db/seed-report-analytics.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/server.ts",
+      "name": "server.ts",
+      "qualifier": "FIL",
+      "path": "server/src/server.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/orders/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/orders/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/users/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/users/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/tracking/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/tracking/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/lookups/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/lookups/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/audit/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/audit/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/auth/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/auth/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/setup/service.ts",
+      "name": "service.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/setup/service.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/auth/session-repository.ts",
+      "name": "session-repository.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/auth/session-repository.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/storage-port.ts",
+      "name": "storage-port.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/storage-port.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:server/src/modules/attachments/storage.ts",
+      "name": "storage.ts",
+      "qualifier": "FIL",
+      "path": "server/src/modules/attachments/storage.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/styles.css",
+      "name": "styles.css",
+      "qualifier": "FIL",
+      "path": "client/src/styles.css",
+      "language": "css"
+    },
+    {
+      "key": "parautos-local-completo:server/src/logging/technical-logger.ts",
+      "name": "technical-logger.ts",
+      "qualifier": "FIL",
+      "path": "server/src/logging/technical-logger.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/src/users-view.tsx",
+      "name": "users-view.tsx",
+      "qualifier": "FIL",
+      "path": "client/src/users-view.tsx",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:client/vite.config.ts",
+      "name": "vite.config.ts",
+      "qualifier": "FIL",
+      "path": "client/vite.config.ts",
+      "language": "ts"
+    },
+    {
+      "key": "parautos-local-completo:tools/sonarqube-local/vitest.coverage.config.mts",
+      "name": "vitest.coverage.config.mts",
+      "qualifier": "FIL",
+      "path": "tools/sonarqube-local/vitest.coverage.config.mts",
+      "language": "ts"
+    }
+  ]
+}

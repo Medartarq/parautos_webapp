@@ -282,7 +282,7 @@ export function DataStep({
               checked={d.claimPending === "true"}
               onChange={(e) => set("claimPending", String(e.target.checked))}
             />
-            Número de siniestro pendiente
+            {" Número de siniestro pendiente"}
           </label>
         </div>
       </section>

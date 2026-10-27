@@ -1,0 +1,231 @@
+21:20:06.851 INFO  Scanner configuration file: /opt/sonar-scanner/conf/sonar-scanner.properties
+21:20:06.862 INFO  Project root configuration file: /usr/src/tools/sonarqube-local/sonar-project.properties
+21:20:06.944 INFO  SonarScanner CLI 8.1.0.6389
+21:20:06.957 INFO  Linux 6.18.54.1-microsoft-standard-WSL2 amd64
+21:20:09.163 INFO  Communicating with SonarQube Community Build 26.10.0.133078
+21:20:09.164 INFO  JRE provisioning: os[linux], arch[x86_64]
+21:20:09.978 INFO  Starting SonarScanner Engine...
+21:20:09.978 INFO  Java 21.0.12.1 Eclipse Adoptium (64-bit)
+21:20:11.636 INFO  Load global settings
+21:20:11.764 WARN  The token used for this analysis will expire on: October 26, 2026
+21:20:11.764 WARN  Analysis executed with this token will fail after the expiration date.
+21:20:11.797 INFO  Load global settings (done) | time=159ms
+21:20:11.802 INFO  Server id: 147B411E-AaF01ffg4S8HQmkYBITS
+21:20:11.819 INFO  Loading required plugins
+21:20:11.820 INFO  Load plugins index
+21:20:11.839 INFO  Load plugins index (done) | time=19ms
+21:20:11.840 INFO  Load/download plugins
+21:20:11.859 INFO  Load/download plugins (done) | time=20ms
+21:20:12.303 INFO  Load project settings for component key: 'parautos-local'
+21:20:12.330 INFO  Load project settings for component key: 'parautos-local' (done) | time=27ms
+21:20:12.353 INFO  Process project properties
+21:20:12.384 INFO  Process project properties (done) | time=30ms
+21:20:12.397 INFO  Project key: parautos-local
+21:20:12.398 INFO  Base dir: /usr/src
+21:20:12.398 INFO  Working dir: /tmp/.scannerwork
+21:20:12.584 INFO  Load quality profiles
+21:20:12.696 INFO  Load quality profiles (done) | time=111ms
+21:20:12.734 INFO  Exclusions based on SCM info is disabled by configuration
+21:20:12.749 INFO  Load active rules
+21:20:13.057 INFO  Load active rules (done) | time=308ms
+21:20:13.068 INFO  Load analysis cache
+21:20:13.132 INFO  Load analysis cache | time=64ms
+21:20:13.243 INFO  Preprocessing files...
+21:20:14.293 INFO  3 languages detected in 190 preprocessed files (done) | time=1050ms
+21:20:14.293 INFO  165 files ignored because of inclusion/exclusion patterns
+21:20:14.296 INFO  Loading plugins for detected languages
+21:20:14.296 INFO  Load/download plugins
+21:20:14.370 INFO  Load/download plugins (done) | time=74ms
+21:20:14.675 INFO  Load project repositories
+21:20:14.797 INFO  Load project repositories (done) | time=122ms
+21:20:14.855 INFO  Indexing files...
+21:20:14.855 INFO  Project configuration:
+21:20:14.856 INFO    Excluded sources: **/*.test.ts, **/*.test.tsx, **/node_modules/**, **/dist/**, **/*.d.ts, **/*.test.ts, **/*.test.tsx
+21:20:14.857 INFO    Included tests: **/*.test.ts, **/*.test.tsx
+21:20:15.563 INFO  190 files indexed (done) | time=709ms
+21:20:15.566 INFO  Quality profile for css: Sonar way core
+21:20:15.566 INFO  Quality profile for js: Sonar way core
+21:20:15.567 INFO  Quality profile for ts: Sonar way core
+21:20:15.567 INFO  ------------- Run sensors on module PARAUTOS auditoria local
+21:20:15.621 INFO  Load metrics repository
+21:20:15.650 INFO  Load metrics repository (done) | time=29ms
+21:20:16.063 INFO  Reflections took 84 ms to scan 1 urls, producing 30 keys and 303 values
+21:20:16.202 INFO  Sensor IaC YAML File Type Classification Sensor [iac]
+21:20:16.210 INFO  Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=7ms
+21:20:16.210 INFO  Sensor IaC hadolint report Sensor [iac]
+21:20:16.211 INFO  Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+21:20:16.211 INFO  Sensor Java Config Sensor [iac]
+21:20:16.211 INFO  There are no files to be analyzed for the Java language
+21:20:16.212 INFO  Sensor Java Config Sensor [iac] (done) | time=0ms
+21:20:16.212 INFO  Sensor IaC Docker Sensor [iac]
+21:20:16.223 INFO  There are no files to be analyzed for the Docker language
+21:20:16.224 INFO  Sensor IaC Docker Sensor [iac] (done) | time=11ms
+21:20:16.224 INFO  Sensor HTML [web]
+21:20:16.237 INFO  Sensor HTML [web] (done) | time=13ms
+21:20:16.238 INFO  Sensor JavaScript/TypeScript module configuration [javascript]
+21:20:16.246 INFO  Sensor JavaScript/TypeScript module configuration [javascript] (done) | time=8ms
+21:20:16.246 INFO  Sensor TextAndSecretsSensor [text]
+21:20:16.294 INFO  Available processors: 4
+21:20:16.294 INFO  Using 4 threads for analysis.
+21:20:16.677 INFO  Start fetching files for the text and secrets analysis
+21:20:16.685 INFO  Using Git CLI to retrieve dirty files
+21:20:16.694 WARN  Retrieving only language associated files, make sure to run the analysis inside a git repository to make use of inclusions specified via "sonar.text.inclusions"
+21:20:16.695 INFO  Starting the text and secrets analysis
+21:20:16.698 INFO  162 source files to be analyzed for the text and secrets analysis
+21:20:17.739 INFO  162/162 source files have been analyzed for the text and secrets analysis
+21:20:17.742 INFO  Sensor TextAndSecretsSensor [text] (done) | time=1496ms
+21:20:17.746 INFO  ------------- Run sensors on project
+21:20:18.044 INFO  Sensor JavaScript/TypeScript/CSS analysis [javascript]
+21:20:18.423 INFO  Detected os: Linux arch: amd64 alpine: false. Platform: LINUX_X64
+21:20:18.424 INFO  Deploy location /opt/sonar-scanner/.sonar/js/node-runtime, tagetRuntime: /opt/sonar-scanner/.sonar/js/node-runtime/node,  version: /opt/sonar-scanner/.sonar/js/node-runtime/version.txt
+21:20:21.376 INFO  Configured Node.js --max-old-space-size=4096.
+21:20:21.376 INFO  Using embedded Node.js runtime.
+21:20:21.376 INFO  Using Node.js executable: '/opt/sonar-scanner/.sonar/js/node-runtime/node'.
+21:20:24.604 INFO  Memory configuration: OS (15929 MB), Docker (6144 MB), Node.js (4288 MB).
+21:20:24.685 INFO  gRPC analyze-project server listening on 127.0.0.1:40465
+21:20:24.901 INFO  Plugin version: [14.0.0.46108]
+21:20:28.320 INFO  Resolving provided TSConfig files using '/usr/src/client/tsconfig.app.json,/usr/src/server/tsconfig.json,/usr/src/shared/tsconfig.json'
+21:20:28.649 INFO  Found 3 tsconfig.json file(s): [/usr/src/client/tsconfig.app.json, /usr/src/server/tsconfig.json, /usr/src/shared/tsconfig.json]
+21:21:49.533 INFO  159 source files to be analyzed
+21:21:49.534 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/client/tsconfig.app.json [lib: lib.es2022.d.ts, lib.dom.d.ts, lib.dom.iterable.d.ts]
+21:21:49.535 INFO  Analyzing 37 file(s) from tsconfig /usr/src/client/tsconfig.app.json (172 total files in program)
+21:21:49.535 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/server/tsconfig.json [lib: lib.es2024.d.ts, lib.dom.d.ts]
+21:21:49.535 INFO  Analyzing 68 file(s) from tsconfig /usr/src/server/tsconfig.json (964 total files in program)
+21:21:49.540 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/shared/tsconfig.json [lib: lib.es2024.d.ts, lib.dom.d.ts]
+21:21:49.541 INFO  Analyzing 1 file(s) from tsconfig /usr/src/shared/tsconfig.json (166 total files in program)
+21:21:49.541 INFO  Analyzing 49 file(s) using merged compiler options [lib: lib.es2024.d.ts, lib.dom.d.ts]
+21:21:49.541 INFO  159/159 source files have been analyzed
+21:21:49.550 INFO  Hit the cache for 0 out of 155
+21:21:49.551 INFO  Miss the cache for 155 out of 155: ANALYSIS_MODE_INELIGIBLE [155/155]
+21:21:49.552 INFO  Sensor JavaScript/TypeScript/CSS analysis [javascript] (done) | time=91506ms
+21:21:49.552 INFO  Sensor IaC Project Sensor [iac]
+21:21:49.555 INFO  Sensor IaC Project Sensor [iac] (done) | time=3ms
+21:21:49.556 INFO  Sensor Zero Coverage Sensor
+21:21:49.586 INFO  Sensor Zero Coverage Sensor (done) | time=31ms
+21:21:49.587 INFO  ------------- Gather SCA dependencies on project
+21:21:49.599 INFO  Dependency analysis skipped
+21:21:49.614 INFO  SCM Publisher SCM provider for this project is: git
+21:21:49.615 INFO  SCM Publisher 107 source files to be analyzed
+21:21:59.614 INFO  
+21:22:03.801 INFO  SCM Publisher 0/107 source files have been analyzed (done) | time=14185ms
+21:22:03.801 WARN  Missing blame information for the following files:
+21:22:03.801 WARN    * client/src/reception-detail.test.tsx
+21:22:03.801 WARN    * server/src/modules/orders/quote-draft-repository.test.ts
+21:22:03.802 WARN    * server/src/modules/orders/pending-claim-repository.ts
+21:22:03.802 WARN    * server/src/app.ts
+21:22:03.802 WARN    * server/src/modules/audit/service.ts
+21:22:03.803 WARN    * server/src/db/seed-demo-environment.ts
+21:22:03.803 WARN    * client/src/api.ts
+21:22:03.803 WARN    * server/src/modules/orders/orders-navigation-repository.ts
+21:22:03.803 WARN    * client/src/reports-view.tsx
+21:22:03.804 WARN    * server/src/logging/technical-logger.ts
+21:22:03.804 WARN    * client/src/quote-editor.tsx
+21:22:03.804 WARN    * server/src/modules/orders/final-control-delivery-repository.test.ts
+21:22:03.805 WARN    * server/src/modules/orders/order-detail-repository.ts
+21:22:03.805 WARN    * server/src/modules/attachments/attachment-repository.ts
+21:22:03.805 WARN    * server/src/modules/tracking/service.ts
+21:22:03.805 WARN    * server/src/modules/orders/quote-mutation-repository.ts
+21:22:03.806 WARN    * client/src/main.tsx
+21:22:03.807 WARN    * server/src/middleware/request-log.ts
+21:22:03.808 WARN    * server/src/modules/users/service.test.ts
+21:22:03.809 WARN    * server/src/modules/orders/parts-query-repository.ts
+21:22:03.811 WARN    * server/src/modules/orders/final-control-reopen-repository.ts
+21:22:03.811 WARN    * server/src/modules/users/service.ts
+21:22:03.812 WARN    * server/src/modules/orders/orders-service.ts
+21:22:03.813 WARN    * server/src/modules/orders/final-control-completion-repository.ts
+21:22:03.813 WARN    * server/src/middleware/request-log.test.ts
+21:22:03.814 WARN    * server/src/logging/technical-logger.test.ts
+21:22:03.814 WARN    * client/src/order-detail.tsx
+21:22:03.815 WARN    * client/src/reception-print.ts
+21:22:03.815 WARN    * client/src/scoped-query.tsx
+21:22:03.816 WARN    * server/src/modules/attachments/routes.ts
+21:22:03.816 WARN    * server/src/db/seed-demo.ts
+21:22:03.817 WARN    * server/src/modules/attachments/attachment-service.test.ts
+21:22:03.817 WARN    * server/src/modules/attachments/local-storage.test.ts
+21:22:03.818 WARN    * server/src/modules/auth/service.ts
+21:22:03.818 WARN    * server/src/modules/orders/final-control-query-repository.test.ts
+21:22:03.819 WARN    * server/src/modules/audit/audit-repository.ts
+21:22:03.819 WARN    * server/src/modules/orders/labor-verification-repository.ts
+21:22:03.820 WARN    * server/src/db/release-connection.test.ts
+21:22:03.820 WARN    * server/src/db/release-connection.ts
+21:22:03.820 WARN    * client/src/reception-image-errors.test.ts
+21:22:03.821 WARN    * server/src/db/migrate.integration.test.ts
+21:22:03.821 WARN    * server/src/modules/orders/order-creation.service.test.ts
+21:22:03.821 WARN    * server/src/modules/auth/service.test.ts
+21:22:03.822 WARN    * server/src/modules/orders/parts-query-repository.test.ts
+21:22:03.822 WARN    * client/src/reception-svg.ts
+21:22:03.822 WARN    * server/src/modules/orders/quote-creation-repository.test.ts
+21:22:03.823 WARN    * server/src/modules/orders/quote-service.ts
+21:22:03.823 WARN    * server/src/modules/orders/final-control-completion-repository.test.ts
+21:22:03.825 WARN    * server/src/db/migrate.ts
+21:22:03.826 WARN    * client/src/reception-draft-storage.ts
+21:22:03.827 WARN    * server/src/modules/attachments/storage.ts
+21:22:03.828 WARN    * client/src/reception-draft-storage.test.ts
+21:22:03.828 WARN    * client/src/app.tsx
+21:22:03.829 WARN    * server/src/db/migrate-demo.ts
+21:22:03.829 WARN    * server/src/modules/audit/audit-writer.test.ts
+21:22:03.830 WARN    * server/src/modules/orders/parts-service.ts
+21:22:03.830 WARN    * client/src/users-view.tsx
+21:22:03.830 WARN    * server/src/modules/orders/quote-draft-repository.ts
+21:22:03.830 WARN    * server/src/modules/orders/reception-email.test.ts
+21:22:03.831 WARN    * client/src/new-order-checklist-steps.tsx
+21:22:03.831 WARN    * server/src/server.ts
+21:22:03.831 WARN    * server/src/modules/orders/final-control-query-repository.ts
+21:22:03.832 WARN    * server/src/modules/reports/routes.ts
+21:22:03.832 WARN    * server/src/modules/orders/parts-mutation-repository.ts
+21:22:03.832 WARN    * scripts/audit-local.mjs
+21:22:03.833 WARN    * server/src/modules/orders/final-control-delivery-repository.ts
+21:22:03.833 WARN    * server/src/modules/orders/final-control-service.ts
+21:22:03.833 WARN    * server/src/modules/attachments/storage-port.ts
+21:22:03.834 WARN    * server/src/modules/setup/service.ts
+21:22:03.834 WARN    * server/src/config/env.ts
+21:22:03.834 WARN    * server/src/modules/orders/quote-transition-repository.ts
+21:22:03.835 WARN    * client/src/query-client.test.ts
+21:22:03.835 WARN    * server/src/modules/attachments/attachment-service.ts
+21:22:03.835 WARN    * client/src/reception-svg.test.ts
+21:22:03.835 WARN    * client/src/camera-stream.ts
+21:22:03.836 WARN    * server/src/modules/attachments/routes.integration.test.ts
+21:22:03.836 WARN    * client/src/camera-stream.test.ts
+21:22:03.836 WARN    * server/src/modules/auth/session-repository.ts
+21:22:03.837 WARN    * server/src/modules/audit/service.test.ts
+21:22:03.837 WARN    * server/src/modules/orders/quote-query-repository.ts
+21:22:03.838 WARN    * client/src/public-tracking.tsx
+21:22:03.838 WARN    * client/src/reception-detail.tsx
+21:22:03.838 WARN    * server/src/middleware/error-handler.test.ts
+21:22:03.839 WARN    * server/src/modules/audit/audit-writer.ts
+21:22:03.839 WARN    * server/src/modules/orders/labor-verification-repository.test.ts
+21:22:03.840 WARN    * client/src/query-client.ts
+21:22:03.840 WARN    * server/src/modules/orders/final-control-reopen-repository.test.ts
+21:22:03.840 WARN    * server/src/middleware/order-transition-error.test.ts
+21:22:03.841 WARN    * server/src/db/seed-report-analytics.ts
+21:22:03.841 WARN    * client/src/full-new-order.tsx
+21:22:03.842 WARN    * shared/src/index.ts
+21:22:03.842 WARN    * server/src/modules/attachments/s3-storage.ts
+21:22:03.842 WARN    * server/src/modules/orders/parts-mutation-repository.test.ts
+21:22:03.843 WARN    * server/src/modules/attachments/s3-storage.test.ts
+21:22:03.844 WARN    * server/src/modules/orders/quote-creation-repository.ts
+21:22:03.845 WARN    * server/src/modules/orders/reception-draft-repository.ts
+21:22:03.845 WARN    * server/src/modules/orders/reception-snapshot.ts
+21:22:03.846 WARN    * server/src/modules/orders/orders-list-repository.test.ts
+21:22:03.847 WARN    * server/src/modules/orders/closed-orders.test.ts
+21:22:03.847 WARN    * client/src/api.test.ts
+21:22:03.847 WARN    * server/src/modules/orders/quote-query-repository.test.ts
+21:22:03.848 WARN    * server/src/middleware/error-handler.ts
+21:22:03.849 WARN    * server/src/db/migrate.test.ts
+21:22:03.849 WARN    * server/src/modules/orders/quote-mutation-repository.test.ts
+21:22:03.850 WARN    * server/src/modules/attachments/storage.test.ts
+21:22:03.850 WARN    * client/src/styles.css
+21:22:03.850 WARN    * server/src/modules/orders/orders-list-repository.ts
+21:22:03.851 WARN  This may lead to missing/broken features in SonarQube
+21:22:03.851 INFO  CPD Executor 20 files had no CPD blocks
+21:22:03.851 INFO  CPD Executor Calculating CPD for 85 files
+21:22:03.887 INFO  CPD Executor CPD calculation finished (done) | time=50ms
+21:22:03.916 INFO  SCM revision ID '4c07f7e5425c1b97d45bf42818377a24a5a938b7'
+21:22:04.719 INFO  Analysis report generated in 819ms, dir size=2.1 MB
+21:22:04.959 INFO  Analysis report compressed in 240ms, zip size=1.2 MB
+21:22:05.060 INFO  Analysis report uploaded in 100ms
+21:22:05.062 INFO  ------------- Check Quality Gate status
+21:22:05.062 INFO  Waiting for the analysis report to be processed (max 600s)
+21:22:10.315 ERROR QUALITY GATE STATUS: FAILED - View details on http://parautos-sonarqube:9000/dashboard?id=parautos-local
+21:22:10.339 INFO  EXECUTION FAILURE
+21:22:10.341 INFO  Total time: 2:03.497s

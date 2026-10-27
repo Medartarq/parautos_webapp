@@ -1,0 +1,25 @@
+{
+  "queue": [],
+  "current": {
+    "id": "0bfaa613-6e98-41c6-a18c-b23d6750ccb8",
+    "type": "REPORT",
+    "componentId": "3408d328-73e6-47d3-84f8-7b9af09e5256",
+    "componentKey": "parautos-local-completo",
+    "componentName": "PARAUTOS analisis local completo",
+    "componentQualifier": "TRK",
+    "analysisId": "7f0a35af-dc24-49ef-9f45-8866821ea42b",
+    "status": "SUCCESS",
+    "submittedAt": "2026-10-25T16:42:38-05:00",
+    "submitterLogin": "admin",
+    "startedAt": "2026-10-25T16:42:38-05:00",
+    "executedAt": "2026-10-25T16:42:42-05:00",
+    "executionTimeMs": 3653,
+    "hasScannerContext": true,
+    "warningCount": 2,
+    "warnings": [
+      "The token used for this analysis will expire on: October 26, 2026\nAfter this date, the token can no longer be used to execute the analysis. Please consider generating a new token and updating it in the locations where it is in use.",
+      "Missing blame information for 108 files. This may lead to some features not working correctly. Please check the analysis logs and refer to <a href=\"https://docs.sonarsource.com/sonarqube-community-build/analyzing-source-code/scm-integration/\" rel=\"noopener noreferrer\" target=\"_blank\">the documentation</a>."
+    ],
+    "infoMessages": []
+  }
+}

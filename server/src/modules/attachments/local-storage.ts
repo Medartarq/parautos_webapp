@@ -7,7 +7,7 @@ import { isDemoScope } from "../../db/pool.js";
 export function getLocalUploadRoot(): string {
   const env = getEnvironment();
   const demo = isDemoScope();
-  const relativeDirectory = (demo ? env.DEMO_LOCAL_UPLOAD_DIR : env.LOCAL_UPLOAD_DIR)!.replace(/\\/g, "/");
+  const relativeDirectory = (demo ? env.DEMO_LOCAL_UPLOAD_DIR : env.LOCAL_UPLOAD_DIR)!.replaceAll("\\", "/");
   if (isAbsolute(relativeDirectory) || relativeDirectory.split("/").includes(".."))
     throw new Error("LOCAL_UPLOAD_DIR debe ser una ruta relativa sin segmentos '..'.");
   const baseDirectory = (demo ? env.DEMO_LOCAL_UPLOAD_BASE : env.LOCAL_UPLOAD_BASE) === "home" ? process.env.HOME : process.cwd();

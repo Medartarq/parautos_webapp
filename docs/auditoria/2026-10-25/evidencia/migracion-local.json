@@ -1,0 +1,16 @@
+[
+  {
+    "scope": "local",
+    "migrationsBefore": 21,
+    "migrationsAfter": 23,
+    "receptions": 15,
+    "snapshots": 15
+  },
+  {
+    "scope": "local-demo",
+    "migrationsBefore": 21,
+    "migrationsAfter": 23,
+    "receptions": 5,
+    "snapshots": 5
+  }
+]

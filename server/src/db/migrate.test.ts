@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
-import { splitMigrationStatements } from "./migrate.js";
+import { compareMigrationNames, splitMigrationStatements } from "./migrate.js";
+
+it("keeps the numbered migration order independent from locale", async () => {
+  const files = ["025_reception_snapshots.sql", "010_orders.sql", "002_cases.sql", "001_identity.sql"];
+  expect(files.sort(compareMigrationNames)).toEqual(["001_identity.sql", "002_cases.sql", "010_orders.sql", "025_reception_snapshots.sql"]);
+  expect(compareMigrationNames("001.sql", "001.sql")).toBe(0);
+  const actual = (await import("node:fs/promises")).readdir;
+  const names = await actual(new URL("../../../database/migrations/", import.meta.url));
+  const ordered = names.filter((name) => name.endsWith(".sql")).sort(compareMigrationNames);
+  expect(ordered.map((name) => Number(name.slice(0, 3)))).toEqual(Array.from({ length: 25 }, (_, index) => index + 1));
+});
 
 describe("splitMigrationStatements", () => {
   it("keeps a trigger body with nested IF blocks as one statement", () => {

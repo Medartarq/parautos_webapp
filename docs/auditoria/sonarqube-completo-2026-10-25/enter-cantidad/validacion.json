@@ -1,0 +1,16 @@
+{
+  "openIssues": 472,
+  "reliabilityIssues": 0,
+  "newOpenIssues": 0,
+  "qualityGate": "ERROR",
+  "newCodeCoverage": 42.0,
+  "requiredNewCodeCoverage": 80,
+  "testsPassed": 155,
+  "testFilesPassed": 56,
+  "buildPassed": true,
+  "temporaryTokenRevoked": true,
+  "sourcesSha256": {
+    "client/src/quote-editor.tsx": "0761c7bef778d19bf86d9aa47542dac7e986f98a58e3a2041e4a4ed57ebc058a",
+    "client/src/quote-editor.test.ts": "e5f88fb3b4d635f1586249554b67cc1b616ab8ef04e4ac13a050e2e38bf18a88"
+  }
+}

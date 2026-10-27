@@ -2,8 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import { MulterError } from "multer";
 import { ZodError } from "zod";
 import { AppError } from "../errors/app-error.js";
+import { technicalLogger } from "../logging/technical-logger.js";
 
 export function errorHandler(error: unknown, request: Request, response: Response, _next: NextFunction): void {
+  if (error && typeof error === "object" && "type" in error && error.type === "entity.too.large") {
+    response.status(413).json({ error: { code: "PAYLOAD_TOO_LARGE", message: "La solicitud supera el tamaño permitido.", requestId: request.requestId } });
+    return;
+  }
   if (error instanceof MulterError && error.code === "LIMIT_FILE_SIZE") {
     response.status(413).json({ error: { code: "FILE_TOO_LARGE", message: "El archivo supera el límite de 5 MB.", requestId: request.requestId } });
     return;
@@ -36,6 +41,6 @@ export function errorHandler(error: unknown, request: Request, response: Respons
     return;
   }
 
-  console.error({ requestId: request.requestId, error });
+  technicalLogger.failure("request_failed", error, request.requestId);
   response.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Ocurrio un error inesperado.", requestId: request.requestId } });
 }

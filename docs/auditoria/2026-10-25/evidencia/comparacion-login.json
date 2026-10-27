@@ -1,0 +1,17 @@
+{
+  "sizeBefore": [
+    1440,
+    900
+  ],
+  "sizeAfter": [
+    1440,
+    900
+  ],
+  "pixelIdentical": true,
+  "meanChannelDifference": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "note": "Only the captured login state at 1440x900 is compared."
+}

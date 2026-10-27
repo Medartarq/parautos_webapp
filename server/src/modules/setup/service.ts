@@ -1,3 +1,4 @@
+import { releaseConnection } from "../../db/release-connection.js";
 import { timingSafeEqual } from "node:crypto";
 import argon2 from "argon2";
 import type { PoolConnection } from "mariadb";
@@ -16,9 +17,10 @@ function matchesBootstrapToken(token: string, expectedToken: string): boolean {
 }
 
 async function releaseTransaction(connection: PoolConnection, failed: boolean): Promise<void> {
-  if (failed) await connection.rollback();
-  else await connection.commit();
-  connection.release();
+  try {
+    if (failed) await connection.rollback();
+    else await connection.commit();
+  } finally { await releaseConnection(connection); }
 }
 
 export async function getSetupStatus(): Promise<{ configured: boolean }> {

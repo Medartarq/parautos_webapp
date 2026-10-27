@@ -1,0 +1,21 @@
+
+ RUN  v5.0.4 D:/Parautos/app-final
+      Coverage enabled with v8
+
+
+ Test Files  55 passed (55)
+      Tests  151 passed (151)
+   Start at  17:16:18
+   Duration  14.79s (import 48%, tests 43%, worker 6%, transform 2%)
+
+    Isolate  55 workers spawned · ~307ms startup each (spawn + environment, per file)
+             at least ~2.11s faster with isolate: false — reuses workers across files instead of one per file
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 24.09% ( 1054/4374 )
+Branches     : 19.2% ( 602/3135 )
+Functions    : 17.22% ( 205/1190 )
+Lines        : 31.46% ( 831/2641 )
+================================================================================

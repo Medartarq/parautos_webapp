@@ -95,7 +95,7 @@ export function SummaryStep({ d, answers, files, damages, signatureCanvas, strok
                   checked={reviewed}
                   onChange={(event) => setReviewed(event.target.checked)}
                 />
-                Checklist revisado completamente.
+                {" Checklist revisado completamente."}
               </label>
               <label>
                 <input
@@ -103,7 +103,7 @@ export function SummaryStep({ d, answers, files, damages, signatureCanvas, strok
                   checked={accepted}
                   onChange={(event) => setAccepted(event.target.checked)}
                 />
-                Acepto las condiciones de ingreso.
+                {" Acepto las condiciones de ingreso."}
               </label>
             </section>
             {(!d.mileage || !d.fuel) && (
