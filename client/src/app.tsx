@@ -2,9 +2,10 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  type FormEvent,
+  type SubmitEvent,
   type ReactNode,
 } from "react";
 import type { CurrentUser } from "@parautos/shared";
@@ -49,13 +50,29 @@ const pendingItems = (notifications: OperationalPendingNotifications): Operation
 ];
 const emptyPendingNotifications: OperationalPendingNotifications = { total: 0, diagnosisPending: [], quotePending: [] };
 
+const syncLabels = { error: "Sin conexión", loading: "Sincronizando", synced: "Sincronizado" };
+const roleLabels: Record<CurrentUser["role"], string> = { SUPERADMINISTRADOR: "Superadministrador", ADMINISTRADOR: "Administrador", ASESOR: "Asesor" };
+const mobileLabels: Partial<Record<Route, string>> = { dashboard: "Panel", quotes: "Cotiza." };
+const orderStatusTones: Record<string, string> = { COTIZACION_PENDIENTE: "red", ESPERA_APROBACION: "amber", ESPERA_REPUESTOS: "blue", EN_REPARACION: "green" };
+
+function getSyncState(isError: boolean, isFetching: boolean) {
+  if (isError) return "error";
+  return isFetching ? "loading" : "synced";
+}
+
+function relativeDate(value: string) {
+  const days = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
+  if (days <= 0) return "Creada hoy";
+  return `Hace ${days} día${days === 1 ? "" : "s"}`;
+}
+
 function BellIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></svg>;
 }
 
-function PlateBadge({ plate, compact = false }: { plate: string; compact?: boolean }) {
+function PlateBadge({ plate, compact = false }: Readonly<{ plate: string; compact?: boolean }>) {
   const normalized = plate.trim().toUpperCase();
-  const match = normalized.match(/^([A-Z]{1,3})[- ]?([A-Z0-9]{2,4})$/);
+  const match = /^([A-Z]{1,3})[- ]?([A-Z0-9]{2,4})$/.exec(normalized);
   const prefix = match?.[1] || normalized.slice(0, 3);
   const suffix = match?.[2] || normalized.slice(3) || "—";
   return <span className={`plate-badge${compact ? " compact" : ""}`} aria-label={`Placa ${normalized}`} title={`Placa ${normalized}`}><b>{prefix}</b><small>{suffix}</small></span>;
@@ -65,11 +82,11 @@ function AccessLayout({
   title,
   lead,
   children,
-}: {
+}: Readonly<{
   title: string;
   lead: string;
   children: ReactNode;
-}) {
+}>) {
   return (
     <main className="login-page">
       <section
@@ -97,10 +114,10 @@ function AccessLayout({
   );
 }
 
-function SetupForm({ onComplete }: { onComplete: () => void }) {
+function SetupForm({ onComplete }: Readonly<{ onComplete: () => void }>) {
   const [message, setMessage] = useState<string>();
   const [saving, setSaving] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setSaving(true);
@@ -179,7 +196,7 @@ function SetupForm({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
   return (
     <label className="form-group">
       <span>{label}</span>
@@ -188,10 +205,10 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function LoginForm({ onLogin }: { onLogin: (user: CurrentUser) => void }) {
+function LoginForm({ onLogin }: Readonly<{ onLogin: (user: CurrentUser) => void }>) {
   const [message, setMessage] = useState<string>();
   const [saving, setSaving] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setSaving(true);
@@ -278,23 +295,24 @@ const titles: Record<Route, string> = {
   users: "Usuarios",
 };
 
-function Dashboard({ user, onLogout }: { user: CurrentUser; onLogout: () => Promise<void> }) {
+function Dashboard({ user, onLogout }: Readonly<{ user: CurrentUser; onLogout: () => Promise<void> }>) {
   const status = useQuery({
     queryKey: ["session", user.id, "demo-status"],
     queryFn: ({ signal }) => api<{ enabled: boolean; active: boolean }>("/demo/status", { signal }),
     enabled: user.role === "SUPERADMINISTRADOR", staleTime: Infinity, retry: false,
   });
+  const demoMode = Boolean(status.data?.enabled && status.data.active);
+  const scope = useMemo(() => ({ userId: user.id, mode: demoMode ? "demo" as const : "production" as const }), [user.id, demoMode]);
   if (user.role === "SUPERADMINISTRADOR" && !status.data)
     return <main className="loading-screen">{status.isError ? <div role="alert">No fue posible verificar el modo de trabajo. <button className="btn" onClick={() => void status.refetch()}>Reintentar</button></div> : "Cargando PARAUTOS..."}</main>;
-  const demoMode = Boolean(status.data?.enabled && status.data.active);
-  return <DataScopeContext.Provider value={{ userId: user.id, mode: demoMode ? "demo" : "production" }}>
+  return <DataScopeContext.Provider value={scope}>
     <DashboardContent key={demoMode ? "demo" : "production"} user={user} onLogout={onLogout} demoMode={demoMode} demoAvailable={Boolean(status.data?.enabled)} />
   </DataScopeContext.Provider>;
 }
 
-function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
+function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<{
   user: CurrentUser; onLogout: () => Promise<void>; demoMode: boolean; demoAvailable: boolean;
-}) {
+}>) {
   const [route, setRoute] = useState<Route>("dashboard");
   const [dashboardFilter, setDashboardFilter] = useState<string>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -305,12 +323,10 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
 
   const notificationsQuery = useScopedQuery<OperationalPendingNotifications>("pending-notifications", "/orders/pending-notifications");
   const operationalPending = notificationsQuery.data ?? emptyPendingNotifications;
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number>();
   const [selectedOrderTab, setSelectedOrderTab] = useState<DetailTab>();
-  const syncState = notificationsQuery.isError ? "error" : notificationsQuery.isFetching ? "loading" : "synced";
+  const syncState = getSyncState(notificationsQuery.isError, notificationsQuery.isFetching);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
 
   const sidebar = useRef<HTMLElement>(null);
@@ -347,7 +363,6 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
   const openPending = (item: OperationalPendingItem) => {
     setSelectedOrderId(item.id);
     setSelectedOrderTab(item.kind === "DIAGNOSIS_PENDING" ? "reception" : "quotes");
-    setNotificationsOpen(false);
     setReminderOpen(false);
     changeRoute("orderDetail");
   };
@@ -377,19 +392,6 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
 
-  useEffect(() => {
-    const onClickOutside = (event: MouseEvent) => {
-      if (
-        profileOpen &&
-        !menuButton.current?.contains(event.target as Node) &&
-        !(event.target as Element).closest(".profile-dropdown")
-      ) {
-        setProfileOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, [profileOpen]);
   return (
     <div
       className={`app-shell ${compact ? "sidebar-collapsed" : ""} sidebar-${sidebarMode}`}
@@ -417,9 +419,8 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
         </nav>
         <div className="sidebar-footer">
           <span className="sidebar-mode-label">Tamaño del menú</span>
-          <div
+          <fieldset
             className="sidebar-modes"
-            role="group"
             aria-label="Modo del menú"
           >
             {(["expanded", "compact"] as const).map((mode) => (
@@ -434,7 +435,7 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
                 <span>{mode === "expanded" ? "Amplio" : "Compacto"}</span>
               </button>
             ))}
-          </div>
+          </fieldset>
         </div>
       </aside>
       {menuOpen && (
@@ -460,112 +461,29 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
             <strong>{titles[route]}</strong>
             <small className={`sync-state ${syncState}`}>
               ●{" "}
-              {syncState === "loading"
-                ? "Sincronizando"
-                : syncState === "synced"
-                  ? "Sincronizado"
-                  : "Sin conexión"}
+              {syncLabels[syncState]}
             </small>
           </div>
             <div className="top-actions">
               {user.role === "SUPERADMINISTRADOR" && demoAvailable && <button className={`demo-mode-toggle${demoMode ? " active" : ""}`} onClick={() => void toggleDemoMode()}>{demoMode ? "Salir de demo" : "Modo demo"}</button>}
-            <div className="notification-center">
-              <button className="bell" title="Pendientes operativos" aria-label={`${operationalPending.total} pendientes operativos`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><BellIcon />{operationalPending.total > 0 && <b>{operationalPending.total > 99 ? "99+" : operationalPending.total}</b>}</button>
-              {notificationsOpen && <OperationalNotificationsPanel notifications={operationalPending} onClose={() => setNotificationsOpen(false)} onOpen={openPending} />}
-            </div>
-            <div className="profile-dropdown">
-              <button
-                className="avatar-btn"
-                aria-label="Perfil de usuario"
-                aria-expanded={profileOpen}
-                onClick={() => setProfileOpen((open) => !open)}
-              >
-                <span className="avatar">
-                  {user.names
-                    .split(" ")
-                    .slice(0, 2)
-                    .map((name) => name[0])
-                    .join("")}
-                </span>
-              </button>
-              {profileOpen && (
-                <div className="profile-menu" role="dialog" aria-label="Perfil de usuario">
-                  <div className="profile-menu-header">
-                    <span className="profile-menu-avatar" aria-hidden="true">{user.names.split(" ").slice(0, 2).map((name) => name[0]).join("")}</span>
-                    <div>
-                      <strong>{user.names}</strong>
-                      <small>{user.role === "SUPERADMINISTRADOR" ? "Superadministrador" : user.role === "ADMINISTRADOR" ? "Administrador" : "Asesor"}</small>
-                    </div>
-                  </div>
-                  <div className="profile-menu-details"><span>Cuenta activa</span><b>{user.email}</b></div>
-                  <button className="profile-menu-item" type="button" onClick={() => void onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))}>Cerrar sesión <span aria-hidden="true">→</span></button>
-                </div>
-              )}
-            </div>
+            <NotificationCenter notifications={operationalPending} onOpen={openPending} />
+            <ProfileDropdown user={user} onLogout={() => onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))} />
           </div>
         </header>
         <section className="app-content">
           {sessionError && <p className="form-error" role="alert">{sessionError}</p>}
-          {route === "dashboard" ? (
-            <DashboardHome
-              user={user}
-              onNew={() => changeRoute("new")}
-              onOrders={() => changeRoute("orders")}
-              operationalPending={operationalPending}
-              onOpenPending={openPending}
-              onMetricFilter={(status) => { setDashboardFilter(status); changeRoute("orders"); }}
-            />
-          ) : route === "new" ? (
-            <NewOrder key={`${demoMode}:${user.id}`} draftScope={`${demoMode ? "demo" : "production"}:${user.id}`} onCreated={() => changeRoute("orders")} advisorName={user.names} />
-          ) : route === "orders" ? (
-            <OrdersView
-              onNew={() => changeRoute("new")}
-              onOpen={(orderId) => {
-                setSelectedOrderId(orderId);
-                setSelectedOrderTab(undefined);
-                changeRoute("orderDetail");
-              }}
-              initialStatus={dashboardFilter}
-            />
-          ) : route === "orderDetail" && selectedOrderId ? (
-            <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} /></Suspense>
-          ) : route === "parts" ? (
-            <PartsGlobalWorkbench
-              onOpenOrder={(orderId) => {
-                setSelectedOrderId(orderId);
-                setSelectedOrderTab("parts");
-                changeRoute("orderDetail");
-              }}
-            />
-          ) : route === "quotes" ? (
-            <QuotesView onOpen={(orderId) => { setSelectedOrderId(orderId); setSelectedOrderTab("quotes"); changeRoute("orderDetail"); }} />
-          ) : route === "audit" ? (
-            <Suspense fallback={<div className="empty">Cargando auditoría...</div>}><AuditView /></Suspense>
-          ) : route === "users" ? (
-            <Suspense fallback={<div className="empty">Cargando usuarios...</div>}><UsersView currentUserId={user.id} /></Suspense>
-          ) : route === "reports" ? (
-            <Suspense fallback={<div className="empty">Cargando reportes...</div>}><ReportsView /></Suspense>
-          ) : (
-            <ModulePlaceholder route={route} />
-          )}
+          <DashboardRoute route={route} user={user} demoMode={demoMode} dashboardFilter={dashboardFilter}
+            selectedOrderId={selectedOrderId} selectedOrderTab={selectedOrderTab}
+            operationalPending={operationalPending} openPending={openPending} changeRoute={changeRoute}
+            onMetricFilter={(status) => { setDashboardFilter(status); changeRoute("orders"); }}
+            onOpenOrder={(id, tab) => { setSelectedOrderId(id); setSelectedOrderTab(tab); changeRoute("orderDetail"); }} />
         </section>
       </main>
-      {demoMode && <div className="demo-mode-banner" role="status">Modo demostración · datos ficticios aislados</div>}
+      {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
       <nav className={`mobile-nav${mobileNavHidden ? " hidden" : ""}`}>
         {allowed.slice(0, 4).map((item) => (
-          <button
-            key={item.route}
-            className={route === item.route ? "active" : ""}
-            onClick={() => changeRoute(item.route)}
-          >
-            <b>{item.icon}</b>
-            <span>
-              {item.label === "Panel principal"
-                ? "Panel"
-                : item.label === "Cotizaciones"
-                  ? "Cotiza."
-                  : item.label}
-            </span>
+          <button key={item.route} className={route === item.route ? "active" : ""} onClick={() => changeRoute(item.route)}>
+            <b>{item.icon}</b><span>{mobileLabels[item.route] ?? item.label}</span>
           </button>
         ))}
       </nav>
@@ -574,14 +492,120 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: {
   );
 }
 
-function OperationalNotificationsPanel({ notifications, onClose, onOpen }: { notifications: OperationalPendingNotifications; onClose: () => void; onOpen: (item: OperationalPendingItem) => void }) {
-  const items = pendingItems(notifications);
-  const age = (createdAt: string) => { const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000); return days <= 0 ? "Creada hoy" : `Hace ${days} día${days === 1 ? "" : "s"}`; };
-  return <section className="notifications-panel" role="dialog" aria-label="Pendientes operativos"><header><div><strong>Pendientes operativos</strong><small>{notifications.total} por atender</small></div><button className="btn small" type="button" onClick={onClose} aria-label="Cerrar pendientes">×</button></header>{items.length ? <div className="notifications-list">{items.slice(0, 8).map((item) => <button key={`${item.kind}-${item.id}`} className={`notification-item ${item.kind === "DIAGNOSIS_PENDING" ? "operational-diagnosis" : "operational-quote"}`} onClick={() => onOpen(item)}><strong>{item.kind === "DIAGNOSIS_PENDING" ? "Diagnóstico pendiente de subir" : "Cotización pendiente de crear"}</strong><span>{item.orderNumber} · {item.plate} · {item.client}</span><small>{age(item.createdAt)}</small></button>)}</div> : <p className="notification-empty">No hay pendientes operativos.</p>}</section>;
+function NotificationCenter({ notifications, onOpen }: Readonly<{ notifications: OperationalPendingNotifications; onOpen: (item: OperationalPendingItem) => void }>) {
+  const [open, setOpen] = useState(false);
+  return <div className="notification-center">
+    <button className="bell" title="Pendientes operativos" aria-label={`${notifications.total} pendientes operativos`} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+      <BellIcon />{notifications.total > 0 && <b>{notifications.total > 99 ? "99+" : notifications.total}</b>}
+    </button>
+    {open && <OperationalNotificationsPanel notifications={notifications} onClose={() => setOpen(false)} onOpen={(item) => { setOpen(false); onOpen(item); }} />}
+  </div>;
 }
 
-function OperationalReminder({ notifications, onClose, onView }: { notifications: OperationalPendingNotifications; onClose: () => void; onView: () => void }) {
-  return <div className="operational-reminder-backdrop" role="presentation"><section className="operational-reminder" role="dialog" aria-modal="true" aria-labelledby="operational-reminder-title"><span className="reminder-icon" aria-hidden="true"><BellIcon /></span><h2 id="operational-reminder-title">Tienes {notifications.total} pendiente{notifications.total === 1 ? "" : "s"} por atender</h2><p>{notifications.diagnosisPending.length} diagnóstico{notifications.diagnosisPending.length === 1 ? "" : "s"} por subir y {notifications.quotePending.length} cotización{notifications.quotePending.length === 1 ? "" : "es"} por crear.</p><div><button className="btn" type="button" onClick={onClose}>Continuar trabajando</button><button className="btn primary" type="button" onClick={onView}>Ver pendientes</button></div></section></div>;
+function ProfileDropdown({ user, onLogout }: Readonly<{ user: CurrentUser; onLogout: () => Promise<void> }>) {
+  const [open, setOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const initials = user.names.split(" ").slice(0, 2).map((name) => name[0]).join("");
+  useEffect(() => {
+    if (!open) return;
+    dialog.current?.querySelector("button")?.focus();
+    const onClickOutside = (event: MouseEvent) => {
+      if (event.target instanceof Node && !container.current?.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
+  return <div className="profile-dropdown" ref={container}>
+    <button ref={trigger} className="avatar-btn" aria-label="Perfil de usuario" aria-expanded={open} onClick={() => setOpen((value) => !value)}><span className="avatar">{initials}</span></button>
+    {open && <dialog ref={dialog} open className="profile-menu" aria-label="Perfil de usuario" onKeyDown={(event) => {
+      if (event.key === "Escape") { setOpen(false); trigger.current?.focus(); }
+    }}>
+      <div className="profile-menu-header"><span className="profile-menu-avatar" aria-hidden="true">{initials}</span><div><strong>{user.names}</strong><small>{roleLabels[user.role]}</small></div></div>
+      <div className="profile-menu-details"><span>Cuenta activa</span><b>{user.email}</b></div>
+      <button className="profile-menu-item" type="button" onClick={() => void onLogout()}>Cerrar sesión <span aria-hidden="true">→</span></button>
+    </dialog>}
+  </div>;
+}
+
+type DashboardRouteProps = Readonly<{
+  route: Route;
+  user: CurrentUser;
+  demoMode: boolean;
+  dashboardFilter?: string;
+  selectedOrderId?: number;
+  selectedOrderTab?: DetailTab;
+  operationalPending: OperationalPendingNotifications;
+  openPending: (item: OperationalPendingItem) => void;
+  changeRoute: (route: Route) => void;
+  onMetricFilter: (status: string) => void;
+  onOpenOrder: (id: number, tab?: DetailTab) => void;
+}>;
+
+function DashboardRoute({ route, user, demoMode, dashboardFilter, selectedOrderId, selectedOrderTab, operationalPending, openPending, changeRoute, onMetricFilter, onOpenOrder }: DashboardRouteProps) {
+  switch (route) {
+    case "dashboard": return (
+      <DashboardHome
+        user={user}
+        onNew={() => changeRoute("new")}
+        onOrders={() => changeRoute("orders")}
+        operationalPending={operationalPending}
+        onOpenPending={openPending}
+        onMetricFilter={onMetricFilter}
+      />
+    );
+    case "new": return (
+      <NewOrder key={`${demoMode}:${user.id}`} draftScope={`${demoMode ? "demo" : "production"}:${user.id}`} onCreated={() => changeRoute("orders")} advisorName={user.names} />
+    );
+    case "orders": return (
+      <OrdersView onNew={() => changeRoute("new")} onOpen={(orderId) => onOpenOrder(orderId)} initialStatus={dashboardFilter} />
+    );
+    case "orderDetail":
+      if (!selectedOrderId) return <ModulePlaceholder route={route} />;
+      return (
+        <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} /></Suspense>
+      );
+    case "parts": return (
+      <PartsGlobalWorkbench onOpenOrder={(orderId) => onOpenOrder(orderId, "parts")} />
+    );
+    case "quotes": return <QuotesView onOpen={(orderId) => onOpenOrder(orderId, "quotes")} />;
+    case "audit": return (
+      <Suspense fallback={<div className="empty">Cargando auditoría...</div>}><AuditView /></Suspense>
+    );
+    case "users": return (
+      <Suspense fallback={<div className="empty">Cargando usuarios...</div>}><UsersView currentUserId={user.id} /></Suspense>
+    );
+    case "reports": return (
+      <Suspense fallback={<div className="empty">Cargando reportes...</div>}><ReportsView /></Suspense>
+    );
+  }
+}
+
+function OperationalNotificationsPanel({ notifications, onClose, onOpen }: Readonly<{ notifications: OperationalPendingNotifications; onClose: () => void; onOpen: (item: OperationalPendingItem) => void }>) {
+  const items = pendingItems(notifications);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const trigger = document.activeElement;
+    closeButton.current?.focus();
+    return () => { if (trigger instanceof HTMLElement) trigger.focus(); };
+  }, []);
+  return <dialog open className="notifications-panel" aria-label="Pendientes operativos" onKeyDown={(event) => { if (event.key === "Escape") onClose(); }}>
+    <header><div><strong>Pendientes operativos</strong><small>{notifications.total} por atender</small></div><button ref={closeButton} className="btn small" type="button" onClick={onClose} aria-label="Cerrar pendientes">×</button></header>
+    {items.length ? <div className="notifications-list">{items.slice(0, 8).map((item) => <button key={`${item.kind}-${item.id}`} className={`notification-item ${item.kind === "DIAGNOSIS_PENDING" ? "operational-diagnosis" : "operational-quote"}`} onClick={() => onOpen(item)}>
+      <strong>{item.kind === "DIAGNOSIS_PENDING" ? "Diagnóstico pendiente de subir" : "Cotización pendiente de crear"}</strong><span>{item.orderNumber} · {item.plate} · {item.client}</span><small>{relativeDate(item.createdAt)}</small>
+    </button>)}</div> : <p className="notification-empty">No hay pendientes operativos.</p>}
+  </dialog>;
+}
+
+function OperationalReminder({ notifications, onClose, onView }: Readonly<{ notifications: OperationalPendingNotifications; onClose: () => void; onView: () => void }>) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    element?.showModal();
+    return () => element?.close();
+  }, []);
+  return <dialog ref={dialog} className="operational-reminder" aria-labelledby="operational-reminder-title" onCancel={onClose}><span className="reminder-icon" aria-hidden="true"><BellIcon /></span><h2 id="operational-reminder-title">Tienes {notifications.total} pendiente{notifications.total === 1 ? "" : "s"} por atender</h2><p>{notifications.diagnosisPending.length} diagnóstico{notifications.diagnosisPending.length === 1 ? "" : "s"} por subir y {notifications.quotePending.length} cotización{notifications.quotePending.length === 1 ? "" : "es"} por crear.</p><div><button className="btn" type="button" onClick={onClose}>Continuar trabajando</button><button className="btn primary" type="button" onClick={onView}>Ver pendientes</button></div></dialog>;
 }
 
 function DashboardHome({
@@ -591,14 +615,14 @@ function DashboardHome({
   operationalPending,
   onOpenPending,
   onMetricFilter,
-}: {
+}: Readonly<{
   user: CurrentUser;
   onNew: () => void;
   onOrders: () => void;
   operationalPending: OperationalPendingNotifications;
   onOpenPending: (item: OperationalPendingItem) => void;
   onMetricFilter: (status: string) => void;
-}) {
+}>) {
   const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
   const summaryQuery = useScopedQuery<{ pendingClaims: number }>("navigation-summary", "/orders/navigation-summary");
   const orders = ordersQuery.data?.orders;
@@ -614,10 +638,6 @@ function DashboardHome({
     LISTA_PARA_ENTREGA: { label: "Lista para entrega", tone: "ready" },
   };
   const distribution = Object.entries(statusMeta);
-  const relativeDate = (value: string) => {
-    const days = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
-    return days <= 0 ? "Creada hoy" : `Hace ${days} día${days === 1 ? "" : "s"}`;
-  };
   const pending = pendingItems(operationalPending);
   return (
     <>
@@ -650,11 +670,11 @@ function DashboardHome({
             <h2>Prioridades del taller</h2>
             <button className="btn small" onClick={onOrders}>Ver todas</button>
           </header>
-          {loadError ? (
+          {loadError && (
             <div className="empty">No fue posible cargar las prioridades.</div>
-          ) : !orders ? (
-            <div className="empty" role={loadError ? "alert" : "status"}>{loadError || "Cargando órdenes..."}</div>
-          ) : orders.length ? (
+          )}
+          {!loadError && !orders && <output className="empty">Cargando órdenes...</output>}
+          {!loadError && orders && orders.length > 0 && (
             <div className="dashboard-priorities">
               {orders.slice(0, 5).map((order) => {
                 const meta = statusMeta[order.status] || { label: order.status, tone: "neutral" };
@@ -670,7 +690,8 @@ function DashboardHome({
                 );
               })}
             </div>
-          ) : (
+          )}
+          {!loadError && orders?.length === 0 && (
             <div className="empty">Aún no hay órdenes registradas.</div>
           )}
         </section>
@@ -704,13 +725,13 @@ function Metric({
   value,
   emptyLabel,
   onClick,
-}: {
+}: Readonly<{
   label: string;
   tone: string;
   value: number;
   emptyLabel: string;
   onClick?: () => void;
-}) {
+}>) {
   const content = <><small>{label}</small><strong>{value}</strong><em>{value === 0 ? emptyLabel : "Requiere seguimiento"}</em></>;
   return (
     onClick
@@ -718,7 +739,7 @@ function Metric({
       : <article className={`card metric ${tone}`}>{content}</article>
   );
 }
-function ModulePlaceholder({ route }: { route: Route }) {
+function ModulePlaceholder({ route }: Readonly<{ route: Route }>) {
   return (
     <>
       <div className="page-head">
@@ -752,16 +773,77 @@ type OrderRow = {
   claimPending: boolean | 0 | 1;
   createdAt: string;
 };
-function QuotesView({ onOpen }: { onOpen: (orderId: number) => void }) {
+const quoteLabels: Record<string, string> = { COTIZACION_PENDIENTE: "Por cotizar", ESPERA_APROBACION: "Enviada · espera aprobación" };
+const ageLabels: Record<string, string> = { RECENT: "0–2 días", ATTENTION: "3–5 días", OVERDUE: "+5 días" };
+const daysOld = (date: string) => Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000);
+
+function matchesQuoteAge(date: string, age: string) {
+  const days = daysOld(date);
+  switch (age) {
+    case "RECENT": return days <= 2;
+    case "ATTENTION": return days >= 3 && days <= 5;
+    case "OVERDUE": return days > 5;
+    default: return !age;
+  }
+}
+
+function QuotesView({ onOpen }: Readonly<{ onOpen: (orderId: number) => void }>) {
   const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
   const orders = ordersQuery.data?.orders;
   const loadError = ordersQuery.error?.message;
   const [search, setSearch] = useState(""); const [stage, setStage] = useState(""); const [modality, setModality] = useState(""); const [age, setAge] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
 
-  const labels: Record<string, string> = { COTIZACION_PENDIENTE: "Por cotizar", ESPERA_APROBACION: "Enviada · espera aprobación" }; const all = (orders || []).filter((order) => ["COTIZACION_PENDIENTE", "ESPERA_APROBACION"].includes(order.status)); const daysOld = (date: string) => Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86400000); const visible = all.filter((order) => { const days = daysOld(order.createdAt); const ageMatch = !age || (age === "RECENT" && days <= 2) || (age === "ATTENTION" && days >= 3 && days <= 5) || (age === "OVERDUE" && days > 5); const date = order.createdAt.slice(0, 10); return (!stage || order.status === stage) && (!modality || order.modality === modality) && ageMatch && (!from || date >= from) && (!to || date <= to) && `${order.orderNumber} ${order.plate} ${order.client} ${order.brand} ${order.model}`.toLowerCase().includes(search.toLowerCase()); }); const filterChips = [[stage && `Etapa: ${labels[stage]}`], [modality && `Modalidad: ${modality}`], [age && `Antigüedad: ${age === "RECENT" ? "0–2 días" : age === "ATTENTION" ? "3–5 días" : "+5 días"}`], [from && `Desde: ${from}`], [to && `Hasta: ${to}`], [search && `Búsqueda: ${search}`]].map(([value]) => value).filter(Boolean) as string[]; const clear = () => { setSearch(""); setStage(""); setModality(""); setAge(""); setFrom(""); setTo(""); };
-  return <><div className="page-head"><div><h1>Cotizaciones</h1><p>Priorice cotizaciones por crear y envíos pendientes de aprobación.</p></div></div><div className="quote-inbox-metrics"><button className={stage === "" ? "active" : ""} onClick={() => setStage("")}><small>Casos por atender</small><strong>{all.length}</strong></button><button className={stage === "COTIZACION_PENDIENTE" ? "active amber" : "amber"} onClick={() => setStage("COTIZACION_PENDIENTE")}><small>Por cotizar</small><strong>{all.filter((item) => item.status === "COTIZACION_PENDIENTE").length}</strong></button><button className={stage === "ESPERA_APROBACION" ? "active blue" : "blue"} onClick={() => setStage("ESPERA_APROBACION")}><small>En aprobación</small><strong>{all.filter((item) => item.status === "ESPERA_APROBACION").length}</strong></button><article><small>Más de 5 días</small><strong>{all.filter((item) => daysOld(item.createdAt) > 5).length}</strong></article></div><section className="card quote-inbox"><div className="quote-inbox-toolbar"><div className="quote-inbox-filter-group"><label>Etapa<select value={stage} onChange={(event) => setStage(event.target.value)}><option value="">Todas las etapas</option><option value="COTIZACION_PENDIENTE">Por cotizar</option><option value="ESPERA_APROBACION">Enviada · espera aprobación</option></select></label><label>Modalidad<select value={modality} onChange={(event) => setModality(event.target.value)}><option value="">Todas las modalidades</option>{[...new Set(all.map((item) => item.modality))].map((item) => <option key={item}>{item.replaceAll("_", " ")}</option>)}</select></label><label>Antigüedad<select value={age} onChange={(event) => setAge(event.target.value)}><option value="">Todas</option><option value="RECENT">0–2 días</option><option value="ATTENTION">3–5 días</option><option value="OVERDUE">Más de 5 días</option></select></label></div><div className="quote-inbox-dates"><span>Fecha de creación</span><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label></div><label className="quote-inbox-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, cliente o vehículo" /></label></div><div className="quote-inbox-resultbar">{filterChips.length ? <><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></> : <span>Sin filtros aplicados</span>}<b>{visible.length} caso{visible.length === 1 ? "" : "s"}</b></div>{!orders ? <div className="empty" role={loadError ? "alert" : "status"}>{loadError || "Cargando cotizaciones..."}</div> : !visible.length ? <div className="empty">No hay cotizaciones pendientes con estos filtros.</div> : <><div className="quote-inbox-head"><span aria-hidden="true" /><span>Vehículo y caso</span><span>Modalidad</span><span>Estado</span><span>Acción</span></div><div className="quote-inbox-list">{visible.map((order) => <button className="quote-case" key={order.id} onClick={() => onOpen(order.id)}><PlateBadge plate={order.plate} /><div className="quote-case-summary"><strong>{order.brand} {order.model}</strong><small>{order.orderNumber} · {order.client} · Hace {daysOld(order.createdAt)} día(s)</small></div><span className="quote-case-modality">{order.modality.replaceAll("_", " ")}</span><b className={`status quote-case-status ${order.status === "COTIZACION_PENDIENTE" ? "amber" : "blue"}`}>{labels[order.status]}</b><em className="quote-case-action">Abrir cotización →</em></button>)}</div></>}</section></>;
+  const all = (orders ?? []).filter((order) => ["COTIZACION_PENDIENTE", "ESPERA_APROBACION"].includes(order.status));
+  const visible = all.filter((order) => {
+    const date = order.createdAt.slice(0, 10);
+    return (!stage || order.status === stage) && (!modality || order.modality === modality)
+      && matchesQuoteAge(order.createdAt, age) && (!from || date >= from) && (!to || date <= to)
+      && `${order.orderNumber} ${order.plate} ${order.client} ${order.brand} ${order.model}`.toLowerCase().includes(search.toLowerCase());
+  });
+  const filterChips = [
+    stage && `Etapa: ${quoteLabels[stage]}`, modality && `Modalidad: ${modality}`,
+    age && `Antigüedad: ${ageLabels[age]}`, from && `Desde: ${from}`, to && `Hasta: ${to}`, search && `Búsqueda: ${search}`,
+  ].filter(Boolean);
+  const clear = () => { setSearch(""); setStage(""); setModality(""); setAge(""); setFrom(""); setTo(""); };
+  return <>
+    <div className="page-head"><div><h1>Cotizaciones</h1><p>Priorice cotizaciones por crear y envíos pendientes de aprobación.</p></div></div>
+    <div className="quote-inbox-metrics">
+      <button className={stage === "" ? "active" : ""} onClick={() => setStage("")}><small>Casos por atender</small><strong>{all.length}</strong></button>
+      <button className={stage === "COTIZACION_PENDIENTE" ? "active amber" : "amber"} onClick={() => setStage("COTIZACION_PENDIENTE")}><small>Por cotizar</small><strong>{all.filter((item) => item.status === "COTIZACION_PENDIENTE").length}</strong></button>
+      <button className={stage === "ESPERA_APROBACION" ? "active blue" : "blue"} onClick={() => setStage("ESPERA_APROBACION")}><small>En aprobación</small><strong>{all.filter((item) => item.status === "ESPERA_APROBACION").length}</strong></button>
+      <article><small>Más de 5 días</small><strong>{all.filter((item) => daysOld(item.createdAt) > 5).length}</strong></article>
+    </div>
+    <section className="card quote-inbox">
+      <div className="quote-inbox-toolbar">
+        <div className="quote-inbox-filter-group">
+          <label>Etapa<select value={stage} onChange={(event) => setStage(event.target.value)}><option value="">Todas las etapas</option><option value="COTIZACION_PENDIENTE">Por cotizar</option><option value="ESPERA_APROBACION">Enviada · espera aprobación</option></select></label>
+          <label>Modalidad<select value={modality} onChange={(event) => setModality(event.target.value)}><option value="">Todas las modalidades</option>{[...new Set(all.map((item) => item.modality))].map((item) => <option key={item}>{item.replaceAll("_", " ")}</option>)}</select></label>
+          <label>Antigüedad<select value={age} onChange={(event) => setAge(event.target.value)}><option value="">Todas</option><option value="RECENT">0–2 días</option><option value="ATTENTION">3–5 días</option><option value="OVERDUE">Más de 5 días</option></select></label>
+        </div>
+        <div className="quote-inbox-dates"><span>Fecha de creación</span><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label></div>
+        <label className="quote-inbox-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, cliente o vehículo" /></label>
+      </div>
+      <div className="quote-inbox-resultbar">{filterChips.length ? <><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></> : <span>Sin filtros aplicados</span>}<b>{visible.length} caso{visible.length === 1 ? "" : "s"}</b></div>
+      <QuoteResults orders={orders} visible={visible} loadError={loadError} onOpen={onOpen} />
+    </section>
+  </>;
 }
-function OrdersView({ onNew, onOpen, initialStatus }: { onNew: () => void; onOpen: (orderId: number) => void; initialStatus?: string }) {
+
+function QuoteResults({ orders, visible, loadError, onOpen }: Readonly<{ orders?: OrderRow[]; visible: OrderRow[]; loadError?: string; onOpen: (id: number) => void }>) {
+  if (!orders) return <div className="empty" role={loadError ? "alert" : "status"}>{loadError || "Cargando cotizaciones..."}</div>;
+  if (!visible.length) return <div className="empty">No hay cotizaciones pendientes con estos filtros.</div>;
+  return <>
+    <div className="quote-inbox-head"><span aria-hidden="true" /><span>Vehículo y caso</span><span>Modalidad</span><span>Estado</span><span>Acción</span></div>
+    <div className="quote-inbox-list">{visible.map((order) => <button className="quote-case" key={order.id} onClick={() => onOpen(order.id)}>
+      <PlateBadge plate={order.plate} />
+      <div className="quote-case-summary"><strong>{order.brand} {order.model}</strong><small>{order.orderNumber} · {order.client} · Hace {daysOld(order.createdAt)} día(s)</small></div>
+      <span className="quote-case-modality">{order.modality.replaceAll("_", " ")}</span>
+      <b className={`status quote-case-status ${order.status === "COTIZACION_PENDIENTE" ? "amber" : "blue"}`}>{quoteLabels[order.status]}</b>
+      <em className="quote-case-action">Abrir cotización →</em>
+    </button>)}</div>
+  </>;
+}
+function OrdersView({ onNew, onOpen, initialStatus }: Readonly<{ onNew: () => void; onOpen: (orderId: number) => void; initialStatus?: string }>) {
   const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
   const orders = ordersQuery.data?.orders;
   const loadError = ordersQuery.error?.message;
@@ -786,15 +868,7 @@ function OrdersView({ onNew, onOpen, initialStatus }: { onNew: () => void; onOpe
     ENTREGADA: "Entregada",
     CANCELADA: "Cancelada",
   };
-  const statusTone = (value: string) =>
-    value === "COTIZACION_PENDIENTE" ? "red" :
-    value === "ESPERA_APROBACION" ? "amber" :
-    value === "ESPERA_REPUESTOS" ? "blue" :
-    value === "EN_REPARACION" ? "green" : "neutral";
-  const relativeDate = (value: string) => {
-    const days = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
-    return days <= 0 ? "Creada hoy" : `Hace ${days} día${days === 1 ? "" : "s"}`;
-  };
+  const statusTone = (value: string) => orderStatusTones[value] ?? "neutral";
   return (
     <>
       <div className="page-head">
@@ -833,11 +907,13 @@ function OrdersView({ onNew, onOpen, initialStatus }: { onNew: () => void; onOpe
       </div>
       <section className="card order-list">
         {orders && <div className="order-result-bar">{visible.length} de {orders.length} órdenes</div>}
-        {!orders ? (
+        {!orders && (
           <div className="empty" role={loadError ? "alert" : "status"}>{loadError || "Cargando órdenes..."}</div>
-        ) : visible.length === 0 ? (
+        )}
+        {orders && visible.length === 0 && (
           <div className="empty">No hay coincidencias.</div>
-        ) : (
+        )}
+        {orders && visible.length > 0 && (
           <><div className="order-column-headings" aria-hidden="true"><span>Placa</span><span>Vehículo y orden</span><span>Cliente y modalidad</span><span>Estado y acción</span></div>{visible.map((order) => (
             <button className="order-row" key={order.id} onClick={() => onOpen(order.id)}>
               <PlateBadge plate={order.plate} />
@@ -864,7 +940,18 @@ function OrdersView({ onNew, onOpen, initialStatus }: { onNew: () => void; onOpe
   );
 }
 type ManagedPart = { id: number; orderId: number; orderNumber: string; plate: string; brand: string; model: string; claimNumber?: string; description: string; quantity: number; receivedQuantity: number; partialReceived: boolean; fullyReceived: boolean; partiallyReceived: boolean; freightRequested: boolean; managementStatus: "POR_GESTIONAR" | "PEDIDO" | "EN_TALLER"; quality: "ORIGINAL" | "ALTERNATIVO"; partCode?: string; expectedDate?: string; providerId?: number | null; providerName?: string; providerContact?: string; providerEmail?: string; providerPhone?: string; notes?: string };
-function PartsGlobalWorkbench({ onOpenOrder }: { onOpenOrder: (orderId: number) => void }) {
+const overdue = (part: ManagedPart) => !part.fullyReceived && Boolean(part.expectedDate) && new Date(`${part.expectedDate}T00:00:00`) < new Date(new Date().toDateString());
+function partTone(part: ManagedPart) {
+  if (part.fullyReceived) return "green";
+  if (overdue(part)) return "red";
+  return part.partiallyReceived ? "blue" : "amber";
+}
+function expectedDateLabel(date?: string) {
+  if (!date) return "Sin fecha estimada";
+  const formatted = new Date(`${date}T00:00:00`).toLocaleDateString("es-PE");
+  return `ETA ${formatted}`;
+}
+function PartsGlobalWorkbench({ onOpenOrder }: Readonly<{ onOpenOrder: (orderId: number) => void }>) {
   const [parts, setParts] = useState<ManagedPart[]>();
   const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [provider, setProvider] = useState(""); const [urgency, setUrgency] = useState(""); const [quality, setQuality] = useState(""); const [message, setMessage] = useState<string>();
   useEffect(() => {
@@ -875,7 +962,6 @@ function PartsGlobalWorkbench({ onOpenOrder }: { onOpenOrder: (orderId: number) 
   const all = parts || [];
   const displayStatus = (part: ManagedPart) => part.fullyReceived ? "RECIBIDO" : part.managementStatus;
   const statusLabel = (part: ManagedPart) => ({ POR_GESTIONAR: "Por gestionar", PEDIDO: "Pedido", EN_TALLER: "En taller", RECIBIDO: "Recibido" }[displayStatus(part)] || displayStatus(part));
-  const overdue = (part: ManagedPart) => !part.fullyReceived && Boolean(part.expectedDate) && new Date(`${part.expectedDate}T00:00:00`) < new Date(new Date().toDateString());
   const daysUntil = (date?: string) => date ? Math.floor((new Date(`${date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000) : undefined;
    const visible = all.filter((part) => {
      const text = `${part.orderNumber} ${part.plate} ${part.description} ${part.partCode || ""} ${part.claimNumber || ""} ${part.providerName || ""}`.toLowerCase(); const days = daysUntil(part.expectedDate); const urgencyMatch = !urgency || (urgency === "OVERDUE" && days !== undefined && days < 0) || (urgency === "NEXT_3" && days !== undefined && days >= 0 && days <= 3) || (urgency === "NO_DATE" && !part.expectedDate);
@@ -894,8 +980,8 @@ function PartsGlobalWorkbench({ onOpenOrder }: { onOpenOrder: (orderId: number) 
     <header className="page-head"><div><h1>Gestión de repuestos</h1><p>Priorice solicitudes y recepciones de todos los casos.</p></div></header>
     <div className="global-parts-metrics" aria-label="Indicadores de repuestos">{metrics.map(([label, count, tone]) => <article className={`card ${tone}`} key={label as string}><small>{label}</small><strong>{count}</strong></article>)}</div>
     <section className="card global-parts-panel"><div className="global-parts-filters"><div className="global-parts-filter-group"><label>Estado<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos</option><option value="POR_GESTIONAR">Por gestionar</option><option value="PEDIDO">Pedido</option><option value="RECIBIDO">Recibido</option><option value="EN_TALLER">En taller</option></select></label><label>Urgencia<select value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value="">Todas</option><option value="OVERDUE">Vencido</option><option value="NEXT_3">Próximos 3 días</option><option value="NO_DATE">Sin fecha</option></select></label><label>Proveedor<select value={provider} onChange={(event) => setProvider(event.target.value)}><option value="">Todos</option><option value="NO_PROVIDER">Sin proveedor</option>{providerOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Calidad<select value={quality} onChange={(event) => setQuality(event.target.value)}><option value="">Todas</option><option value="ORIGINAL">Original</option><option value="ALTERNATIVO">Alternativo</option></select></label></div><label className="global-parts-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, siniestro, código, proveedor o repuesto" /></label></div><div className="global-parts-result">{activeFilters ? <button onClick={clearFilters}>Limpiar filtros</button> : <span>Sin filtros aplicados</span>}<b>{visible.length} repuesto(s) encontrado(s)</b></div>
-      <div className="global-parts-table-wrap"><table className="global-parts-table"><thead><tr><th>Repuesto</th><th>Orden y vehículo</th><th>Estado</th><th>Proveedor / ETA</th><th>Recepción</th><th aria-label="Acciones" /></tr></thead><tbody>{visible.map((part) => <tr key={part.id}><td><strong>{part.description}</strong>{part.partCode && <small>Cód. {part.partCode}</small>}</td><td><strong>{part.orderNumber}</strong><small>{part.plate} · {part.brand} {part.model}</small></td><td><span className={`status ${part.fullyReceived ? "green" : overdue(part) ? "red" : part.partiallyReceived ? "blue" : "amber"}`}>{statusLabel(part)}</span></td><td><strong>{part.providerName || "Sin proveedor"}</strong><small>{part.expectedDate ? `ETA ${new Date(`${part.expectedDate}T00:00:00`).toLocaleDateString("es-PE")}` : "Sin fecha estimada"}</small></td><td><strong>{part.receivedQuantity} de {part.quantity}</strong><small>{part.fullyReceived ? "Recepción completa" : "Pendiente de recepción"}</small></td><td><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></td></tr>)}</tbody></table></div>
-      <div className="global-parts-cards">{visible.map((part) => <article key={part.id}><div><span className={`status ${part.fullyReceived ? "green" : overdue(part) ? "red" : part.partiallyReceived ? "blue" : "amber"}`}>{statusLabel(part)}</span><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></div><strong>{part.description}</strong><p>{part.orderNumber} · {part.plate}</p><dl><div><dt>Proveedor</dt><dd>{part.providerName || "Sin proveedor"}</dd></div><div><dt>Recepción</dt><dd>{part.receivedQuantity} de {part.quantity}</dd></div>{part.expectedDate && <div><dt>ETA</dt><dd>{new Date(`${part.expectedDate}T00:00:00`).toLocaleDateString("es-PE")}</dd></div>}</dl></article>)}</div>
+      <div className="global-parts-table-wrap"><table className="global-parts-table"><thead><tr><th>Repuesto</th><th>Orden y vehículo</th><th>Estado</th><th>Proveedor / ETA</th><th>Recepción</th><th aria-label="Acciones" /></tr></thead><tbody>{visible.map((part) => <tr key={part.id}><td><strong>{part.description}</strong>{part.partCode && <small>Cód. {part.partCode}</small>}</td><td><strong>{part.orderNumber}</strong><small>{part.plate} · {part.brand} {part.model}</small></td><td><span className={`status ${partTone(part)}`}>{statusLabel(part)}</span></td><td><strong>{part.providerName || "Sin proveedor"}</strong><small>{expectedDateLabel(part.expectedDate)}</small></td><td><strong>{part.receivedQuantity} de {part.quantity}</strong><small>{part.fullyReceived ? "Recepción completa" : "Pendiente de recepción"}</small></td><td><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></td></tr>)}</tbody></table></div>
+      <div className="global-parts-cards">{visible.map((part) => <article key={part.id}><div><span className={`status ${partTone(part)}`}>{statusLabel(part)}</span><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></div><strong>{part.description}</strong><p>{part.orderNumber} · {part.plate}</p><dl><div><dt>Proveedor</dt><dd>{part.providerName || "Sin proveedor"}</dd></div><div><dt>Recepción</dt><dd>{part.receivedQuantity} de {part.quantity}</dd></div>{part.expectedDate && <div><dt>ETA</dt><dd>{new Date(`${part.expectedDate}T00:00:00`).toLocaleDateString("es-PE")}</dd></div>}</dl></article>)}</div>
       {!visible.length && <p className="empty">No hay repuestos que coincidan con los filtros.</p>}
     </section>
   </section>;
