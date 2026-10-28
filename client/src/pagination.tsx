@@ -53,7 +53,7 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
         <label className="pagination-size">
           Resultados por página
           <select value={controls.pageSize} onChange={(event) => controls.setPageSize(Number(event.target.value))}>
-            {[10, 20, 30, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+            {[10, 20, 30].map((size) => <option key={size} value={size}>{size}</option>)}
           </select>
         </label>
         
