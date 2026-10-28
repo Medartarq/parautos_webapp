@@ -58,6 +58,11 @@ const steps = [
   "Evidencias",
   "Resumen",
 ];
+const initialReceptionData = () => ({
+  modality: "PARTICULAR",
+  colorType: "CATALOGO",
+  fuel: "",
+});
 function readImagePreview(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -70,11 +75,7 @@ function readImagePreview(file: File) {
 export function NewOrder({ onCreated, draftScope }: { onCreated: () => void; advisorName: string; draftScope: string }) {
   const [catalog, setCatalog] = useState<Catalog>();
   const [step, setStep] = useState(0);
-  const [d, setD] = useState<Record<string, string>>({
-    modality: "PARTICULAR",
-    colorType: "CATALOGO",
-    fuel: "",
-  });
+  const [d, setD] = useState<Record<string, string>>(initialReceptionData);
   const [answers, setAnswers] = useState<Record<number, "SI" | "NO">>({});
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [openChecklistCategory, setOpenChecklistCategory] = useState<string>();
@@ -680,7 +681,7 @@ export function NewOrder({ onCreated, draftScope }: { onCreated: () => void; adv
     if (!window.confirm(`Se borrarán los datos ingresados en el paso «${steps[step]}». ¿Desea continuar?`)) return;
 
     if (step === 0) {
-      setD({ modality: "PARTICULAR", colorType: "CATALOGO", fuel: "" });
+      setD(initialReceptionData());
     } else if (step === 1) {
       setAnswers({});
       setNotes({});
@@ -718,6 +719,43 @@ export function NewOrder({ onCreated, draftScope }: { onCreated: () => void; adv
       setAccepted(false);
     }
     setMessage(`Se limpiaron los campos del paso «${steps[step]}».`);
+  };
+  const resetReception = () => {
+    if (createdOrder || saving) return;
+    if (!window.confirm("Se borrarán todos los datos, evidencias y la firma de esta recepción. Volverá al primer paso. ¿Desea continuar?")) return;
+
+    files.forEach((evidence) => URL.revokeObjectURL(evidence.preview));
+    signatureCanvas.current?.getContext("2d")?.clearRect(0, 0, signatureCanvas.current.width, signatureCanvas.current.height);
+    stroke.current = [];
+    setCameraTarget(undefined);
+    setStep(0);
+    setD(initialReceptionData());
+    setAnswers({});
+    setNotes({});
+    setOpenChecklistCategory(undefined);
+    setOpenChecklistNotes({});
+    setChecklistUndo(undefined);
+    setFlagsSelected([]);
+    setDamages([]);
+    setUndoneDamages([]);
+    setView("01");
+    setDamageExpanded(false);
+    setFiles([]);
+    setDiagnosisFile(undefined);
+    setDiagnosisPreview("");
+    setDiagnosisLegibility("PENDIENTE");
+    setDiagnosisReviewState("PENDIENTE_REVISION");
+    setSignature("");
+    setReviewed(false);
+    setAccepted(false);
+    setUploadedEvidence([]);
+    setDiagnosisUploaded(false);
+    setDraftRevision(undefined);
+    setSyncState(navigator.onLine ? "saved" : "offline");
+    setMessage("Recepción reiniciada. Puede comenzar nuevamente desde el primer paso.");
+    void api("/orders/reception-draft", { method: "DELETE" }).catch(() => undefined);
+    void clearLocalReceptionDraft(draftScope);
+    void clearLocalReceptionMedia(draftScope);
   };
   return (
     <section className="wizard full-wizard">
@@ -821,6 +859,7 @@ export function NewOrder({ onCreated, draftScope }: { onCreated: () => void; adv
       </div>
       {message && <p className="wizard-message">{message}</p>}
       <div className="wizard-actions">
+        {!createdOrder && <button type="button" className="btn small reset-reception-button" disabled={saving || !draftReady} onClick={resetReception}>Reiniciar orden</button>}
         {!createdOrder && <button type="button" className="btn small clear-step-button" disabled={saving} onClick={clearCurrentStep}>Limpiar campos</button>}
         {step > 0 && (
           <button

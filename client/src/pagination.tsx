@@ -51,19 +51,18 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
       <span className="pagination-summary" aria-live="polite">
         {busy ? "Cargando resultados…" : `Mostrando ${from}–${to} de ${total}`}
       </span>
-      <div className="pagination-controls">
-        <label className="pagination-size">
-          Resultados por página
-          <select value={controls.pageSize} onChange={(event) => {
-            const size = Number(event.target.value);
-            controls.setPageSize(Number.isNaN(size) ? 10 : size);
-          }}
-          >
-            {[10, 20, 30].map((size) => <option key={size} value={size}>{size}</option>)}
-          </select>
-        </label>
+      <label className="pagination-size">
+        Resultados por página
+        <select value={controls.pageSize} onChange={(event) => {
+          const size = Number(event.target.value);
+          controls.setPageSize(Number.isNaN(size) ? 10 : size);
+        }}
+        >
+          {[10, 20, 30].map((size) => <option key={size} value={size}>{size}</option>)}
+        </select>
+      </label>
 
-        <div className="pagination-navigation">
+      <div className="pagination-navigation">
           <button
             type="button"
             className="btn small"
@@ -120,7 +119,6 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
           >
             Última »
           </button>
-        </div>
       </div>
     </nav>
   );
