@@ -84,7 +84,6 @@ a:visited {
 .login-panel {
   display: grid;
   place-items: center;
-  background: #fff;
 }
 @media (max-width: 700px) {
   .login-panel {
