@@ -33,7 +33,7 @@ no debe definirse y `npm run build` sólo compilará. Tras crear el primer Super
 
 | Rol | Acceso |
 | --- | --- |
-| `SUPERADMINISTRADOR` | Todos los módulos y administración exclusiva de cuentas: listar, crear, activar y desactivar usuarios. |
+| `SUPERADMINISTRADOR` | Todos los módulos y administración exclusiva de cuentas: listar, crear, editar, activar, desactivar y restablecer contraseñas. |
 | `ADMINISTRADOR` | Todo el flujo operativo, Reportes y Auditoría; no puede acceder a Usuarios. |
 | `ASESOR` | Flujo operativo; no puede acceder a Reportes, Auditoría ni Usuarios. |
 
@@ -72,8 +72,12 @@ persistencia, y mantenga copias de seguridad de la carpeta junto con MariaDB.
 | Asesor 1 | `asesor01` | Configuración local no versionada | `ASESOR` |
 | Asesor 2 | `asesor02` | Configuración local no versionada | `ASESOR` |
 
-La cuenta Superadministrador se crea sólo mediante el bootstrap inicial o una
-migración controlada; no se crea desde el directorio de usuarios.
+La cuenta Superadministrador inicial se crea sólo mediante el bootstrap o una
+migración controlada; no se crea desde el formulario de alta de Usuarios. Un
+Superadministrador puede promover una cuenta existente desde la edición.
+
+Cualquier usuario autenticado puede cambiar su propia contraseña desde el
+perfil. El cambio exige la contraseña actual y no revoca las sesiones abiertas.
 
 ## Pruebas de integración con MariaDB
 
