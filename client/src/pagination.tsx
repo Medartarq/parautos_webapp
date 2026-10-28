@@ -40,7 +40,7 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
   const total = info?.total ?? 0;
   const page = info?.page ?? controls.page;
   const pages = info?.pages ?? 1;
-  
+
   const from = total === 0 ? 0 : (page - 1) * controls.pageSize + 1;
   const to = Math.min(page * controls.pageSize, total);
 
@@ -56,8 +56,9 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
           Resultados por página
           <select value={controls.pageSize} onChange={(event) => {
             const size = Number(event.target.value);
-            controls.setPageSize(isNaN(size) ? 10 : size);
-          }}>
+            controls.setPageSize(Number.isNaN(size) ? 10 : size);
+          }}
+          >
             {[10, 20, 30].map((size) => <option key={size} value={size}>{size}</option>)}
           </select>
         </label>

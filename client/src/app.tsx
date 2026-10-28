@@ -277,15 +277,15 @@ const navigation: Array<{
   admin?: boolean;
   superadmin?: boolean;
 }> = [
-  { route: "dashboard", icon: "▦", label: "Panel principal" },
-  { route: "new", icon: "+", label: "Nueva orden" },
-  { route: "orders", icon: "▤", label: "Órdenes" },
-  { route: "quotes", icon: "S/", label: "Cotizaciones" },
-  { route: "parts", icon: "▧", label: "Repuestos" },
-  { route: "reports", icon: "◫", label: "Reportes", admin: true },
-  { route: "audit", icon: "⌁", label: "Auditoría", admin: true },
-  { route: "users", icon: "♙", label: "Usuarios", superadmin: true },
-];
+    { route: "dashboard", icon: "▦", label: "Panel principal" },
+    { route: "new", icon: "+", label: "Nueva orden" },
+    { route: "orders", icon: "▤", label: "Órdenes" },
+    { route: "quotes", icon: "S/", label: "Cotizaciones" },
+    { route: "parts", icon: "▧", label: "Repuestos" },
+    { route: "reports", icon: "◫", label: "Reportes", admin: true },
+    { route: "audit", icon: "⌁", label: "Auditoría", admin: true },
+    { route: "users", icon: "♙", label: "Usuarios", superadmin: true },
+  ];
 const titles: Record<Route, string> = {
   dashboard: "Panel principal",
   new: "Nueva orden",
@@ -494,8 +494,8 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
               {syncLabels[syncState]}
             </small>
           </div>
-            <div className="top-actions">
-              {user.role === "SUPERADMINISTRADOR" && demoAvailable && <button className={`demo-mode-toggle${demoMode ? " active" : ""}`} onClick={() => void toggleDemoMode()}>{demoMode ? "Salir de demo" : "Modo demo"}</button>}
+          <div className="top-actions">
+            {user.role === "SUPERADMINISTRADOR" && demoAvailable && <button className={`demo-mode-toggle${demoMode ? " active" : ""}`} onClick={() => void toggleDemoMode()}>{demoMode ? "Salir de demo" : "Modo demo"}</button>}
             <NotificationCenter notifications={operationalPending} onOpen={openPending} />
             <ProfileDropdown user={user} onLogout={() => onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))} onChangePassword={() => setShowPasswordModal(true)} />
           </div>
@@ -517,10 +517,10 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
           </button>
         ))}
       </nav>
-      {reminderOpen && <OperationalReminder notifications={operationalPending} onClose={() => setReminderOpen(false)} onView={() => { setReminderOpen(false); changeRoute("dashboard"); } } />}
+      {reminderOpen && <OperationalReminder notifications={operationalPending} onClose={() => setReminderOpen(false)} onView={() => { setReminderOpen(false); changeRoute("dashboard"); }} />}
       {showPasswordModal && (
-        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
-          <div className="modal-content card" onClick={(event) => event.stopPropagation()} style={{ maxWidth: "400px" }}>
+        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowPasswordModal(false); }} role="button" tabIndex={0} aria-label="Cerrar ventana">
+          <div className="modal-content card" onClick={(event) => event.stopPropagation()} style={{ maxWidth: 400, width: "100%" }}>
             <button className="btn small" type="button" onClick={() => setShowPasswordModal(false)} style={{ position: "absolute", top: "10px", right: "12px", padding: "4px 8px", fontSize: "12px" }}>×</button>
             <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 18 }}>Cambiar Contraseña</h3>
             <p style={{ color: "#666", marginBottom: 18, fontSize: "0.9rem" }}>
@@ -529,16 +529,51 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
             <form onSubmit={handlePasswordChange} style={{ display: "grid", gap: 12 }}>
               <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
                 Contraseña actual
-                <input name="currentPassword" type="password" required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+                <input
+                  name="currentPassword"
+                  type="password"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #cfd9e5",
+                    borderRadius: 8,
+                    fontFamily: "inherit",
+                    fontSize: "inherit"
+                  }}
+                />
+
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
                 Nueva contraseña
-                <input name="newPassword" type="password" minLength={12} maxLength={128} required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+                <input name="newPassword" type="password" minLength={12} maxLength={128} required style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  border: "1px solid #cfd9e5",
+                  borderRadius: 8,
+                  fontFamily: "inherit",
+                  fontSize: "inherit"
+                }}
+                />
                 <small style={{ color: "#666", fontSize: "0.8rem", fontWeight: "normal" }}>Mínimo 12 caracteres.</small>
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
                 Confirmar nueva contraseña
-                <input name="confirmPassword" type="password" minLength={12} maxLength={128} required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  minLength={12}
+                  maxLength={128}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    border: "1px solid #cfd9e5",
+                    borderRadius: 8,
+                    fontFamily: "inherit",
+                    fontSize: "inherit"
+                  }}
+                />
               </label>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 12 }}>
                 <button type="button" className="btn" onClick={() => setShowPasswordModal(false)} style={{ minHeight: 38 }}>Cancelar</button>
@@ -759,14 +794,14 @@ function DashboardHome({
               {orders.slice(0, 5).map((order) => {
                 const meta = statusMeta[order.status] || { label: order.status, tone: "neutral" };
                 return (
-                <button key={order.id} className={`dashboard-priority ${meta.tone}`} onClick={onOrders}>
-                   <PlateBadge plate={order.plate} compact />
-                  <div>
-                    <strong>{order.brand} {order.model} · {order.color}</strong>
-                    <small>{order.plate} · {order.orderNumber} · {order.client} · {relativeDate(order.createdAt)}</small>
-                  </div>
-                  <b>{meta.label}</b>
-                </button>
+                  <button key={order.id} className={`dashboard-priority ${meta.tone}`} onClick={onOrders}>
+                    <PlateBadge plate={order.plate} compact />
+                    <div>
+                      <strong>{order.brand} {order.model} · {order.color}</strong>
+                      <small>{order.plate} · {order.orderNumber} · {order.client} · {relativeDate(order.createdAt)}</small>
+                    </div>
+                    <b>{meta.label}</b>
+                  </button>
                 );
               })}
             </div>
@@ -784,13 +819,13 @@ function DashboardHome({
               const total = count(status);
               const width = orders?.length ? Math.max(0, (total / orders.length) * 100) : 0;
               return (
-              <div className="chart-row" key={status}>
-                <span>{meta.label}</span>
-                <div>
-                  <i className={meta.tone} style={{ width: `${width}%` }} />
+                <div className="chart-row" key={status}>
+                  <span>{meta.label}</span>
+                  <div>
+                    <i className={meta.tone} style={{ width: `${width}%` }} />
+                  </div>
+                  <b>{total}</b>
                 </div>
-                <b>{total}</b>
-              </div>
               );
             })}
           </div>
@@ -1020,10 +1055,10 @@ function PartsGlobalWorkbench({ onOpenOrder }: Readonly<{ onOpenOrder: (orderId:
   const all = parts ?? [];
   const displayStatus = (part: ManagedPart) => part.fullyReceived ? "RECIBIDO" : part.managementStatus;
   const statusLabel = (part: ManagedPart) => ({ POR_GESTIONAR: "Por gestionar", PEDIDO: "Pedido", EN_TALLER: "En taller", RECIBIDO: "Recibido" }[displayStatus(part)] || displayStatus(part));
-   const visible = all;
-   const providerOptions = (partsQuery.data?.providerOptions ?? []).map((p) => [String(p.id), p.name]);
-   const clearFilters = () => { setSearch(""); setStatus(""); setProvider(""); setUrgency(""); setQuality(""); }; const activeFilters = Boolean(search || status || provider || urgency || quality);
-   const metrics = [
+  const visible = all;
+  const providerOptions = (partsQuery.data?.providerOptions ?? []).map((p) => [String(p.id), p.name]);
+  const clearFilters = () => { setSearch(""); setStatus(""); setProvider(""); setUrgency(""); setQuality(""); }; const activeFilters = Boolean(search || status || provider || urgency || quality);
+  const metrics = [
     ["Vencidos", partsQuery.data?.metrics.overdue ?? 0, "overdue"],
     ["Pedidos", partsQuery.data?.metrics.ordered ?? 0, "ordered"],
     ["Sin proveedor", partsQuery.data?.metrics.unassigned ?? 0, "unassigned"],
