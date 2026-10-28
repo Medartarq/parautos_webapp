@@ -8,5 +8,5 @@ export const DataScopeContext = createContext<DataScope | undefined>(undefined);
 export function useScopedQuery<T>(resource: string, path: string) {
   const scope = useContext(DataScopeContext);
   if (!scope) throw new Error("La consulta necesita un contexto de sesión.");
-  return useQuery({ queryKey: resourceKey(scope, resource), queryFn: ({ signal }) => api<T>(path, { signal }) });
+  return useQuery({ queryKey: [...resourceKey(scope, resource), path], queryFn: ({ signal }) => api<T>(path, { signal }) });
 }

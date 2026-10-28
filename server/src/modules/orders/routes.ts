@@ -3,6 +3,7 @@ import { createOrderSchema, operationalDataSchema } from "@parautos/shared";
 import { requireAuthentication, requireRoles } from "../../middleware/auth.js";
 import { AppError } from "../../errors/app-error.js";
 import { z } from "zod";
+import { listQuerySchema, listPage, orderListSummary, partsPage, recentOrders } from "./paginated-lists.js";
 import {
   createOrder,
   getNavigationSummary,
@@ -20,7 +21,6 @@ import {
   transitionQuote,
   getReceptionCatalog,
   getReceptionDraft,
-  listOrders,
   getOperationalPendingNotifications,
   listParts,
   listPartProviders,
@@ -53,9 +53,11 @@ const receptionDraftSchema = z.object({ revision: z.number().int().positive().op
 ordersRouter.get("/reception-draft", async (request, response) => response.json({ draft: await getReceptionDraft(request.currentUser!.id) }));
 ordersRouter.put("/reception-draft", async (request, response) => response.json({ draft: await saveReceptionDraft(request.currentUser!.id, receptionDraftSchema.parse(request.body)) }));
 ordersRouter.delete("/reception-draft", async (request, response) => { await deleteReceptionDraft(request.currentUser!.id); response.status(204).end(); });
-ordersRouter.get("/", async (_request, response) =>
-  response.json({ orders: await listOrders() }),
-);
+ordersRouter.get("/recent", async (_request, response) => response.json(await recentOrders()));
+ordersRouter.get("/", async (request, response) => {
+  const result = await listPage("orders", listQuerySchema.parse(request.query));
+  response.json({ orders: result.rows, pagination: result.pagination, ...await orderListSummary() });
+});
 ordersRouter.get("/:orderId", async (request, response) => {
   const orderId = Number(request.params.orderId);
   if (!Number.isSafeInteger(orderId) || orderId < 1)
@@ -127,7 +129,7 @@ async function quoteTransition(request: import("express").Request, response: imp
 ordersRouter.post("/:orderId/quotes/:quoteId/send", (request, response) => quoteTransition(request, response, "SEND"));
 ordersRouter.post("/:orderId/quotes/:quoteId/approve", (request, response) => quoteTransition(request, response, "APPROVE"));
 const partUpdateSchema = z.object({ receivedQuantity: z.number().min(0), partialReceived: z.boolean().optional(), managementStatus: z.enum(["POR_GESTIONAR", "PEDIDO", "EN_TALLER"]), quality: z.enum(["ORIGINAL", "ALTERNATIVO"]), partCode: z.string().trim().max(120).optional(), expectedDate: z.string().date().optional().or(z.literal("")), providerId: z.number().int().positive().optional().nullable(), notes: z.string().trim().max(4000).optional() });
-ordersRouter.get("/parts/workbench", async (request, response) => response.json({ parts: await listParts(), providers: await listPartProviders(typeof request.query.brand === "string" ? request.query.brand : undefined, typeof request.query.quality === "string" ? request.query.quality : undefined) }));
+ordersRouter.get("/parts/workbench", async (request, response) => response.json({ ...await partsPage(listQuerySchema.parse(request.query)), providers: await listPartProviders(typeof request.query.brand === "string" ? request.query.brand : undefined, typeof request.query.quality === "string" ? request.query.quality : undefined) }));
 ordersRouter.get("/:orderId/parts", async (request, response) => {
   const orderId = Number(request.params.orderId); if (!Number.isSafeInteger(orderId) || orderId < 1) throw new AppError(400, "INVALID_ORDER", "La orden no es válida.");
   response.json({ parts: await listParts(orderId), logistics: await getPartsLogistics(orderId) });

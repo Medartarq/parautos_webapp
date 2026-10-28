@@ -1,11 +1,8 @@
-import { snapshotIdentityColumn } from "../orders/reception-snapshot.js";
 import { Router } from "express";
 import { requireAuthentication, requireRoles } from "../../middleware/auth.js";
 import { getPool } from "../../db/pool.js";
+import { exportReportRows, listPage, listQuerySchema, reportOptions } from "../orders/paginated-lists.js";
 
-type OperationalOrderRow = { id: number; orderNumber: string; status: string; modality: string; createdAt: Date };
-type PendingQuoteRow = { orderNumber: string; plate: string; brand: string; model: string; color: string; client: string; advisor: string | null; modality: string; status: string; createdAt: Date; sentAt: Date | null };
-type PendingPartRow = { orderNumber: string; plate: string; brand: string; model: string; client: string; advisor: string | null; description: string; quantity: number | string; receivedQuantity: number | string; status: string; providerName: string | null; expectedDate: string | null; updatedAt: Date };
 type AdvisorActivityRow = { names: string; created: number | string; diagnosis: number | string; quotes: number | string; sent: number | string; delivered: number | string };
 type WeeklyRow = { week: string; created: number | string; sent: number | string; delivered: number | string };
 type AdvisorWorkloadRow = { names: string; quotePending: number | string; approvalPending: number | string; partsPending: number | string; repair: number | string; ready: number | string };
@@ -14,17 +11,28 @@ type QuoteFunnelRow = { created: number | string; sent: number | string; approve
 
 export const reportsRouter = Router();
 reportsRouter.use(requireAuthentication, requireRoles("SUPERADMINISTRADOR", "ADMINISTRADOR"));
+reportsRouter.get("/export/:kind", async (request, response) => {
+  if (!["quotes", "parts"].includes(request.params.kind)) { response.status(404).end(); return; }
+  const kind = request.params.kind === "quotes" ? "reportQuotes" : "reportParts";
+  response.json({ rows: await exportReportRows(kind, listQuerySchema.parse(request.query)) });
+});
+reportsRouter.get("/list/:kind", async (request, response) => {
+  if (!["quotes", "parts"].includes(request.params.kind)) { response.status(404).end(); return; }
+  const kind = request.params.kind === "quotes" ? "reportQuotes" : "reportParts";
+  const result = await listPage(kind, listQuerySchema.parse(request.query));
+  response.json({ ...result, options: await reportOptions(kind) });
+});
 reportsRouter.get("/operational", async (_request, response) => {
   const pool = getPool();
   const [orders, quotes, parts, advisorActivity, weekly, advisorWorkload, aging, quoteFunnel] = await Promise.all([
-    pool.query<OperationalOrderRow[]>("SELECT o.id, o.order_number AS orderNumber, o.internal_status AS status, o.modality, o.created_at AS createdAt FROM service_orders o"),
-    pool.query<PendingQuoteRow[]>(`SELECT o.order_number AS orderNumber, ${snapshotIdentityColumn("plate", "v.plate")} AS plate, ${snapshotIdentityColumn("brand", "v.brand")} AS brand, ${snapshotIdentityColumn("model", "v.model")} AS model, ${snapshotIdentityColumn("color", "v.color")} AS color, ${snapshotIdentityColumn("client", "c.full_name")} AS client, ${snapshotIdentityColumn("advisorName", "u.names")} AS advisor, o.modality, q.status, q.created_at AS createdAt, q.sent_at AS sentAt FROM quote_versions q JOIN service_orders o ON o.id=q.order_id JOIN client_vehicles cv ON cv.id=o.client_vehicle_id JOIN clients c ON c.id=cv.client_id JOIN vehicles v ON v.id=cv.vehicle_id LEFT JOIN users u ON u.id=o.advisor_user_id  LEFT JOIN reception_snapshots rs ON rs.order_id = o.id WHERE q.status IN ('PENDIENTE','ENVIADA') AND q.version_number=(SELECT MAX(q2.version_number) FROM quote_versions q2 WHERE q2.order_id=q.order_id) ORDER BY q.created_at DESC`),
-    pool.query<PendingPartRow[]>(`SELECT o.order_number AS orderNumber, ${snapshotIdentityColumn("plate", "v.plate")} AS plate, ${snapshotIdentityColumn("brand", "v.brand")} AS brand, ${snapshotIdentityColumn("model", "v.model")} AS model, ${snapshotIdentityColumn("client", "c.full_name")} AS client, ${snapshotIdentityColumn("advisorName", "u.names")} AS advisor, p.description, p.quantity, p.received_quantity AS receivedQuantity, p.management_status AS status, p.provider_name AS providerName, p.expected_date AS expectedDate, p.updated_at AS updatedAt FROM order_parts p JOIN service_orders o ON o.id=p.order_id JOIN client_vehicles cv ON cv.id=o.client_vehicle_id JOIN clients c ON c.id=cv.client_id JOIN vehicles v ON v.id=cv.vehicle_id LEFT JOIN users u ON u.id=o.advisor_user_id  LEFT JOIN reception_snapshots rs ON rs.order_id = o.id WHERE p.received_quantity < p.quantity ORDER BY p.expected_date IS NULL, p.expected_date, p.updated_at DESC`),
+    pool.query<any[]>("SELECT internal_status AS status, modality, COUNT(*) AS total FROM service_orders GROUP BY internal_status, modality"),
+    pool.query<any[]>("SELECT COUNT(*) AS total FROM quote_versions q WHERE q.status IN ('PENDIENTE','ENVIADA') AND q.version_number=(SELECT MAX(q2.version_number) FROM quote_versions q2 WHERE q2.order_id=q.order_id)"),
+    pool.query<any[]>("SELECT COUNT(*) AS total FROM order_parts WHERE received_quantity<quantity"),
     pool.query<AdvisorActivityRow[]>("SELECT u.names, SUM(ae.action='CREATED') AS created, SUM(ae.action='DIAGNOSIS_UPLOADED') AS diagnosis, SUM(ae.action IN ('QUOTE_CREATED','QUOTE_UPDATED')) AS quotes, SUM(ae.action='QUOTE_SENT') AS sent, SUM(ae.action='ORDER_DELIVERED') AS delivered FROM users u JOIN roles r ON r.id=u.role_id LEFT JOIN audit_events ae ON ae.actor_user_id=u.id AND ae.created_at >= DATE_SUB(CURDATE(), INTERVAL 90 DAY) WHERE r.code='ASESOR' AND u.active=1 GROUP BY u.id, u.names ORDER BY u.names"),
     pool.query<WeeklyRow[]>("SELECT DATE_FORMAT(created_at, '%Y-%u') AS week, SUM(action='CREATED') AS created, SUM(action='QUOTE_SENT') AS sent, SUM(action='ORDER_DELIVERED') AS delivered FROM audit_events WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 8 WEEK) GROUP BY DATE_FORMAT(created_at, '%Y-%u') ORDER BY week"),
     pool.query<AdvisorWorkloadRow[]>("SELECT u.names, SUM(o.internal_status='COTIZACION_PENDIENTE') AS quotePending, SUM(o.internal_status='ESPERA_APROBACION') AS approvalPending, SUM(o.internal_status='ESPERA_REPUESTOS') AS partsPending, SUM(o.internal_status='EN_REPARACION') AS repair, SUM(o.internal_status='LISTA_PARA_ENTREGA') AS ready FROM users u JOIN roles r ON r.id=u.role_id LEFT JOIN service_orders o ON o.advisor_user_id=u.id AND o.internal_status NOT IN ('ENTREGADA','CANCELADA') WHERE r.code='ASESOR' AND u.active=1 GROUP BY u.id, u.names ORDER BY u.names"),
     pool.query<AgingRow[]>("SELECT source, SUM(days_old BETWEEN 0 AND 2) AS recent, SUM(days_old BETWEEN 3 AND 5) AS attention, SUM(days_old > 5) AS overdue, SUM(days_old IS NULL) AS withoutDate FROM (SELECT 'COTIZACIONES' AS source, TIMESTAMPDIFF(DAY, q.created_at, NOW()) AS days_old FROM quote_versions q WHERE q.status IN ('PENDIENTE','ENVIADA') AND q.version_number=(SELECT MAX(q2.version_number) FROM quote_versions q2 WHERE q2.order_id=q.order_id) UNION ALL SELECT 'REPUESTOS', CASE WHEN p.expected_date IS NULL THEN NULL ELSE TIMESTAMPDIFF(DAY, p.expected_date, CURDATE()) END FROM order_parts p WHERE p.received_quantity<p.quantity) pending GROUP BY source"),
     pool.query<QuoteFunnelRow[]>("SELECT COUNT(*) AS created, SUM(status IN ('ENVIADA','APROBADA')) AS sent, SUM(status='APROBADA') AS approved FROM quote_versions q WHERE q.version_number=(SELECT MAX(q2.version_number) FROM quote_versions q2 WHERE q2.order_id=q.order_id)"),
   ]);
-  response.json({ orders, quotes, parts, advisorActivity, weekly, advisorWorkload, aging, quoteFunnel: quoteFunnel[0] ?? { created: 0, sent: 0, approved: 0 } });
+  response.json({ orders, quoteCount: Number(quotes[0].total), partCount: Number(parts[0].total), advisorActivity, weekly, advisorWorkload, aging, quoteFunnel: quoteFunnel[0] ?? { created: 0, sent: 0, approved: 0 } });
 });

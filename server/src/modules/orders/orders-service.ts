@@ -260,7 +260,10 @@ export async function listOrders(repository: OrdersListRepository = mariaDbOrder
 
 export async function getOperationalPendingNotifications(repository: OrdersNavigationRepository = mariaDbOrdersNavigationRepository) {
   const [diagnosisPending, quotePending] = await repository.pendingNotifications();
-  return { total: diagnosisPending.length + quotePending.length, diagnosisPending, quotePending };
+  const diagnosisCount = Number(diagnosisPending[0]?.groupTotal ?? diagnosisPending.length);
+  const quoteCount = Number(quotePending[0]?.groupTotal ?? quotePending.length);
+  const clean = (rows: any[]) => rows.map(({ groupTotal: _total, ...row }) => row);
+  return { total: diagnosisCount + quoteCount, diagnosisCount, quoteCount, diagnosisPending: clean(diagnosisPending), quotePending: clean(quotePending.slice(0, Math.max(0, 8 - diagnosisPending.length))) };
 }
 
 export async function getOrderDetail(orderId: number, repository: OrderDetailRepository = mariaDbOrderDetailRepository) {

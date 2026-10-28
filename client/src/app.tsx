@@ -19,6 +19,7 @@ import { NewOrder } from "./full-new-order";
 import { api } from "./api";
 import { useQuery } from "@tanstack/react-query";
 import { DataScopeContext, useScopedQuery } from "./scoped-query";
+import { Pagination, usePagination, type PageInfo } from "./pagination";
 
 const ReportsView = lazy(() => import("./reports-view").then(({ ReportsView }) => ({ default: ReportsView })));
 const OrderDetail = lazy(() => import("./order-detail").then(({ OrderDetail }) => ({ default: OrderDetail })));
@@ -41,6 +42,8 @@ type OperationalPendingItem = {
 };
 type OperationalPendingNotifications = {
   total: number;
+  diagnosisCount?: number;
+  quoteCount?: number;
   diagnosisPending: Omit<OperationalPendingItem, "kind">[];
   quotePending: Omit<OperationalPendingItem, "kind">[];
 };
@@ -605,7 +608,9 @@ function OperationalReminder({ notifications, onClose, onView }: Readonly<{ noti
     element?.showModal();
     return () => element?.close();
   }, []);
-  return <dialog ref={dialog} className="operational-reminder" aria-labelledby="operational-reminder-title" onCancel={onClose}><span className="reminder-icon" aria-hidden="true"><BellIcon /></span><h2 id="operational-reminder-title">Tienes {notifications.total} pendiente{notifications.total === 1 ? "" : "s"} por atender</h2><p>{notifications.diagnosisPending.length} diagnóstico{notifications.diagnosisPending.length === 1 ? "" : "s"} por subir y {notifications.quotePending.length} cotización{notifications.quotePending.length === 1 ? "" : "es"} por crear.</p><div><button className="btn" type="button" onClick={onClose}>Continuar trabajando</button><button className="btn primary" type="button" onClick={onView}>Ver pendientes</button></div></dialog>;
+  const diagnosisCount = notifications.diagnosisCount ?? notifications.diagnosisPending.length;
+  const quoteCount = notifications.quoteCount ?? notifications.quotePending.length;
+  return <dialog ref={dialog} className="operational-reminder" aria-labelledby="operational-reminder-title" onCancel={onClose}><span className="reminder-icon" aria-hidden="true"><BellIcon /></span><h2 id="operational-reminder-title">Tienes {notifications.total} pendiente{notifications.total === 1 ? "" : "s"} por atender</h2><p>{diagnosisCount} diagnóstico{diagnosisCount === 1 ? "" : "s"} por subir y {quoteCount} cotización{quoteCount === 1 ? "" : "es"} por crear.</p><div><button className="btn" type="button" onClick={onClose}>Continuar trabajando</button><button className="btn primary" type="button" onClick={onView}>Ver pendientes</button></div></dialog>;
 }
 
 function DashboardHome({
@@ -623,13 +628,12 @@ function DashboardHome({
   onOpenPending: (item: OperationalPendingItem) => void;
   onMetricFilter: (status: string) => void;
 }>) {
-  const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
+  const ordersQuery = useScopedQuery<{ orders: OrderRow[]; counts: Record<string, number> }>("orders", "/orders/recent");
   const summaryQuery = useScopedQuery<{ pendingClaims: number }>("navigation-summary", "/orders/navigation-summary");
   const orders = ordersQuery.data?.orders;
   const pendingClaims = summaryQuery.data?.pendingClaims ?? 0;
   const loadError = ordersQuery.isError || summaryQuery.isError;
-  const count = (status: string) =>
-    orders?.filter((order) => order.status === status).length || 0;
+  const count = (status: string) => ordersQuery.data?.counts?.[status] || 0;
   const statusMeta: Record<string, { label: string; tone: string }> = {
     COTIZACION_PENDIENTE: { label: "Cotización pendiente", tone: "red" },
     ESPERA_APROBACION: { label: "Espera aprobación", tone: "amber" },
@@ -663,7 +667,7 @@ function DashboardHome({
           <i>Ver órdenes →</i>
         </button>
       )}
-      {pending.length > 0 && <section className="dashboard-operational-pending card"><header><div><h2>Pendientes operativos</h2><small>Diagnósticos y cotizaciones que requieren atención.</small></div><span className="status amber">{pending.length}</span></header><div>{pending.slice(0, 5).map((item) => <button key={`${item.kind}-${item.id}`} className="dashboard-pending-item" onClick={() => onOpenPending(item)}><span className={item.kind === "DIAGNOSIS_PENDING" ? "operational-diagnosis" : "operational-quote"}>{item.kind === "DIAGNOSIS_PENDING" ? "Diagnóstico pendiente" : "Cotización pendiente"}</span><strong>{item.orderNumber} · {item.plate}</strong><small>{item.client} · {relativeDate(item.createdAt)}</small></button>)}</div></section>}
+      {pending.length > 0 && <section className="dashboard-operational-pending card"><header><div><h2>Pendientes operativos</h2><small>Diagnósticos y cotizaciones que requieren atención.</small></div><span className="status amber">{operationalPending.total}</span></header><div>{pending.slice(0, 5).map((item) => <button key={`${item.kind}-${item.id}`} className="dashboard-pending-item" onClick={() => onOpenPending(item)}><span className={item.kind === "DIAGNOSIS_PENDING" ? "operational-diagnosis" : "operational-quote"}>{item.kind === "DIAGNOSIS_PENDING" ? "Diagnóstico pendiente" : "Cotización pendiente"}</span><strong>{item.orderNumber} · {item.plate}</strong><small>{item.client} · {relativeDate(item.createdAt)}</small></button>)}</div></section>}
       <div className="dashboard-columns">
         <section className="card">
           <header>
@@ -777,29 +781,15 @@ const quoteLabels: Record<string, string> = { COTIZACION_PENDIENTE: "Por cotizar
 const ageLabels: Record<string, string> = { RECENT: "0–2 días", ATTENTION: "3–5 días", OVERDUE: "+5 días" };
 const daysOld = (date: string) => Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000);
 
-function matchesQuoteAge(date: string, age: string) {
-  const days = daysOld(date);
-  switch (age) {
-    case "RECENT": return days <= 2;
-    case "ATTENTION": return days >= 3 && days <= 5;
-    case "OVERDUE": return days > 5;
-    default: return !age;
-  }
-}
 
 function QuotesView({ onOpen }: Readonly<{ onOpen: (orderId: number) => void }>) {
-  const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
+  const [search, setSearch] = useState(""); const [stage, setStage] = useState(""); const [modality, setModality] = useState(""); const [age, setAge] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
+  const paging = usePagination({ search, status: stage, modality, age, from, to, view: "quotes" });
+  const ordersQuery = useScopedQuery<{ orders: OrderRow[]; pagination: PageInfo; counts: Record<string, number>; overdue: number }>("orders", `/orders?${paging.params}`);
   const orders = ordersQuery.data?.orders;
   const loadError = ordersQuery.error?.message;
-  const [search, setSearch] = useState(""); const [stage, setStage] = useState(""); const [modality, setModality] = useState(""); const [age, setAge] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
-
-  const all = (orders ?? []).filter((order) => ["COTIZACION_PENDIENTE", "ESPERA_APROBACION"].includes(order.status));
-  const visible = all.filter((order) => {
-    const date = order.createdAt.slice(0, 10);
-    return (!stage || order.status === stage) && (!modality || order.modality === modality)
-      && matchesQuoteAge(order.createdAt, age) && (!from || date >= from) && (!to || date <= to)
-      && `${order.orderNumber} ${order.plate} ${order.client} ${order.brand} ${order.model}`.toLowerCase().includes(search.toLowerCase());
-  });
+  const visible = orders ?? [];
+  const counts = ordersQuery.data?.counts ?? {};
   const filterChips = [
     stage && `Etapa: ${quoteLabels[stage]}`, modality && `Modalidad: ${modality}`,
     age && `Antigüedad: ${ageLabels[age]}`, from && `Desde: ${from}`, to && `Hasta: ${to}`, search && `Búsqueda: ${search}`,
@@ -808,22 +798,23 @@ function QuotesView({ onOpen }: Readonly<{ onOpen: (orderId: number) => void }>)
   return <>
     <div className="page-head"><div><h1>Cotizaciones</h1><p>Priorice cotizaciones por crear y envíos pendientes de aprobación.</p></div></div>
     <div className="quote-inbox-metrics">
-      <button className={stage === "" ? "active" : ""} onClick={() => setStage("")}><small>Casos por atender</small><strong>{all.length}</strong></button>
-      <button className={stage === "COTIZACION_PENDIENTE" ? "active amber" : "amber"} onClick={() => setStage("COTIZACION_PENDIENTE")}><small>Por cotizar</small><strong>{all.filter((item) => item.status === "COTIZACION_PENDIENTE").length}</strong></button>
-      <button className={stage === "ESPERA_APROBACION" ? "active blue" : "blue"} onClick={() => setStage("ESPERA_APROBACION")}><small>En aprobación</small><strong>{all.filter((item) => item.status === "ESPERA_APROBACION").length}</strong></button>
-      <article><small>Más de 5 días</small><strong>{all.filter((item) => daysOld(item.createdAt) > 5).length}</strong></article>
+      <button className={stage === "" ? "active" : ""} onClick={() => setStage("")}><small>Casos por atender</small><strong>{(counts.COTIZACION_PENDIENTE ?? 0) + (counts.ESPERA_APROBACION ?? 0)}</strong></button>
+      <button className={stage === "COTIZACION_PENDIENTE" ? "active amber" : "amber"} onClick={() => setStage("COTIZACION_PENDIENTE")}><small>Por cotizar</small><strong>{counts.COTIZACION_PENDIENTE ?? 0}</strong></button>
+      <button className={stage === "ESPERA_APROBACION" ? "active blue" : "blue"} onClick={() => setStage("ESPERA_APROBACION")}><small>En aprobación</small><strong>{counts.ESPERA_APROBACION ?? 0}</strong></button>
+      <article><small>Más de 5 días</small><strong>{ordersQuery.data?.overdue ?? 0}</strong></article>
     </div>
     <section className="card quote-inbox">
       <div className="quote-inbox-toolbar">
         <div className="quote-inbox-filter-group">
           <label>Etapa<select value={stage} onChange={(event) => setStage(event.target.value)}><option value="">Todas las etapas</option><option value="COTIZACION_PENDIENTE">Por cotizar</option><option value="ESPERA_APROBACION">Enviada · espera aprobación</option></select></label>
-          <label>Modalidad<select value={modality} onChange={(event) => setModality(event.target.value)}><option value="">Todas las modalidades</option>{[...new Set(all.map((item) => item.modality))].map((item) => <option key={item}>{item.replaceAll("_", " ")}</option>)}</select></label>
+          <label>Modalidad<select value={modality} onChange={(event) => setModality(event.target.value)}><option value="">Todas las modalidades</option>{["PARTICULAR", "PACIFICO", "MAPFRE", "LA_POSITIVA", "RIMAC", "QUALITAS"].map((item) => <option key={item} value={item}>{item.replaceAll("_", " ")}</option>)}</select></label>
           <label>Antigüedad<select value={age} onChange={(event) => setAge(event.target.value)}><option value="">Todas</option><option value="RECENT">0–2 días</option><option value="ATTENTION">3–5 días</option><option value="OVERDUE">Más de 5 días</option></select></label>
         </div>
         <div className="quote-inbox-dates"><span>Fecha de creación</span><label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label><label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label></div>
         <label className="quote-inbox-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, cliente o vehículo" /></label>
       </div>
-      <div className="quote-inbox-resultbar">{filterChips.length ? <><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></> : <span>Sin filtros aplicados</span>}<b>{visible.length} caso{visible.length === 1 ? "" : "s"}</b></div>
+      {filterChips.length > 0 && <div className="quote-inbox-resultbar"><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></div>}
+      <Pagination controls={paging} info={ordersQuery.data?.pagination} busy={ordersQuery.isFetching} />
       <QuoteResults orders={orders} visible={visible} loadError={loadError} onOpen={onOpen} />
     </section>
   </>;
@@ -844,21 +835,15 @@ function QuoteResults({ orders, visible, loadError, onOpen }: Readonly<{ orders?
   </>;
 }
 function OrdersView({ onNew, onOpen, initialStatus }: Readonly<{ onNew: () => void; onOpen: (orderId: number) => void; initialStatus?: string }>) {
-  const ordersQuery = useScopedQuery<{ orders: OrderRow[] }>("orders", "/orders");
-  const orders = ordersQuery.data?.orders;
-  const loadError = ordersQuery.error?.message;
   const [filter, setFilter] = useState("");
   const [status, setStatus] = useState(initialStatus ?? "ALL");
   const [modality, setModality] = useState("ALL");
   const [onlyPendingClaim, setOnlyPendingClaim] = useState(false);
-  const visible =
-    orders?.filter((order) =>
-      `${order.orderNumber} ${order.client} ${order.plate} ${order.brand} ${order.model}`
-        .toLowerCase()
-        .includes(filter.toLowerCase()),
-    ).filter((order) => status === "ALL" || order.status === status)
-      .filter((order) => modality === "ALL" || order.modality === modality)
-      .filter((order) => !onlyPendingClaim || Boolean(order.claimPending)) ?? [];
+  const paging = usePagination({ search: filter, status, modality, pendingClaim: String(onlyPendingClaim) });
+  const ordersQuery = useScopedQuery<{ orders: OrderRow[]; pagination: PageInfo; total: number }>("orders", `/orders?${paging.params}`);
+  const orders = ordersQuery.data?.orders;
+  const loadError = ordersQuery.error?.message;
+  const visible = orders ?? [];
   const statuses: Record<string, string> = {
     COTIZACION_PENDIENTE: "Cotización pendiente",
     ESPERA_APROBACION: "Espera aprobación",
@@ -897,7 +882,7 @@ function OrdersView({ onNew, onOpen, initialStatus }: Readonly<{ onNew: () => vo
           <span>Modalidad</span>
           <select value={modality} onChange={(event) => setModality(event.target.value)}>
             <option value="ALL">Todas las modalidades</option>
-            {[...new Set(orders?.map((order) => order.modality) || [])].map((value) => <option value={value} key={value}>{value.replaceAll("_", " ")}</option>)}
+            {["PARTICULAR", "PACIFICO", "MAPFRE", "LA_POSITIVA", "RIMAC", "QUALITAS"].map((value) => <option value={value} key={value}>{value.replaceAll("_", " ")}</option>)}
           </select>
         </label>
         <label className="order-claim-filter">
@@ -906,7 +891,7 @@ function OrdersView({ onNew, onOpen, initialStatus }: Readonly<{ onNew: () => vo
         </label>
       </div>
       <section className="card order-list">
-        {orders && <div className="order-result-bar">{visible.length} de {orders.length} órdenes</div>}
+        <Pagination controls={paging} info={ordersQuery.data?.pagination} busy={ordersQuery.isFetching} />
         {!orders && (
           <div className="empty" role={loadError ? "alert" : "status"}>{loadError || "Cargando órdenes..."}</div>
         )}
@@ -952,37 +937,32 @@ function expectedDateLabel(date?: string) {
   return `ETA ${formatted}`;
 }
 function PartsGlobalWorkbench({ onOpenOrder }: Readonly<{ onOpenOrder: (orderId: number) => void }>) {
-  const [parts, setParts] = useState<ManagedPart[]>();
-  const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [provider, setProvider] = useState(""); const [urgency, setUrgency] = useState(""); const [quality, setQuality] = useState(""); const [message, setMessage] = useState<string>();
-  useEffect(() => {
-    api<{ parts: ManagedPart[] }>("/orders/parts/workbench")
-      .then((result) => setParts(result.parts))
-      .catch((error: Error) => setMessage(error.message));
-  }, []);
-  const all = parts || [];
+  const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [provider, setProvider] = useState(""); const [urgency, setUrgency] = useState(""); const [quality, setQuality] = useState("");
+  const paging = usePagination({ search, status, provider, age: urgency, quality });
+  const partsQuery = useScopedQuery<{ parts: ManagedPart[]; pagination: PageInfo; metrics: Record<string, number>; providerOptions: { id: number; name: string }[] }>("orders", `/orders/parts/workbench?${paging.params}`);
+  const parts = partsQuery.data?.parts;
+  const all = parts ?? [];
   const displayStatus = (part: ManagedPart) => part.fullyReceived ? "RECIBIDO" : part.managementStatus;
   const statusLabel = (part: ManagedPart) => ({ POR_GESTIONAR: "Por gestionar", PEDIDO: "Pedido", EN_TALLER: "En taller", RECIBIDO: "Recibido" }[displayStatus(part)] || displayStatus(part));
-  const daysUntil = (date?: string) => date ? Math.floor((new Date(`${date}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000) : undefined;
-   const visible = all.filter((part) => {
-     const text = `${part.orderNumber} ${part.plate} ${part.description} ${part.partCode || ""} ${part.claimNumber || ""} ${part.providerName || ""}`.toLowerCase(); const days = daysUntil(part.expectedDate); const urgencyMatch = !urgency || (urgency === "OVERDUE" && days !== undefined && days < 0) || (urgency === "NEXT_3" && days !== undefined && days >= 0 && days <= 3) || (urgency === "NO_DATE" && !part.expectedDate);
-     return (!search || text.includes(search.trim().toLowerCase())) && (!status || displayStatus(part) === status) && (!provider || (provider === "NO_PROVIDER" ? !part.providerId : String(part.providerId) === provider)) && (!quality || part.quality === quality) && urgencyMatch;
-   });
-   const providerOptions = [...new Map(all.filter((part) => part.providerId && part.providerName).map((part) => [String(part.providerId), part.providerName!])).entries()];
+   const visible = all;
+   const providerOptions = (partsQuery.data?.providerOptions ?? []).map((p) => [String(p.id), p.name]);
    const clearFilters = () => { setSearch(""); setStatus(""); setProvider(""); setUrgency(""); setQuality(""); }; const activeFilters = Boolean(search || status || provider || urgency || quality);
    const metrics = [
-    ["Vencidos", all.filter(overdue).length, "overdue"],
-    ["Pedidos", all.filter((part) => displayStatus(part) === "PEDIDO").length, "ordered"],
-    ["Sin proveedor", all.filter((part) => !part.fullyReceived && !part.providerId).length, "unassigned"],
-    ["Recibidos", all.filter((part) => part.fullyReceived).length, "received"],
+    ["Vencidos", partsQuery.data?.metrics.overdue ?? 0, "overdue"],
+    ["Pedidos", partsQuery.data?.metrics.ordered ?? 0, "ordered"],
+    ["Sin proveedor", partsQuery.data?.metrics.unassigned ?? 0, "unassigned"],
+    ["Recibidos", partsQuery.data?.metrics.received ?? 0, "received"],
   ];
-  if (!parts) return <div className="empty">{message || "Cargando repuestos..."}</div>;
   return <section className="global-parts-workbench">
     <header className="page-head"><div><h1>Gestión de repuestos</h1><p>Priorice solicitudes y recepciones de todos los casos.</p></div></header>
     <div className="global-parts-metrics" aria-label="Indicadores de repuestos">{metrics.map(([label, count, tone]) => <article className={`card ${tone}`} key={label as string}><small>{label}</small><strong>{count}</strong></article>)}</div>
-    <section className="card global-parts-panel"><div className="global-parts-filters"><div className="global-parts-filter-group"><label>Estado<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos</option><option value="POR_GESTIONAR">Por gestionar</option><option value="PEDIDO">Pedido</option><option value="RECIBIDO">Recibido</option><option value="EN_TALLER">En taller</option></select></label><label>Urgencia<select value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value="">Todas</option><option value="OVERDUE">Vencido</option><option value="NEXT_3">Próximos 3 días</option><option value="NO_DATE">Sin fecha</option></select></label><label>Proveedor<select value={provider} onChange={(event) => setProvider(event.target.value)}><option value="">Todos</option><option value="NO_PROVIDER">Sin proveedor</option>{providerOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Calidad<select value={quality} onChange={(event) => setQuality(event.target.value)}><option value="">Todas</option><option value="ORIGINAL">Original</option><option value="ALTERNATIVO">Alternativo</option></select></label></div><label className="global-parts-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, siniestro, código, proveedor o repuesto" /></label></div><div className="global-parts-result">{activeFilters ? <button onClick={clearFilters}>Limpiar filtros</button> : <span>Sin filtros aplicados</span>}<b>{visible.length} repuesto(s) encontrado(s)</b></div>
+    <section className="card global-parts-panel"><div className="global-parts-filters"><div className="global-parts-filter-group"><label>Estado<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos</option><option value="POR_GESTIONAR">Por gestionar</option><option value="PEDIDO">Pedido</option><option value="RECIBIDO">Recibido</option><option value="EN_TALLER">En taller</option></select></label><label>Urgencia<select value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value="">Todas</option><option value="OVERDUE">Vencido</option><option value="NEXT_3">Próximos 3 días</option><option value="NO_DATE">Sin fecha</option></select></label><label>Proveedor<select value={provider} onChange={(event) => setProvider(event.target.value)}><option value="">Todos</option><option value="NO_PROVIDER">Sin proveedor</option>{providerOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><label>Calidad<select value={quality} onChange={(event) => setQuality(event.target.value)}><option value="">Todas</option><option value="ORIGINAL">Original</option><option value="ALTERNATIVO">Alternativo</option></select></label></div><label className="global-parts-search">Buscar<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Orden, placa, siniestro, código, proveedor o repuesto" /></label></div>
+      {activeFilters && <div className="global-parts-result"><button onClick={clearFilters}>Limpiar filtros</button></div>}
+      <Pagination controls={paging} info={partsQuery.data?.pagination} busy={partsQuery.isFetching} />
       <div className="global-parts-table-wrap"><table className="global-parts-table"><thead><tr><th>Repuesto</th><th>Orden y vehículo</th><th>Estado</th><th>Proveedor / ETA</th><th>Recepción</th><th aria-label="Acciones" /></tr></thead><tbody>{visible.map((part) => <tr key={part.id}><td><strong>{part.description}</strong>{part.partCode && <small>Cód. {part.partCode}</small>}</td><td><strong>{part.orderNumber}</strong><small>{part.plate} · {part.brand} {part.model}</small></td><td><span className={`status ${partTone(part)}`}>{statusLabel(part)}</span></td><td><strong>{part.providerName || "Sin proveedor"}</strong><small>{expectedDateLabel(part.expectedDate)}</small></td><td><strong>{part.receivedQuantity} de {part.quantity}</strong><small>{part.fullyReceived ? "Recepción completa" : "Pendiente de recepción"}</small></td><td><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></td></tr>)}</tbody></table></div>
       <div className="global-parts-cards">{visible.map((part) => <article key={part.id}><div><span className={`status ${partTone(part)}`}>{statusLabel(part)}</span><button className="btn small" onClick={() => onOpenOrder(part.orderId)}>Gestionar</button></div><strong>{part.description}</strong><p>{part.orderNumber} · {part.plate}</p><dl><div><dt>Proveedor</dt><dd>{part.providerName || "Sin proveedor"}</dd></div><div><dt>Recepción</dt><dd>{part.receivedQuantity} de {part.quantity}</dd></div>{part.expectedDate && <div><dt>ETA</dt><dd>{new Date(`${part.expectedDate}T00:00:00`).toLocaleDateString("es-PE")}</dd></div>}</dl></article>)}</div>
-      {!visible.length && <p className="empty">No hay repuestos que coincidan con los filtros.</p>}
+      {partsQuery.error && <p role="alert">{partsQuery.error.message}</p>}
+      {!partsQuery.isFetching && !visible.length && <p className="empty">No hay repuestos que coincidan con los filtros.</p>}
     </section>
   </section>;
 }

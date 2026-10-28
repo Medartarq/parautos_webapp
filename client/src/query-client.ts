@@ -25,7 +25,7 @@ export async function invalidateOrderQueries(path: string, method: string, clien
   if (!/^\/(orders(?:\/|$)|attachments\/orders\/)/.test(pathname)) return;
   if (/\/(reception-draft|quote-draft)$/.test(pathname)) return;
   const predicate = (query: { queryKey: readonly unknown[] }) => query.queryKey[0] === "session"
-    && ["orders", "navigation-summary", "pending-notifications"].includes(String(query.queryKey[3]));
+    && ["orders", "reports", "navigation-summary", "pending-notifications"].includes(String(query.queryKey[3]));
   await client.cancelQueries({ predicate });
   await client.invalidateQueries({ predicate });
 }
