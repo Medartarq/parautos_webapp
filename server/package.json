@@ -19,11 +19,11 @@
     "@aws-sdk/client-s3": "^3.1152.0",
     "@parautos/shared": "file:../shared",
     "argon2": "^0.41.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "helmet": "^8.0.0",
-    "mariadb": "^3.4.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "mariadb": "^3.5.4",
     "multer": "^2.5.0",
     "pino": "^10.4.0",
     "zod": "^4.6.7"
@@ -33,8 +33,8 @@
     "@types/express": "^5.0.1",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.4",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
     "vitest": "^5.0.4"
   }
 }
