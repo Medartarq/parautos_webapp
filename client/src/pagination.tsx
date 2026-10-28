@@ -41,37 +41,42 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
   const page = info?.page ?? controls.page;
   const pages = info?.pages ?? 1;
   
+  const from = total === 0 ? 0 : (page - 1) * controls.pageSize + 1;
+  const to = Math.min(page * controls.pageSize, total);
+
   const pageNumbers = generatePageNumbers(page, pages);
 
   return (
     <nav className="pagination" aria-label="Paginación de resultados">
       <span className="pagination-summary" aria-live="polite">
-        {busy ? "Cargando resultados…" : `Mostrando ${total ? (page - 1) * controls.pageSize + 1 : 0}–${Math.min(page * controls.pageSize, total)} de ${total}`}
+        {busy ? "Cargando resultados…" : `Mostrando ${from}–${to} de ${total}`}
       </span>
-      
       <div className="pagination-controls">
         <label className="pagination-size">
           Resultados por página
-          <select value={controls.pageSize} onChange={(event) => controls.setPageSize(Number(event.target.value))}>
+          <select value={controls.pageSize} onChange={(event) => {
+            const size = Number(event.target.value);
+            controls.setPageSize(isNaN(size) ? 10 : size);
+          }}>
             {[10, 20, 30].map((size) => <option key={size} value={size}>{size}</option>)}
           </select>
         </label>
-        
+
         <div className="pagination-navigation">
-          <button 
-            type="button" 
-            className="btn small" 
-            disabled={busy || page <= 1} 
+          <button
+            type="button"
+            className="btn small"
+            disabled={busy || page <= 1}
             onClick={() => controls.setPage(1)}
             title="Primera página"
           >
             « Primera
           </button>
 
-          <button 
-            type="button" 
-            className="btn small" 
-            disabled={busy || page <= 1} 
+          <button
+            type="button"
+            className="btn small"
+            disabled={busy || page <= 1}
             onClick={() => controls.setPage(page - 1)}
           >
             Anterior
@@ -96,19 +101,19 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
             })}
           </div>
 
-          <button 
-            type="button" 
-            className="btn small" 
-            disabled={busy || page >= pages} 
+          <button
+            type="button"
+            className="btn small"
+            disabled={busy || page >= pages}
             onClick={() => controls.setPage(page + 1)}
           >
             Siguiente
           </button>
 
-          <button 
-            type="button" 
-            className="btn small" 
-            disabled={busy || page >= pages} 
+          <button
+            type="button"
+            className="btn small"
+            disabled={busy || page >= pages}
             onClick={() => controls.setPage(pages)}
             title="Última página"
           >
