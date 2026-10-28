@@ -41,6 +41,13 @@ const DIAGNOSES = [
 const FUEL_LEVELS = [0, 25, 50, 75, 100] as const;
 
 export type SeedSummary = { created: number; skipped: number; failed: number };
+export type SeedOutcome = "created" | "failed";
+
+type SeedCatalogs = {
+  advisors: Array<{ id: number }>;
+  bodyTypes: Array<{ id: number }>;
+  checklist: Array<{ id: number }>;
+};
 
 function nonNegativeInt(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -55,6 +62,10 @@ function plateFor(index: number): string {
   return `DM-${String(index + 1).padStart(4, "0")}`;
 }
 
+function normalizedPlateFor(index: number): string {
+  return plateFor(index).replace(/[^A-Z0-9]/g, "");
+}
+
 function quoteLines(index: number): { noParts: boolean; lines: QuoteLine[] } {
   const withParts = index % 3 === 0;
   const lines: QuoteLine[] = [
@@ -64,6 +75,83 @@ function quoteLines(index: number): { noParts: boolean; lines: QuoteLine[] } {
   if (withParts)
     lines.push({ type: "REPUESTO", description: "Repuesto demostrativo de carrocería", quantity: 1, unitPrice: 190 + (index % 7) * 35 });
   return { noParts: !withParts, lines };
+}
+
+function checklistAnswersFor(checklist: SeedCatalogs["checklist"]) {
+  return checklist.map((item, itemIndex) => {
+    const needsRepair = itemIndex % 11 === 0;
+    return {
+      itemId: item.id,
+      answer: needsRepair ? ("NO" as const) : ("SI" as const),
+      observation: needsRepair ? "Revisar durante la reparación" : undefined,
+    };
+  });
+}
+
+/**
+ * Crea una orden demo con su cotización y, según la etapa, su envío/aprobación.
+ * Devuelve el resultado en lugar de lanzar, para que el lote continúe ante un
+ * caso defectuoso.
+ */
+async function seedOneCase(catalogs: SeedCatalogs, index: number): Promise<SeedOutcome> {
+  const plate = plateFor(index);
+  const normalized = normalizedPlateFor(index);
+  const slot = index % BRANDS.length;
+  const modality = MODALITIES[index % MODALITIES.length];
+  const actorId = catalogs.advisors[index % catalogs.advisors.length].id;
+  const documentNumber = String(70_000_000 + index);
+
+  try {
+    const order = await createOrder({
+      client: {
+        documentType: "DNI",
+        documentNumber,
+        fullName: `Cliente Demo ${String(index + 1).padStart(4, "0")}`,
+        phone: "999888777",
+        email: `cliente${index + 1}@demo.parautos.pe`,
+      },
+      vehicle: {
+        plate,
+        brand: BRANDS[slot],
+        model: MODELS[slot],
+        year: 2015 + (index % 10),
+        // El VIN excluye I, O y Q: "DMV" + 8 dígitos + 6 dígitos = 17 caracteres.
+        vin: `DMV${documentNumber}${String(index).padStart(6, "0")}`,
+        color: COLORS[slot],
+        colorType: "CATALOGO",
+        bodyTypeId: catalogs.bodyTypes[index % catalogs.bodyTypes.length].id,
+      },
+      modality,
+      claimNumber: modality === "PARTICULAR" ? undefined : `DM-2026-${String(index + 1).padStart(4, "0")}`,
+      claimPendingReminder: false,
+      diagnosisPendingReminder: false,
+      mileage: 12_000 + (index % 90) * 137,
+      fuelLevel: FUEL_LEVELS[index % FUEL_LEVELS.length],
+      considerations: ["Caso generado para la prueba de carga de 1,000 órdenes demo."],
+      damages: [],
+      diagnosis: DIAGNOSES[index % DIAGNOSES.length],
+      diagnosisLegibility: "LEGIBLE",
+      diagnosisReviewState: "REVISADA",
+      checklistReviewed: true,
+      signature: SIGNATURE,
+      checklist: checklistAnswersFor(catalogs.checklist),
+      acceptedTerms: true,
+    }, actorId, `demo-1000-${normalized}`, "127.0.0.1", "PARAUTOS demo 1000");
+
+    const quote = await createQuote(order.id, { currency: "PEN", ...quoteLines(index) }, actorId, `demo-1000-quote-${normalized}`);
+
+    const stage = index % 4;
+    if (stage !== 0)
+      await transitionQuote(order.id, quote.id, "SEND", actorId, `demo-1000-send-${normalized}`);
+    if (stage === 3)
+      await transitionQuote(order.id, quote.id, "APPROVE", actorId, `demo-1000-approve-${normalized}`);
+
+    return "created";
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[seed-1000] Falló índice=${index} placa=${plate}: ${message}`);
+    return "failed";
+  }
 }
 
 /**
@@ -103,80 +191,31 @@ export async function seed1000Demo(): Promise<SeedSummary> {
     );
     const existingPlates = new Set(existing.map((row) => String(row.plate)));
 
+    const catalogs: SeedCatalogs = { advisors, bodyTypes, checklist };
     const summary: SeedSummary = { created: 0, skipped: 0, failed: 0 };
     const startedAt = Date.now();
     console.info(`[seed-1000] Iniciando ${count} casos demo desde el índice ${start}...`);
 
     for (let offset = 0; offset < count; offset += 1) {
       const index = start + offset;
-      const plate = plateFor(index);
-      const normalizedPlate = plate.replace(/[^A-Z0-9]/g, "");
-      if (existingPlates.has(normalizedPlate)) { summary.skipped += 1; continue; }
+      if (existingPlates.has(normalizedPlateFor(index))) {
+        summary.skipped += 1;
+        continue;
+      }
 
-      const slot = index % BRANDS.length;
-      const modality = MODALITIES[index % MODALITIES.length];
-      const documentNumber = String(70_000_000 + index);
-      const checklistAnswers = checklist.map((item, itemIndex) => ({
-        itemId: item.id,
-        answer: itemIndex % 11 === 0 ? ("NO" as const) : ("SI" as const),
-        observation: itemIndex % 11 === 0 ? "Revisar durante la reparación" : undefined,
-      }));
-
-      try {
-        const order = await createOrder({
-          client: {
-            documentType: "DNI",
-            documentNumber,
-            fullName: `Cliente Demo ${String(index + 1).padStart(4, "0")}`,
-            phone: "999888777",
-            email: `cliente${index + 1}@demo.parautos.pe`,
-          },
-          vehicle: {
-            plate,
-            brand: BRANDS[slot],
-            model: MODELS[slot],
-            year: 2015 + (index % 10),
-            // El VIN excluye I, O y Q: "DMV" + 8 dígitos + 6 dígitos = 17 caracteres.
-            vin: `DMV${documentNumber}${String(index).padStart(6, "0")}`,
-            color: COLORS[slot],
-            colorType: "CATALOGO",
-            bodyTypeId: bodyTypes[index % bodyTypes.length].id,
-          },
-          modality,
-          claimNumber: modality === "PARTICULAR" ? undefined : `DM-2026-${String(index + 1).padStart(4, "0")}`,
-          claimPendingReminder: false,
-          diagnosisPendingReminder: false,
-          mileage: 12_000 + (index % 90) * 137,
-          fuelLevel: FUEL_LEVELS[index % FUEL_LEVELS.length],
-          considerations: ["Caso generado para la prueba de carga de 1,000 órdenes demo."],
-          damages: [],
-          diagnosis: DIAGNOSES[index % DIAGNOSES.length],
-          diagnosisLegibility: "LEGIBLE",
-          diagnosisReviewState: "REVISADA",
-          checklistReviewed: true,
-          signature: SIGNATURE,
-          checklist: checklistAnswers,
-          acceptedTerms: true,
-        }, advisors[index % advisors.length].id, `demo-1000-${normalizedPlate}`, "127.0.0.1", "PARAUTOS demo 1000");
-
-        const quote = await createQuote(order.id, { currency: "PEN", ...quoteLines(index) }, advisors[index % advisors.length].id, `demo-1000-quote-${normalizedPlate}`);
-
-        const stage = index % 4;
-        if (stage === 1 || stage === 2 || stage === 3)
-          await transitionQuote(order.id, quote.id, "SEND", advisors[index % advisors.length].id, `demo-1000-send-${normalizedPlate}`);
-        if (stage === 3)
-          await transitionQuote(order.id, quote.id, "APPROVE", advisors[index % advisors.length].id, `demo-1000-approve-${normalizedPlate}`);
-
-        existingPlates.add(normalizedPlate);
-        summary.created += 1;
-        if (summary.created % 50 === 0) {
-          const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
-          console.info(`[seed-1000] ${summary.created}/${count} creadas (${seconds}s, ${summary.failed} fallidas)`);
-        }
-      } catch (error: unknown) {
+      // Carga secuencial intencional: cada caso depende de la orden y la
+      // cotización anteriores, y así se aísla el error por registro.
+      const outcome = await seedOneCase(catalogs, index); // NOSONAR: secuencial intencional (order → quote → transition)
+      if (outcome === "failed") {
         summary.failed += 1;
-        const message = error instanceof Error ? error.message : String(error);
-        console.error(`[seed-1000] Falló índice=${index} placa=${plate}: ${message}`);
+        continue;
+      }
+
+      existingPlates.add(normalizedPlateFor(index));
+      summary.created += 1;
+      if (summary.created % 50 === 0) {
+        const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
+        console.info(`[seed-1000] ${summary.created}/${count} creadas (${seconds}s, ${summary.failed} fallidas)`);
       }
     }
 
