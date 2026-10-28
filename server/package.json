@@ -9,6 +9,8 @@
     "start": "node dist/server.js",
     "migrate": "tsx src/db/migrate.ts",
     "seed:demo": "tsx src/db/seed-demo.ts",
+    "seed:demo:1000": "tsx src/db/seed-1000-demo.ts",
+    "verify:demo:1000": "tsx src/db/verify-1000-demo.ts",
     "seed:reports": "tsx src/db/seed-report-analytics.ts",
     "test": "vitest run"
   },

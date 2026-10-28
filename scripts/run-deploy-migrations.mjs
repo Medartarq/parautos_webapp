@@ -1,4 +1,32 @@
 import { spawn } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+// En Hostinger las variables pueden vivir en .env; este script corre antes de
+// que la aplicación cargue dotenv, así que se leen aquí sin sobrescribir el
+// entorno real de la plataforma.
+function loadDotEnv() {
+  try {
+    const content = readFileSync(join(process.cwd(), ".env"), "utf8");
+    for (const line of content.split(/\r?\n/)) {
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/.exec(line);
+      if (!match) continue;
+      const [, key, rawValue] = match;
+      if (process.env[key] !== undefined) continue;
+      let value = rawValue.trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      )
+        value = value.slice(1, -1);
+      process.env[key] = value;
+    }
+  } catch {
+    // Sin .env: se usa el entorno provisto por la plataforma.
+  }
+}
+
+loadDotEnv();
 
 if (process.env.DEPLOY_RUN_MIGRATIONS !== "true") {
   console.info("Database migrations skipped. Set DEPLOY_RUN_MIGRATIONS=true only in the deployment environment.");
@@ -6,29 +34,31 @@ if (process.env.DEPLOY_RUN_MIGRATIONS !== "true") {
 }
 
 function run(script) {
+  if (!existsSync(script)) {
+    console.error(`No se encontró el script compilado: ${script}. Ejecute "npm run build:app" antes.`);
+    process.exitCode = 1;
+    return Promise.reject(new Error(`Missing compiled script: ${script}`));
+  }
   return new Promise((resolve, reject) => {
-    // Usar npx tsx para ejecutar scripts TypeScript, igual que hace el proyecto
-    const migration = spawn("npx", ["tsx", script], {
-      env: process.env,
-      stdio: "inherit",
-      shell: true,
-    });
-    migration.on("error", reject);
-    migration.on("exit", (code, signal) =>
-      code === 0 ? resolve() : reject(new Error(`Script failed${signal ? ` (${signal})` : ""}.`))
+    const child = spawn(process.execPath, [script], { env: process.env, stdio: "inherit" });
+    child.on("error", reject);
+    child.on("exit", (code, signal) =>
+      code === 0 ? resolve() : reject(new Error(`Script failed: ${script}${signal ? ` (${signal})` : ""}.`))
     );
   });
 }
 
 console.info("Applying database migrations before publishing the deployment.");
 try {
-  await run("server/src/db/migrate.ts");
+  await run("server/dist/db/migrate.js");
   if (process.env.DEMO_MODE_ENABLED === "true") {
-    console.info("Running demo database migrations and seed...");
-    await run("server/src/db/seed-demo.ts");
-    // Cargar 1000 casos ficticios en la base demo para entornos de prueba
-    console.info("Seeding 1000 demo orders from scripts/...");
-    await run("scripts/seed-1000-demo.ts");
+    console.info("Applying demo database migrations and base demo seed...");
+    await run("server/dist/db/migrate-demo.js");
+    await run("server/dist/db/seed-demo-environment.js");
+    if (process.env.DEMO_SEED_1000 !== "false") {
+      console.info("Loading fictional demo orders for the pagination and volume test...");
+      await run("server/dist/db/seed-1000-demo.js");
+    }
   }
 } catch (error) {
   console.error(error);

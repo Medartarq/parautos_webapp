@@ -20,4 +20,30 @@ La misma regla se aplica a producción y demo a través del ámbito de conexión
 6. Exportar un reporte con más de 30 coincidencias y verificar que incluye todas.
 7. Cambiar entre demo y producción y confirmar que los resultados pertenecen al modo activo.
 
-El despliegue de esta mejora no requiere migraciones nuevas ni carga datos ficticios.
+## Carga de volumen en la base demo
+
+Los casos ficticios viven únicamente en la base demo. La carga se ejecuta con
+`runWithDatabaseScope("demo")`, por lo que `createOrder`, `createQuote` y
+`transitionQuote` usan la conexión demo y la carpeta de adjuntos demo. Si
+`DEMO_MODE_ENABLED` no es `true`, el proceso se detiene sin escribir nada.
+
+```bash
+npm run seed:demo:1000     # carga 1.000 órdenes (idempotente por placa DM-####)
+npm run verify:demo:1000   # reporte de solo lectura
+```
+
+Variables opcionales:
+
+- `DEMO_SEED_COUNT` (por defecto `1000`) y `DEMO_SEED_START` (por defecto `0`) para
+  ejecutar lotes o reanudar una carga.
+- `DEMO_SEED_1000=false` omite la carga durante el despliegue.
+
+El despliegue (`scripts/run-deploy-migrations.mjs`) ejecuta, con los binarios
+compilados de `server/dist`, las migraciones, las migraciones demo, el seed demo
+base y esta carga cuando `DEMO_MODE_ENABLED=true` y `DEPLOY_RUN_MIGRATIONS=true`.
+Las órdenes ya cargadas se omiten, así que los despliegues posteriores no
+duplican datos.
+
+Formato de los datos ficticios: DNI `70xxxxxx`, placa `DM-####`, VIN `DMV…`,
+correo `cliente<n>@demo.parautos.pe`. Esos prefijos son los que identifican el
+lote para una limpieza controlada.

@@ -17,6 +17,8 @@
     "dev": "concurrently -n server,client -c blue,green \"npm run dev --workspace @parautos/server\" \"npm run dev --workspace @parautos/client\"",
     "migrate": "npm run migrate --workspace @parautos/server",
     "seed:demo": "npm run seed:demo --workspace @parautos/server",
+    "seed:demo:1000": "npm run seed:demo:1000 --workspace @parautos/server",
+    "verify:demo:1000": "npm run verify:demo:1000 --workspace @parautos/server",
     "seed:reports": "npm run seed:reports --workspace @parautos/server",
     "test": "npm run build --workspace @parautos/shared && npm run test --workspace @parautos/server && npm run test --workspace @parautos/client"
   },
