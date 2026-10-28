@@ -46,15 +46,106 @@ export async function createManagedUser(input: ManagedUserInput, actorUserId: nu
   return users.find((user) => user.id === id)!;
 }
 
+export async function updateManagedUser(
+  userId: number,
+  input: { names?: string; email?: string; username?: string; role?: string; newPassword?: string; active?: boolean },
+  actorUserId: number,
+  requestId: string,
+  ipAddress?: string,
+  userAgent?: string,
+): Promise<void> {
+  const argon2 = (await import("argon2")).default;
+  const connection = await getPool().getConnection();
+  let failed = true;
+  try {
+    await connection.beginTransaction();
+    const user = (await connection.query<Array<{ id: number; username: string; names: string; email: string; role: string; active: number; anonymizedAt?: Date }>>(
+      "SELECT u.id, u.username, u.names, u.email, r.code AS role, u.active, u.anonymized_at FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ? FOR UPDATE",
+      [userId],
+    ))[0];
+    if (!user) throw new AppError(404, "USER_NOT_FOUND", "El usuario no existe.");
+    if (user.anonymizedAt) throw new AppError(409, "USER_ANONYMIZED", "La cuenta ya fue anonimizada y no puede modificarse.");
+
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    const previousData: Record<string, unknown> = { names: user.names, email: user.email, username: user.username, role: user.role, active: Boolean(user.active) };
+    const newData: Record<string, unknown> = {};
+
+    if (input.names !== undefined && input.names.trim() !== user.names) {
+      updates.push("names = ?");
+      values.push(input.names.trim());
+      previousData.names = user.names;
+      newData.names = input.names.trim();
+    }
+    if (input.email !== undefined && input.email.toLowerCase() !== user.email) {
+      const existing = await connection.query<Array<{ id: number }>>("SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1", [input.email.toLowerCase(), userId]);
+      if (existing[0]) throw new AppError(409, "EMAIL_ALREADY_EXISTS", "El correo ya está registrado.");
+      updates.push("email = ?");
+      values.push(input.email.toLowerCase());
+      newData.email = input.email.toLowerCase();
+    }
+    if (input.username !== undefined && input.username.trim() !== user.username) {
+      const existing = await connection.query<Array<{ id: number }>>("SELECT id FROM users WHERE username = ? AND id <> ? LIMIT 1", [input.username.trim(), userId]);
+      if (existing[0]) throw new AppError(409, "USERNAME_ALREADY_EXISTS", "El nombre de usuario ya está registrado.");
+      updates.push("username = ?");
+      values.push(input.username.trim());
+      newData.username = input.username.trim();
+    }
+    if (input.role !== undefined && input.role !== user.role) {
+      const roleRows = await connection.query<Array<{ id: number }>>("SELECT id FROM roles WHERE code = ? AND active = 1 LIMIT 1", [input.role]);
+      if (!roleRows[0]) throw new AppError(400, "ROLE_NOT_FOUND", "El rol seleccionado no está disponible.");
+      updates.push("role_id = ?");
+      values.push(roleRows[0].id);
+      newData.role = input.role;
+    }
+    if (input.newPassword !== undefined && input.newPassword.trim().length > 0) {
+      const passwordHash = await argon2.hash(input.newPassword.trim(), { type: argon2.argon2id });
+      updates.push("password_hash = ?");
+      values.push(passwordHash);
+      updates.push("password_changed_at = UTC_TIMESTAMP(6)");
+      newData.password_changed = true;
+    }
+    if (input.active !== undefined && Boolean(input.active) !== Boolean(user.active)) {
+      if (userId === actorUserId && !input.active) {
+        throw new AppError(400, "SELF_DEACTIVATION", "No puede desactivar su propia cuenta.");
+      }
+      updates.push("active = ?");
+      values.push(input.active ? 1 : 0);
+      if (input.active) {
+        updates.push("deactivated_at = NULL");
+      } else {
+        updates.push("deactivated_at = UTC_TIMESTAMP(6)");
+      }
+      newData.active = input.active;
+    }
+    if (updates.length === 0) {
+      await connection.rollback();
+      return;
+    }
+
+    values.push(userId);
+    await connection.query(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`, values);
+
+    await connection.query(
+      "INSERT INTO audit_events (actor_user_id, entity, record_id, action, previous_data, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, 'USER_UPDATED', ?, ?, ?, ?, ?)",
+      [actorUserId, String(userId), JSON.stringify(previousData), JSON.stringify(newData), requestId, ipAddress ?? null, userAgent ?? null],
+    );
+    await connection.commit();
+    failed = false;
+  } finally {
+    try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); }
+  }
+}
+
 export async function setManagedUserActive(userId: number, active: boolean, actorUserId: number, requestId: string, ipAddress?: string, userAgent?: string): Promise<void> {
   if (userId === actorUserId && !active) throw new AppError(400, "SELF_DEACTIVATION", "No puede desactivar su propia cuenta.");
   const connection = await getPool().getConnection();
   let failed = true;
   try {
     await connection.beginTransaction();
-  const result = await connection.query<{ affectedRows: number }>("UPDATE users SET active = ?, deactivated_at = CASE WHEN ? THEN NULL ELSE UTC_TIMESTAMP(6) END WHERE id = ? AND anonymized_at IS NULL", [active ? 1 : 0, active ? 1 : 0, userId]);
-  if (!result.affectedRows) throw new AppError(404, "USER_NOT_FOUND", "El usuario no existe.");
-  await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('active', ?), ?, ?, ?)", [actorUserId, String(userId), active ? "USER_ACTIVATED" : "USER_DEACTIVATED", active, requestId, ipAddress ?? null, userAgent ?? null]);
+    const result = await connection.query<{ affectedRows: number }>("UPDATE users SET active = ?, deactivated_at = CASE WHEN ? THEN NULL ELSE UTC_TIMESTAMP(6) END WHERE id = ? AND anonymized_at IS NULL", [active ? 1 : 0, active ? 1 : 0, userId]);
+    if (!result.affectedRows) throw new AppError(404, "USER_NOT_FOUND", "El usuario no existe.");
+    await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('active', ?), ?, ?, ?)", [actorUserId, String(userId), active ? "USER_ACTIVATED" : "USER_DEACTIVATED", active, requestId, ipAddress ?? null, userAgent ?? null]);
     await connection.commit();
     failed = false;
   } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
@@ -89,4 +180,40 @@ export async function deleteManagedUser(userId: number, actorUserId: number, req
     await connection.query("INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, ?, JSON_OBJECT('username', ?), ?, ?, ?)", [actorUserId, String(userId), hasHistory ? 'USER_ANONYMIZED' : 'USER_DELETED', user.username, requestId, ipAddress ?? null, userAgent ?? null]);
     await connection.commit(); failed = false;
   } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
+}
+
+export async function changeOwnPassword(
+  userId: number,
+  input: { currentPassword: string; newPassword: string },
+  requestId: string,
+  ipAddress?: string,
+  userAgent?: string,
+): Promise<void> {
+  const connection = await getPool().getConnection();
+  let failed = true;
+  try {
+    await connection.beginTransaction();
+    const user = (await connection.query<Array<{ id: number; password_hash: string }>>(
+      "SELECT id, password_hash FROM users WHERE id = ? AND active = 1 AND anonymized_at IS NULL LIMIT 1",
+      [userId],
+    ))[0];
+    if (!user) throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado.");
+
+    const isValid = await argon2.verify(user.password_hash, input.currentPassword);
+    if (!isValid) throw new AppError(401, "INVALID_PASSWORD", "La contraseña actual es incorrecta.");
+
+    const newHash = await argon2.hash(input.newPassword.trim(), { type: argon2.argon2id });
+    await connection.query(
+      "UPDATE users SET password_hash = ?, password_changed_at = UTC_TIMESTAMP(6) WHERE id = ?",
+      [newHash, userId],
+    );
+    await connection.query(
+      "INSERT INTO audit_events (actor_user_id, entity, record_id, action, new_data, request_id, ip_address, user_agent) VALUES (?, 'user', ?, 'PASSWORD_CHANGED', JSON_OBJECT('password_changed', true), ?, ?, ?)",
+      [userId, String(userId), requestId, ipAddress ?? null, userAgent ?? null],
+    );
+    await connection.commit();
+    failed = false;
+  } finally {
+    try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); }
+  }
 }

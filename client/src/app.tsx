@@ -320,6 +320,7 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
   const [dashboardFilter, setDashboardFilter] = useState<string>();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sessionError, setSessionError] = useState<string>();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<"expanded" | "compact">(
     () => localStorage.getItem("parautos-sidebar-mode") === "compact" ? "compact" : "expanded",
   );
@@ -394,6 +395,32 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
+
+  const handlePasswordChange = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!user.id) return;
+    const form = new FormData(event.currentTarget);
+    const currentPassword = String(form.get("currentPassword") || "");
+    const newPassword = String(form.get("newPassword") || "");
+    const confirmPassword = String(form.get("confirmPassword") || "");
+
+    if (newPassword !== confirmPassword) {
+      setSessionError("La nueva contraseña y la confirmación no coinciden.");
+      return;
+    }
+
+    try {
+      await api("/users/me/password", {
+        method: "PUT",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      setShowPasswordModal(false);
+      setSessionError(undefined);
+      alert("Contraseña actualizada correctamente. Por seguridad, vuelva a iniciar sesión.");
+    } catch (cause) {
+      setSessionError(cause instanceof Error ? cause.message : "Error al cambiar la contraseña.");
+    }
+  };
 
   return (
     <div
@@ -470,7 +497,7 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
             <div className="top-actions">
               {user.role === "SUPERADMINISTRADOR" && demoAvailable && <button className={`demo-mode-toggle${demoMode ? " active" : ""}`} onClick={() => void toggleDemoMode()}>{demoMode ? "Salir de demo" : "Modo demo"}</button>}
             <NotificationCenter notifications={operationalPending} onOpen={openPending} />
-            <ProfileDropdown user={user} onLogout={() => onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))} />
+            <ProfileDropdown user={user} onLogout={() => onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))} onChangePassword={() => setShowPasswordModal(true)} />
           </div>
         </header>
         <section className="app-content">
@@ -490,7 +517,37 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
           </button>
         ))}
       </nav>
-      {reminderOpen && <OperationalReminder notifications={operationalPending} onClose={() => setReminderOpen(false)} onView={() => { setReminderOpen(false); changeRoute("dashboard"); }} />}
+      {reminderOpen && <OperationalReminder notifications={operationalPending} onClose={() => setReminderOpen(false)} onView={() => { setReminderOpen(false); changeRoute("dashboard"); } } />}
+      {showPasswordModal && (
+        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
+          <div className="modal-content card" onClick={(event) => event.stopPropagation()} style={{ maxWidth: "400px" }}>
+            <button className="btn small" type="button" onClick={() => setShowPasswordModal(false)} style={{ position: "absolute", top: "10px", right: "12px", padding: "4px 8px", fontSize: "12px" }}>×</button>
+            <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 18 }}>Cambiar Contraseña</h3>
+            <p style={{ color: "#666", marginBottom: 18, fontSize: "0.9rem" }}>
+              Por seguridad, ingresa tu contraseña actual antes de cambiarla.
+            </p>
+            <form onSubmit={handlePasswordChange} style={{ display: "grid", gap: 12 }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
+                Contraseña actual
+                <input name="currentPassword" type="password" required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
+                Nueva contraseña
+                <input name="newPassword" type="password" minLength={12} maxLength={128} required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+                <small style={{ color: "#666", fontSize: "0.8rem", fontWeight: "normal" }}>Mínimo 12 caracteres.</small>
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600 }}>
+                Confirmar nueva contraseña
+                <input name="confirmPassword" type="password" minLength={12} maxLength={128} required style={{ width: "100%", padding: "8px 10px", border: "1px solid #cfd9e5", borderRadius: 8, font: "inherit" }} />
+              </label>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 12 }}>
+                <button type="button" className="btn" onClick={() => setShowPasswordModal(false)} style={{ minHeight: 38 }}>Cancelar</button>
+                <button type="submit" className="btn primary" style={{ minHeight: 38 }}>Actualizar contraseña</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -505,7 +562,7 @@ function NotificationCenter({ notifications, onOpen }: Readonly<{ notifications:
   </div>;
 }
 
-function ProfileDropdown({ user, onLogout }: Readonly<{ user: CurrentUser; onLogout: () => Promise<void> }>) {
+function ProfileDropdown({ user, onLogout, onChangePassword }: Readonly<{ user: CurrentUser; onLogout: () => Promise<void>; onChangePassword: () => void }>) {
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -527,6 +584,7 @@ function ProfileDropdown({ user, onLogout }: Readonly<{ user: CurrentUser; onLog
     }}>
       <div className="profile-menu-header"><span className="profile-menu-avatar" aria-hidden="true">{initials}</span><div><strong>{user.names}</strong><small>{roleLabels[user.role]}</small></div></div>
       <div className="profile-menu-details"><span>Cuenta activa</span><b>{user.email}</b></div>
+      <button className="profile-menu-item" type="button" onClick={() => { setOpen(false); onChangePassword(); }}>Cambiar contraseña</button>
       <button className="profile-menu-item" type="button" onClick={() => void onLogout()}>Cerrar sesión <span aria-hidden="true">→</span></button>
     </dialog>}
   </div>;
@@ -613,6 +671,14 @@ function OperationalReminder({ notifications, onClose, onView }: Readonly<{ noti
   return <dialog ref={dialog} className="operational-reminder" aria-labelledby="operational-reminder-title" onCancel={onClose}><span className="reminder-icon" aria-hidden="true"><BellIcon /></span><h2 id="operational-reminder-title">Tienes {notifications.total} pendiente{notifications.total === 1 ? "" : "s"} por atender</h2><p>{diagnosisCount} diagnóstico{diagnosisCount === 1 ? "" : "s"} por subir y {quoteCount} cotización{quoteCount === 1 ? "" : "es"} por crear.</p><div><button className="btn" type="button" onClick={onClose}>Continuar trabajando</button><button className="btn primary" type="button" onClick={onView}>Ver pendientes</button></div></dialog>;
 }
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 0 && hour < 4) return "Buena madrugada";
+  if (hour >= 4 && hour < 12) return "Buenos días";
+  if (hour >= 12 && hour < 19) return "Buenas tardes";
+  return "Buenas noches";
+};
+
 function DashboardHome({
   user,
   onNew,
@@ -643,11 +709,21 @@ function DashboardHome({
   };
   const distribution = Object.entries(statusMeta);
   const pending = pendingItems(operationalPending);
+  const [greeting, setGreeting] = useState(getGreeting());
+  const firstName = user.names.split(" ")[0];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <div className="page-head">
         <div>
-          <h1>Buenos días, {user.names.split(" ")[0]}</h1>
+          <h1>{greeting}, {firstName}</h1>
           <p>Vista operativa del taller actualizada en tiempo real.</p>
         </div>
         <button className="btn primary" onClick={onNew}>

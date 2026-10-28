@@ -624,7 +624,6 @@ a:visited {
   padding: 8px 12px;
   border: 1px solid #d8e0e8;
   border-radius: 9px;
-  background: #fff;
   font-weight: 700;
   cursor: pointer;
   border-color: #ed3337;
@@ -5291,4 +5290,24 @@ a:visited {
 .quote-pdf-action:disabled::before,
 .quote-excel-action:disabled::before {
   border-color: #6b768280;
+}
+/* Modal de edición de usuario */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #17212b66;
+}
+.modal-content {
+  width: min(460px, 92%);
+  padding: 28px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 48px #17202b50;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
 }

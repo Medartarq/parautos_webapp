@@ -25,37 +25,72 @@ const selects: Record<ListKind, string> = { orders: orderSelect, parts: partSele
 const listOrder = (kind: ListKind) => kind === "parts" || kind === "reportParts" ? "expectedDate IS NULL, expectedDate, updatedAt DESC, id DESC" : "createdAt DESC, id DESC";
 
 export function buildListFilter(kind: ListKind, query: ListQuery) {
-  const clauses: string[] = []; const values: unknown[] = [];
-  const add = (sql: string, value?: unknown) => { clauses.push(sql); if (value !== undefined) values.push(value); };
+  const clauses: string[] = [];
+  const values: unknown[] = [];
+  // Modificado para aceptar múltiples valores de manera limpia
+  const add = (sql: string, ...vals: unknown[]) => {
+    clauses.push(sql);
+    values.push(...vals);
+  };
   const isPart = kind === "parts" || kind === "reportParts";
   const date = isPart ? "expectedDate" : "createdAt";
+  // 1. Optimización de rendimiento: Uso de LIKE individual por columna en lugar de CONCAT_WS
   if (query.search) {
-    const columns = kind === "parts" ? "orderNumber, plate, description, partCode, claimNumber, providerName" : kind === "reportParts" ? "orderNumber, plate, client, brand, model, description, providerName" : "orderNumber, plate, client, brand, model";
-    add(`LOCATE(LOWER(?), LOWER(CONCAT_WS(' ', ${columns}))) > 0`, query.search);
+    const columnsArray = kind === "parts"
+      ? ["orderNumber", "plate", "description", "partCode", "claimNumber", "providerName"]
+      : kind === "reportParts"
+        ? ["orderNumber", "plate", "client", "brand", "model", "description", "providerName"]
+        : ["orderNumber", "plate", "client", "brand", "model"];
+    const searchCondition = columnsArray.map(col => `${col} LIKE ?`).join(" OR ");
+    const searchWildcard = `%${query.search}%`;
+    add(`(${searchCondition})`, ...Array(columnsArray.length).fill(searchWildcard));
   }
   if (query.status && query.status !== "ALL") {
-    add(kind === "parts" ? "(CASE WHEN receivedQuantity>=quantity THEN 'RECIBIDO' ELSE managementStatus END)=?" : "status=?", query.status);
+    if (kind === "parts") {
+      add("(CASE WHEN receivedQuantity >= quantity THEN 'RECIBIDO' ELSE managementStatus END) = ?", query.status);
+    } else {
+      add("status = ?", query.status);
+    }
   }
-  if (query.modality && query.modality !== "ALL" && !isPart) add("modality=?", query.modality);
-  if (query.view === "quotes" && kind === "orders") add("status IN ('COTIZACION_PENDIENTE','ESPERA_APROBACION')");
-  if (query.pendingClaim === "true" && kind === "orders") add("claimPending=1");
-  if (query.advisor && kind.startsWith("report")) add("advisor=?", query.advisor);
+  if (query.modality && query.modality !== "ALL" && !isPart) {
+    add("modality = ?", query.modality);
+  }
+  if (query.view === "quotes" && kind === "orders") {
+    add("status IN ('COTIZACION_PENDIENTE', 'ESPERA_APROBACION')");
+  }
+  if (query.pendingClaim === "true" && kind === "orders") {
+    add("claimPending = 1");
+  }
+  if (query.advisor && kind.startsWith("report")) {
+    add("advisor = ?", query.advisor);
+  }
+  // 2. Control estricto del Proveedor: Resolución de ambigüedad ID numérico vs Nombre de texto
   if (query.provider && isPart) {
-    const column = kind === "parts" ? "providerId" : "providerName";
-    if (query.provider === "NO_PROVIDER") add(`${column} IS NULL`); else add(`${column}=?`, query.provider);
+    const isPartsKind = kind === "parts";
+    const column = isPartsKind ? "providerId" : "providerName";
+    if (query.provider === "NO_PROVIDER") {
+      add(`${column} IS NULL`);
+    } else {
+      // Si filtramos por la tabla 'parts', forzamos el casteo a número para el ID. De lo contrario, pasamos el string.
+      const providerValue = isPartsKind ? Number(query.provider) : query.provider;
+      add(`${column} = ?`, providerValue);
+    }
   }
-  if (query.quality && kind === "parts") add("quality=?", query.quality);
-  if (query.from) add(`${date}>=?`, query.from);
-  if (query.to) add(`${date}<DATE_ADD(?, INTERVAL 1 DAY)`, query.to);
+  if (query.quality && kind === "parts") {
+    add("quality = ?", query.quality);
+  }
+  if (query.from) add(`${date} >= ?`, query.from);
+  if (query.to) add(`${date} < DATE_ADD(?, INTERVAL 1 DAY)`, query.to);
   if (isPart) {
-    if (query.age === "OVERDUE") add("expectedDate<CURDATE() AND receivedQuantity<quantity");
-    if (query.age === "NEXT_3") add("expectedDate>=CURDATE() AND expectedDate<DATE_ADD(CURDATE(), INTERVAL 4 DAY)");
+    if (query.age === "OVERDUE") add("expectedDate < CURDATE() AND receivedQuantity < quantity");
+    if (query.age === "NEXT_3") add("expectedDate >= CURDATE() AND expectedDate < DATE_ADD(CURDATE(), INTERVAL 4 DAY)");
     if (query.age === "NO_DATE") add("expectedDate IS NULL");
   } else {
-    if (query.age === "RECENT") add("TIMESTAMPDIFF(DAY, createdAt, NOW())<=2");
-    if (query.age === "ATTENTION") add("TIMESTAMPDIFF(DAY, createdAt, NOW()) BETWEEN 3 AND 5");
-    if (query.age === "OVERDUE") add("TIMESTAMPDIFF(DAY, createdAt, NOW())>5");
+    if (query.age === "RECENT") add("DATEDIFF(CURDATE(), DATE(createdAt)) <= 2");
+    if (query.age === "ATTENTION") add("DATEDIFF(CURDATE(), DATE(createdAt)) BETWEEN 3 AND 5");
+    if (query.age === "OVERDUE") add("DATEDIFF(CURDATE(), DATE(createdAt)) > 5");
   }
+
   return { where: clauses.length ? ` WHERE ${clauses.join(" AND ")}` : "", values };
 }
 
@@ -69,7 +104,7 @@ export async function listPage(kind: ListKind, query: ListQuery) {
 }
 
 // A deliberate export uses one consistent SELECT, rather than collecting changing pages.
-export async function exportReportRows(kind: "reportQuotes" | "reportParts", query: ListQuery) {
+export function exportReportRows(kind: "reportQuotes" | "reportParts", query: ListQuery) {
   const { where, values } = buildListFilter(kind, query);
   return getPool().query<any[]>(`SELECT * FROM (${selects[kind]}) records${where} ORDER BY ${listOrder(kind)}`, values);
 }
@@ -93,6 +128,20 @@ export async function partsPage(query: ListQuery) {
   return { parts: result.rows.map((r) => ({ ...r, quantity: Number(r.quantity), receivedQuantity: Number(r.receivedQuantity), fullyReceived: Number(r.receivedQuantity) >= Number(r.quantity), partiallyReceived: false, partialReceived: false, freightRequested: Boolean(r.freightRequested) })), pagination: result.pagination, metrics: metrics[0], providerOptions: providers };
 }
 
-export async function reportOptions(kind: "reportQuotes" | "reportParts") {
-  return getPool().query<any[]>(`SELECT DISTINCT advisor, ${kind === "reportQuotes" ? "modality, status" : "providerName, status"} FROM (${selects[kind]}) records`);
+export interface ReportQuotesOptions {
+  advisor: string | null;
+  modality: string | null;
+  status: string;
+}
+
+export interface ReportPartsOptions {
+  advisor: string | null;
+  providerName: string | null;
+  status: string;
+}
+export function reportOptions(kind: "reportQuotes" | "reportParts"): Promise<any[]> {
+  const fields = kind === "reportQuotes" ? "modality, status" : "providerName, status";
+  return getPool().query<any[]>(
+    `SELECT DISTINCT advisor, ${fields} FROM (${selects[kind]}) records`
+  );
 }

@@ -34,6 +34,18 @@ export const managedUserSchema = z.object({
 });
 export type ManagedUserInput = z.infer<typeof managedUserSchema>;
 
+export const updateManagedUserSchema = z.object({
+  names: z.string().trim().min(3).max(120).optional(),
+  email: z.string().email().max(150).optional(),
+  username: z.string().trim().min(3).max(80).regex(/^[a-zA-Z0-9._-]+$/).optional(),
+  role: z.enum(["ADMINISTRADOR", "ASESOR", "SUPERADMINISTRADOR"]).optional(),
+  newPassword: z.string().min(12).max(128).optional(),
+  active: z.boolean().optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: "Debe proporcionar al menos un campo para actualizar.",
+});
+export type UpdateManagedUserInput = z.infer<typeof updateManagedUserSchema>;
+
 export function collapseWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
