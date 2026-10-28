@@ -7,7 +7,7 @@ if (process.env.DEPLOY_RUN_MIGRATIONS !== "true") {
 
 function run(script) {
   return new Promise((resolve, reject) => {
-    const migration = spawn(process.execPath, [script], { env: process.env, stdio: "inherit" });
+    const migration = spawn(process.execPath, ["tsx", script], { env: process.env, stdio: "inherit" });
     migration.on("error", reject);
     migration.on("exit", (code, signal) => code === 0 ? resolve() : reject(new Error(`Database migrations failed${signal ? ` (${signal})` : ""}.`)));
   });
@@ -15,10 +15,13 @@ function run(script) {
 
 console.info("Applying database migrations before publishing the deployment.");
 try {
-  await run("server/dist/db/migrate.js");
+  await run("server/src/db/migrate.ts");
   if (process.env.DEMO_MODE_ENABLED === "true") {
-    await run("server/dist/db/migrate-demo.js");
-    await run("server/dist/db/seed-demo-environment.js");
+    console.info("Running demo database migrations and seed...");
+    await run("server/src/db/seed-demo.ts");
+    // Cargar 1000 casos ficticios en la base demo para entornos de prueba
+    console.info("Seeding 1000 demo orders from scripts/...");
+    await run("scripts/seed-1000-demo.ts");
   }
 } catch (error) {
   console.error(error);
