@@ -5,10 +5,10 @@ if (process.env.DEPLOY_RUN_MIGRATIONS !== "true") {
   process.exit(0);
 }
 
-function run(script, args = []) {
+function run(script) {
   return new Promise((resolve, reject) => {
-    // Usar shell: true para invocar npx tsx, que es cómo el proyecto ejecuta migraciones
-    const migration = spawn("npm", ["run", "tsx", script, ...args], {
+    // Usar npx tsx para ejecutar scripts TypeScript, igual que hace el proyecto
+    const migration = spawn("npx", ["tsx", script], {
       env: process.env,
       stdio: "inherit",
       shell: true,
