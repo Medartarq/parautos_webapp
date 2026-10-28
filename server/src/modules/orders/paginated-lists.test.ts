@@ -18,11 +18,11 @@ describe("bounded operational lists", () => {
     expect(result.pagination).toEqual({ page: 3, pageSize: 20, total: 42, pages: 3 });
     const [countSql, countValues] = database.query.mock.calls[0];
     const [rowsSql, rowsValues] = database.query.mock.calls[1];
-    expect(countSql).toContain("LOCATE(LOWER(?)");
+    expect(countSql).toContain("LIKE ?");
     expect(countSql).not.toContain(search);
-    expect(rowsSql).toContain("status=? ORDER BY createdAt DESC, id DESC LIMIT ? OFFSET ?");
-    expect(countValues).toEqual([search, "EN_REPARACION"]);
-    expect(rowsValues).toEqual([search, "EN_REPARACION", 20, 40]);
+    expect(rowsSql).toContain("status = ? ORDER BY createdAt DESC, id DESC LIMIT ? OFFSET ?");
+    expect(countValues).toEqual([`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, "EN_REPARACION"]);
+    expect(rowsValues).toEqual([`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, "EN_REPARACION", 20, 40]);
   });
   it("clamps an out-of-range page after results shrink and handles an empty list", async () => {
     database.query.mockResolvedValueOnce([{ total: 11 }]).mockResolvedValueOnce([{ id: 1 }]);
@@ -33,9 +33,9 @@ describe("bounded operational lists", () => {
   });
   it("handles received parts, missing providers and inclusive date ranges", () => {
     const filter = buildListFilter("parts", listQuerySchema.parse({ status: "RECIBIDO", provider: "NO_PROVIDER", from: "2026-10-01", to: "2026-10-31" }));
-    expect(filter.where).toContain("receivedQuantity>=quantity");
+    expect(filter.where).toContain("receivedQuantity >= quantity");
     expect(filter.where).toContain("providerId IS NULL");
-    expect(filter.where).toContain("expectedDate<DATE_ADD(?, INTERVAL 1 DAY)");
+    expect(filter.where).toContain("expectedDate < DATE_ADD(?, INTERVAL 1 DAY)");
     expect(filter.values).toEqual(["RECIBIDO", "2026-10-01", "2026-10-31"]);
   });
   it("exports every matching row with the same filters, independent of the visible page", async () => {
@@ -45,6 +45,6 @@ describe("bounded operational lists", () => {
     const [sql, values] = database.query.mock.calls[0];
     expect(sql).toContain(buildListFilter("reportQuotes", query).where);
     expect(sql).not.toContain("LIMIT");
-    expect(values).toEqual(["Toyota", "Asesor demo"]);
+    expect(values).toEqual(["%Toyota%", "%Toyota%", "%Toyota%", "%Toyota%", "%Toyota%", "Asesor demo"]);
   });
 });
