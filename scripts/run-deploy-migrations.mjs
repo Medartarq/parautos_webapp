@@ -56,6 +56,10 @@ try {
     await run("server/dist/db/migrate-demo.js");
     await run("server/dist/db/seed-demo-environment.js");
     if (process.env.DEMO_SEED_1000 !== "false") {
+      if (process.env.DEMO_PURGE_CONFIRM === "PURGE") {
+        console.info("Purging the previous fictional demo batch before reloading it...");
+        await run("server/dist/db/purge-1000-demo.js");
+      }
       console.info("Loading fictional demo orders for the pagination and volume test...");
       await run("server/dist/db/seed-1000-demo.js");
     }

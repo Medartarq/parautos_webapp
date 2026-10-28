@@ -44,6 +44,12 @@ base y esta carga cuando `DEMO_MODE_ENABLED=true` y `DEPLOY_RUN_MIGRATIONS=true`
 Las órdenes ya cargadas se omiten, así que los despliegues posteriores no
 duplican datos.
 
+Si además `DEMO_PURGE_CONFIRM=PURGE` está definida en el entorno del despliegue,
+el build purga primero el lote `DM####` y luego lo recarga completo, de modo que
+los nombres y las fechas se regeneran en cada despliegue. Esa recarga añade unos
+minutos al build; quite la variable cuando ya no necesite refrescar los datos
+ficticios. Sin la variable, el despliegue solo ejecuta la carga idempotente.
+
 Formato de los datos ficticios: nombre y apellidos peruanos generados de forma
 determinista, DNI `70xxxxxx`, placa `DM-####`, VIN `DMV…`, correo
 `nombre.apellido##@demo.parautos.pe` y fechas repartidas en los últimos 365 días
@@ -59,6 +65,9 @@ variable de entorno:
 ```bash
 DEMO_PURGE_CONFIRM=PURGE npm run purge:demo:1000
 ```
+
+El despliegue ejecuta automáticamente esa purga antes de la carga cuando
+`DEMO_PURGE_CONFIRM=PURGE` está presente en el entorno de Hostinger.
 
 En PowerShell:
 
