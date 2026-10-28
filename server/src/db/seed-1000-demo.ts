@@ -1,13 +1,17 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Pool } from "mariadb";
 import { technicalLogger } from "../logging/technical-logger.js";
 import { getEnvironment } from "../config/env.js";
 import { closePool, getPool, runWithDatabaseScope } from "./pool.js";
 import { createOrder, createQuote, transitionQuote } from "../modules/orders/service.js";
+import { demoHash, personaFor } from "./demo-personas.js";
 import type { CreateOrderInput } from "@parautos/shared";
 
 type Modality = CreateOrderInput["modality"];
 type QuoteLine = Parameters<typeof createQuote>[1]["lines"][number];
+
+const DAY_MS = 86_400_000;
 
 const MODALITIES = [
   "PARTICULAR",
@@ -47,6 +51,11 @@ type SeedCatalogs = {
   advisors: Array<{ id: number }>;
   bodyTypes: Array<{ id: number }>;
   checklist: Array<{ id: number }>;
+};
+
+type SeedContext = SeedCatalogs & {
+  pool: Pool;
+  anchor: number;
 };
 
 function nonNegativeInt(name: string, fallback: number): number {
@@ -89,26 +98,97 @@ function checklistAnswersFor(checklist: SeedCatalogs["checklist"]) {
 }
 
 /**
+ * Reparte las fechas en los últimos 365 días, en horario laboral (08:00–18:59).
+ * El literal se guarda tal cual y es el que muestra la aplicación. Determinista
+ * por índice.
+ */
+function dateFor(index: number, anchor: number): Date {
+  const seed = demoHash(index * 31 + 17);
+  const daysAgo = seed % 365;
+  const minutes = (seed >>> 8) % 660;
+  const seconds = (seed >>> 20) % 60;
+  const date = new Date(anchor - daysAgo * DAY_MS);
+  date.setUTCHours(8, 0, 0, 0);
+  date.setUTCMinutes(minutes);
+  date.setUTCSeconds(seconds);
+  if (date.getTime() > anchor) date.setTime(date.getTime() - DAY_MS);
+  return date;
+}
+
+function addMinutes(date: Date, minutes: number): Date {
+  return new Date(date.getTime() + minutes * 60_000);
+}
+
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * DAY_MS);
+}
+
+function stamp(date: Date): string {
+  return date.toISOString().slice(0, 23).replace("T", " ");
+}
+
+/**
+ * Retrodata una orden recién creada para que la demo muestre actividad
+ * histórica coherente: orden → recepción → cotización → envío → aprobación.
+ */
+async function backdateCase(
+  pool: Pool,
+  caseData: { orderId: number; quoteId: number; index: number; stage: number },
+  anchor: number,
+): Promise<void> {
+  const base = dateFor(caseData.index, anchor);
+  const receptionAt = addMinutes(base, 60);
+  const quoteAt = addMinutes(base, 180);
+  const sentAt = addDays(base, 1);
+  const approvedAt = addDays(base, 2);
+  const orderNumber = `OS-${base.getUTCFullYear()}-${String(caseData.orderId).padStart(5, "0")}`;
+
+  await pool.query("UPDATE service_orders SET created_at = ?, order_number = ? WHERE id = ?", [
+    stamp(base),
+    orderNumber,
+    caseData.orderId,
+  ]);
+  await pool.query("UPDATE receptions SET created_at = ? WHERE order_id = ?", [stamp(receptionAt), caseData.orderId]);
+  await pool.query("UPDATE quote_versions SET created_at = ?, sent_at = ?, approved_at = ? WHERE id = ?", [
+    stamp(quoteAt),
+    caseData.stage === 0 ? null : stamp(sentAt),
+    caseData.stage === 3 ? stamp(approvedAt) : null,
+    caseData.quoteId,
+  ]);
+  await pool.query("UPDATE attachments SET created_at = ? WHERE order_id = ?", [stamp(receptionAt), caseData.orderId]);
+  await pool.query(
+    `UPDATE audit_events SET created_at = CASE action
+       WHEN 'CREATED' THEN ?
+       WHEN 'QUOTE_CREATED' THEN ?
+       WHEN 'QUOTE_SENT' THEN ?
+       WHEN 'QUOTE_APPROVED' THEN ?
+       ELSE ? END
+     WHERE entity = 'service_order' AND record_id = ?`,
+    [stamp(base), stamp(quoteAt), stamp(sentAt), stamp(approvedAt), stamp(base), String(caseData.orderId)],
+  );
+}
+
+/**
  * Crea una orden demo con su cotización y, según la etapa, su envío/aprobación.
  * Devuelve el resultado en lugar de lanzar, para que el lote continúe ante un
  * caso defectuoso.
  */
-async function seedOneCase(catalogs: SeedCatalogs, index: number): Promise<SeedOutcome> {
+async function seedOneCase(context: SeedContext, index: number): Promise<SeedOutcome> {
   const plate = plateFor(index);
   const normalized = normalizedPlateFor(index);
   const slot = index % BRANDS.length;
   const modality = MODALITIES[index % MODALITIES.length];
-  const actorId = catalogs.advisors[index % catalogs.advisors.length].id;
-  const documentNumber = String(70_000_000 + index);
+  const actorId = context.advisors[index % context.advisors.length].id;
+  const persona = personaFor(index);
 
   try {
     const order = await createOrder({
       client: {
         documentType: "DNI",
-        documentNumber,
-        fullName: `Cliente Demo ${String(index + 1).padStart(4, "0")}`,
-        phone: "999888777",
-        email: `cliente${index + 1}@demo.parautos.pe`,
+        documentNumber: String(70_000_000 + index),
+        fullName: persona.fullName,
+        phone: persona.phone,
+        email: persona.email,
       },
       vehicle: {
         plate,
@@ -116,10 +196,10 @@ async function seedOneCase(catalogs: SeedCatalogs, index: number): Promise<SeedO
         model: MODELS[slot],
         year: 2015 + (index % 10),
         // El VIN excluye I, O y Q: "DMV" + 8 dígitos + 6 dígitos = 17 caracteres.
-        vin: `DMV${documentNumber}${String(index).padStart(6, "0")}`,
+        vin: `DMV${String(70_000_000 + index)}${String(index).padStart(6, "0")}`,
         color: COLORS[slot],
         colorType: "CATALOGO",
-        bodyTypeId: catalogs.bodyTypes[index % catalogs.bodyTypes.length].id,
+        bodyTypeId: context.bodyTypes[index % context.bodyTypes.length].id,
       },
       modality,
       claimNumber: modality === "PARTICULAR" ? undefined : `DM-2026-${String(index + 1).padStart(4, "0")}`,
@@ -134,7 +214,7 @@ async function seedOneCase(catalogs: SeedCatalogs, index: number): Promise<SeedO
       diagnosisReviewState: "REVISADA",
       checklistReviewed: true,
       signature: SIGNATURE,
-      checklist: checklistAnswersFor(catalogs.checklist),
+      checklist: checklistAnswersFor(context.checklist),
       acceptedTerms: true,
     }, actorId, `demo-1000-${normalized}`, "127.0.0.1", "PARAUTOS demo 1000");
 
@@ -145,6 +225,8 @@ async function seedOneCase(catalogs: SeedCatalogs, index: number): Promise<SeedO
       await transitionQuote(order.id, quote.id, "SEND", actorId, `demo-1000-send-${normalized}`);
     if (stage === 3)
       await transitionQuote(order.id, quote.id, "APPROVE", actorId, `demo-1000-approve-${normalized}`);
+
+    await backdateCase(context.pool, { orderId: order.id, quoteId: quote.id, index, stage }, context.anchor);
 
     return "created";
   } catch (error: unknown) {
@@ -169,6 +251,7 @@ export async function seed1000Demo(): Promise<SeedSummary> {
 
   const count = nonNegativeInt("DEMO_SEED_COUNT", 1000);
   const start = nonNegativeInt("DEMO_SEED_START", 0);
+  const anchor = Date.now();
 
   return runWithDatabaseScope("demo", async () => {
     const pool = getPool();
@@ -191,7 +274,7 @@ export async function seed1000Demo(): Promise<SeedSummary> {
     );
     const existingPlates = new Set(existing.map((row) => String(row.plate)));
 
-    const catalogs: SeedCatalogs = { advisors, bodyTypes, checklist };
+    const context: SeedContext = { pool, anchor, advisors, bodyTypes, checklist };
     const summary: SeedSummary = { created: 0, skipped: 0, failed: 0 };
     const startedAt = Date.now();
     console.info(`[seed-1000] Iniciando ${count} casos demo desde el índice ${start}...`);
@@ -205,7 +288,7 @@ export async function seed1000Demo(): Promise<SeedSummary> {
 
       // Carga secuencial intencional: cada caso depende de la orden y la
       // cotización anteriores, y así se aísla el error por registro.
-      const outcome = await seedOneCase(catalogs, index); // NOSONAR: secuencial intencional (order → quote → transition)
+      const outcome = await seedOneCase(context, index); // NOSONAR: secuencial intencional (order → quote → transition)
       if (outcome === "failed") {
         summary.failed += 1;
         continue;

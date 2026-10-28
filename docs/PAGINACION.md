@@ -44,6 +44,38 @@ base y esta carga cuando `DEMO_MODE_ENABLED=true` y `DEPLOY_RUN_MIGRATIONS=true`
 Las órdenes ya cargadas se omiten, así que los despliegues posteriores no
 duplican datos.
 
-Formato de los datos ficticios: DNI `70xxxxxx`, placa `DM-####`, VIN `DMV…`,
-correo `cliente<n>@demo.parautos.pe`. Esos prefijos son los que identifican el
-lote para una limpieza controlada.
+Formato de los datos ficticios: nombre y apellidos peruanos generados de forma
+determinista, DNI `70xxxxxx`, placa `DM-####`, VIN `DMV…`, correo
+`nombre.apellido##@demo.parautos.pe` y fechas repartidas en los últimos 365 días
+en horario de 08:00 a 18:59. Esos prefijos (placa y dominio de correo) son los
+que identifican el lote para una limpieza controlada.
+
+## Purga controlada del lote demo
+
+`npm run purge:demo:1000` elimina solo las órdenes con placa `DM####` de la base
+demo. Por defecto **simula** (dry-run); para borrar hay que confirmar con la
+variable de entorno:
+
+```bash
+DEMO_PURGE_CONFIRM=PURGE npm run purge:demo:1000
+```
+
+En PowerShell:
+
+```powershell
+$env:DEMO_PURGE_CONFIRM="PURGE"; npm run purge:demo:1000; Remove-Item Env:DEMO_PURGE_CONFIRM
+```
+
+Salvaguardas, todas obligatorias:
+
+- `DEMO_MODE_ENABLED=true` y `DEMO_DB_NAME` distinto de `DB_NAME`.
+- La conexión debe ser exactamente `DEMO_DB_NAME`: se comprueba con
+  `SELECT DATABASE()` antes de tocar nada.
+- Cualquier valor de `DEMO_PURGE_CONFIRM` distinto de `PURGE` aborta.
+- La selección se limita a placas `^DM[0-9]+$`; nunca hay un `DELETE` global.
+- El borrado va en una sola transacción y respeta el orden de las claves
+  foráneas. Después elimina los adjuntos demo de esas órdenes.
+- Los cuatro casos base `DEM101`…`DEM404` no se tocan.
+
+Al terminar, `npm run seed:demo:1000` vuelve a cargar el lote completo.
+
