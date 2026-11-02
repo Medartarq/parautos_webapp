@@ -9,7 +9,7 @@ it("keeps the numbered migration order independent from locale", async () => {
   const actual = (await import("node:fs/promises")).readdir;
   const names = await actual(new URL("../../../database/migrations/", import.meta.url));
   const ordered = names.filter((name) => name.endsWith(".sql")).sort(compareMigrationNames);
-  expect(ordered.map((name) => Number(name.slice(0, 3)))).toEqual(Array.from({ length: 25 }, (_, index) => index + 1));
+  expect(ordered.map((name) => Number(name.slice(0, 3)))).toEqual(Array.from({ length: 33 }, (_, index) => index + 1));
 });
 
 describe("splitMigrationStatements", () => {

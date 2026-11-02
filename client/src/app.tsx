@@ -16,6 +16,7 @@ import "./orders.css";
 import "./final-control.css";
 import "./parts-workbench.css";
 import { NewOrder } from "./full-new-order";
+import { IndependentQuotesView } from "./independent-quotes-view";
 import { api } from "./api";
 import { useQuery } from "@tanstack/react-query";
 import { DataScopeContext, useScopedQuery } from "./scoped-query";
@@ -25,10 +26,13 @@ const ReportsView = lazy(() => import("./reports-view").then(({ ReportsView }) =
 const OrderDetail = lazy(() => import("./order-detail").then(({ OrderDetail }) => ({ default: OrderDetail })));
 const AuditView = lazy(() => import("./audit-view").then(({ AuditView }) => ({ default: AuditView })));
 const UsersView = lazy(() => import("./users-view").then(({ UsersView }) => ({ default: UsersView })));
+const PartsRequestsView = lazy(() => import("./parts-requests-view").then(({ PartsRequestsView }) => ({ default: PartsRequestsView })));
+const ProvidersView = lazy(() => import("./providers-view").then(({ ProvidersView }) => ({ default: ProvidersView })));
+const PartsRequestDetail = lazy(() => import("./parts-request-detail").then(({ PartsRequestDetail }) => ({ default: PartsRequestDetail })));
 
 type AppState = "loading" | "setup" | "login" | "dashboard";
 type Route =
-  "dashboard" | "new" | "orders" | "orderDetail" | "quotes" | "parts" | "reports" | "audit" | "users";
+  "dashboard" | "new" | "orders" | "orderDetail" | "quotes" | "parts" | "partsDetail" | "providers" | "reports" | "audit" | "users";
 type DetailTab = "summary" | "reception" | "quotes" | "parts" | "control" | "history";
 type OperationalPendingItem = {
   id: number;
@@ -282,6 +286,7 @@ const navigation: Array<{
     { route: "orders", icon: "▤", label: "Órdenes" },
     { route: "quotes", icon: "S/", label: "Cotizaciones" },
     { route: "parts", icon: "▧", label: "Repuestos" },
+    { route: "providers", icon: "♧", label: "Proveedores" },
     { route: "reports", icon: "◫", label: "Reportes", admin: true },
     { route: "audit", icon: "⌁", label: "Auditoría", admin: true },
     { route: "users", icon: "♙", label: "Usuarios", superadmin: true },
@@ -292,7 +297,9 @@ const titles: Record<Route, string> = {
   orders: "Órdenes",
   orderDetail: "Detalle de orden",
   quotes: "Cotizaciones",
-  parts: "Repuestos",
+    parts: "Repuestos",
+    partsDetail: "Detalle de solicitud",
+    providers: "Proveedores",
   reports: "Dashboard y reportes",
   audit: "Auditoría",
   users: "Usuarios",
@@ -330,6 +337,7 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
   const [reminderOpen, setReminderOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number>();
   const [selectedOrderTab, setSelectedOrderTab] = useState<DetailTab>();
+  const [selectedPartsRequestId, setSelectedPartsRequestId] = useState<number>();
   const syncState = getSyncState(notificationsQuery.isError, notificationsQuery.isFetching);
   const [mobileNavHidden, setMobileNavHidden] = useState(false);
 
@@ -503,10 +511,10 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
         <section className="app-content">
           {sessionError && <p className="form-error" role="alert">{sessionError}</p>}
           <DashboardRoute route={route} user={user} demoMode={demoMode} dashboardFilter={dashboardFilter}
-            selectedOrderId={selectedOrderId} selectedOrderTab={selectedOrderTab}
+            selectedOrderId={selectedOrderId} selectedOrderTab={selectedOrderTab} selectedPartsRequestId={selectedPartsRequestId}
             operationalPending={operationalPending} openPending={openPending} changeRoute={changeRoute}
             onMetricFilter={(status) => { setDashboardFilter(status); changeRoute("orders"); }}
-            onOpenOrder={(id, tab) => { setSelectedOrderId(id); setSelectedOrderTab(tab); changeRoute("orderDetail"); }} />
+            onOpenOrder={(id, tab) => { setSelectedOrderId(id); setSelectedOrderTab(tab); changeRoute("orderDetail"); }} onOpenPartsRequest={(id) => { setSelectedPartsRequestId(id); changeRoute("partsDetail"); }} />
         </section>
       </main>
       {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
@@ -637,14 +645,16 @@ type DashboardRouteProps = Readonly<{
   dashboardFilter?: string;
   selectedOrderId?: number;
   selectedOrderTab?: DetailTab;
+  selectedPartsRequestId?: number;
   operationalPending: OperationalPendingNotifications;
   openPending: (item: OperationalPendingItem) => void;
   changeRoute: (route: Route) => void;
   onMetricFilter: (status: string) => void;
   onOpenOrder: (id: number, tab?: DetailTab) => void;
+  onOpenPartsRequest: (id: number) => void;
 }>;
 
-function DashboardRoute({ route, user, demoMode, dashboardFilter, selectedOrderId, selectedOrderTab, operationalPending, openPending, changeRoute, onMetricFilter, onOpenOrder }: DashboardRouteProps) {
+function DashboardRoute({ route, user, demoMode, dashboardFilter, selectedOrderId, selectedOrderTab, selectedPartsRequestId, operationalPending, openPending, changeRoute, onMetricFilter, onOpenOrder, onOpenPartsRequest }: DashboardRouteProps) {
   switch (route) {
     case "dashboard": return (
       <DashboardHome
@@ -667,10 +677,10 @@ function DashboardRoute({ route, user, demoMode, dashboardFilter, selectedOrderI
       return (
         <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} isSuperadmin={user.role === "SUPERADMINISTRADOR"} /></Suspense>
       );
-    case "parts": return (
-      <PartsGlobalWorkbench onOpenOrder={(orderId) => onOpenOrder(orderId, "parts")} />
-    );
-    case "quotes": return <QuotesView onOpen={(orderId) => onOpenOrder(orderId, "quotes")} />;
+    case "parts": return <Suspense fallback={<div className="empty">Cargando solicitudes...</div>}><PartsRequestsView onOpen={onOpenPartsRequest} /></Suspense>;
+    case "partsDetail": return selectedPartsRequestId ? <Suspense fallback={<div className="empty">Cargando solicitud...</div>}><PartsRequestDetail requestId={selectedPartsRequestId} onBack={() => changeRoute("parts")} /></Suspense> : <ModulePlaceholder route={route} />;
+    case "providers": return <Suspense fallback={<div className="empty">Cargando proveedores...</div>}><ProvidersView /></Suspense>;
+    case "quotes": return <QuotesView onOpen={(orderId) => onOpenOrder(orderId, "quotes")} isSuperadmin={user.role === "SUPERADMINISTRADOR"} />;
     case "audit": return (
       <Suspense fallback={<div className="empty">Cargando auditoría...</div>}><AuditView /></Suspense>
     );
@@ -898,7 +908,7 @@ const ageLabels: Record<string, string> = { RECENT: "0–2 días", ATTENTION: "3
 const daysOld = (date: string) => Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000);
 
 
-function QuotesView({ onOpen }: Readonly<{ onOpen: (orderId: number) => void }>) {
+function QuotesView({ onOpen, isSuperadmin = false }: Readonly<{ onOpen: (orderId: number) => void; isSuperadmin?: boolean }>) {
   const [search, setSearch] = useState(""); const [stage, setStage] = useState(""); const [modality, setModality] = useState(""); const [age, setAge] = useState(""); const [from, setFrom] = useState(""); const [to, setTo] = useState("");
   const paging = usePagination({ search, status: stage, modality, age, from, to, view: "quotes" });
   const ordersQuery = useScopedQuery<{ orders: OrderRow[]; pagination: PageInfo; counts: Record<string, number>; overdue: number }>("orders", `/orders?${paging.params}`);
@@ -932,7 +942,7 @@ function QuotesView({ onOpen }: Readonly<{ onOpen: (orderId: number) => void }>)
       {filterChips.length > 0 && <div className="quote-inbox-resultbar"><div>{filterChips.map((item) => <span key={item}>{item}</span>)}</div><button onClick={clear}>Limpiar filtros</button></div>}
       <Pagination controls={paging} info={ordersQuery.data?.pagination} busy={ordersQuery.isFetching} />
       <QuoteResults orders={orders} visible={visible} loadError={loadError} onOpen={onOpen} />
-    </section>
+    </section><IndependentQuotesView isSuperadmin={isSuperadmin} />
   </>;
 }
 
@@ -1082,6 +1092,7 @@ function PartsGlobalWorkbench({ onOpenOrder }: Readonly<{ onOpenOrder: (orderId:
     </section>
   </section>;
 }
+void PartsGlobalWorkbench;
 
 export function App() {
   const [state, setState] = useState<AppState>("loading");

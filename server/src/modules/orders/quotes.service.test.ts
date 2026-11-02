@@ -85,7 +85,7 @@ describe("quote workflow service", () => {
     expect(database.connection.rollback).toHaveBeenCalledOnce();
   });
 
-  it("derives approved parts using their quote-line identifiers", async () => {
+  it("keeps approved parts independent until a parts request is generated", async () => {
     database.connection.query
       .mockResolvedValueOnce([{ id: 9, status: "ENVIADA", currency: "PEN", noParts: 0, versionNumber: 2 }])
       .mockResolvedValueOnce([{ id: 21, type: "MANO_OBRA", description: "Reparar guardafango", quantity: 1, unitPrice: 180 }, { id: 22, type: "REPUESTO", description: "Guardafango", quantity: 1, unitPrice: 240 }])
@@ -95,7 +95,8 @@ describe("quote workflow service", () => {
       .mockResolvedValueOnce({});
 
     await expect(transitionQuote(5, 9, "APPROVE", 3, "request-5")).resolves.toMatchObject({ status: "ESPERA_REPUESTOS" });
-    expect(database.connection.query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO order_parts"), [5, 22, "Guardafango", 1]);
+    expect(database.connection.query.mock.calls.some(([sql]) => String(sql).includes("INSERT INTO order_parts"))).toBe(false);
+    expect(database.connection.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE service_orders SET internal_status"), ["ESPERA_REPUESTOS", "ESPERA_REPUESTOS", 5]);
     expect(database.connection.commit).toHaveBeenCalledOnce();
   });
 });

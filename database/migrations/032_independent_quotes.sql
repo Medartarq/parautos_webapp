@@ -1,0 +1,41 @@
+CREATE TABLE independent_quotes (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  quote_number VARCHAR(30) NOT NULL,
+  vehicle_profile_id BIGINT UNSIGNED NOT NULL,
+  vehicle_id BIGINT UNSIGNED NULL,
+  order_id BIGINT UNSIGNED NULL,
+  client_name VARCHAR(180) NULL,
+  client_document VARCHAR(30) NULL,
+  client_phone VARCHAR(80) NULL,
+  insurer VARCHAR(120) NULL,
+  claim_number VARCHAR(60) NULL,
+  currency ENUM('PEN','USD') NOT NULL DEFAULT 'PEN',
+  status ENUM('BORRADOR','ENVIADA','APROBADA','RECHAZADA','CANCELADA') NOT NULL DEFAULT 'BORRADOR',
+  owner_user_id BIGINT UNSIGNED NOT NULL,
+  notes TEXT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  UNIQUE KEY uq_independent_quotes_number (quote_number),
+  KEY idx_independent_quotes_order (order_id, status),
+  KEY idx_independent_quotes_vehicle (vehicle_profile_id, status),
+  CONSTRAINT fk_independent_quotes_profile FOREIGN KEY (vehicle_profile_id) REFERENCES parts_vehicle_profiles(id),
+  CONSTRAINT fk_independent_quotes_vehicle FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
+  CONSTRAINT fk_independent_quotes_order FOREIGN KEY (order_id) REFERENCES service_orders(id),
+  CONSTRAINT fk_independent_quotes_owner FOREIGN KEY (owner_user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE independent_quote_lines (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  quote_id BIGINT UNSIGNED NOT NULL,
+  line_type ENUM('MANO_OBRA','REPUESTO') NOT NULL,
+  labor_category ENUM('PLANCHADO','PINTURA','MECANICA') NULL,
+  description VARCHAR(500) NOT NULL,
+  quantity DECIMAL(12,3) NOT NULL,
+  unit_price DECIMAL(14,2) NOT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  KEY idx_independent_quote_lines_quote (quote_id),
+  CONSTRAINT fk_independent_quote_lines_quote FOREIGN KEY (quote_id) REFERENCES independent_quotes(id),
+  CONSTRAINT chk_independent_quote_lines_quantity CHECK (quantity > 0),
+  CONSTRAINT chk_independent_quote_lines_price CHECK (unit_price >= 0),
+  CONSTRAINT chk_independent_quote_lines_category CHECK ((line_type='MANO_OBRA' AND labor_category IS NOT NULL) OR (line_type='REPUESTO' AND labor_category IS NULL))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

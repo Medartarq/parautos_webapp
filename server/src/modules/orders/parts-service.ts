@@ -41,3 +41,7 @@ export async function startRepair(orderId: number, actorUserId: number, requestI
   return repository.startRepair(orderId, actorUserId, requestId, ipAddress, userAgent);
 }
 
+export async function forceStartRepair(orderId: number, reason: string, actorUserId: number, requestId: string, ipAddress?: string, userAgent?: string, repository: PartsMutationRepository = mariaDbPartsMutationRepository) {
+  return repository.forceStartRepair(orderId, reason, actorUserId, requestId, ipAddress, userAgent);
+}
+
