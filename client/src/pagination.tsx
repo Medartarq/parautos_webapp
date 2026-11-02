@@ -65,7 +65,7 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
       <div className="pagination-navigation">
           <button
             type="button"
-            className="btn small"
+            className="btn small pagination-first"
             disabled={busy || page <= 1}
             onClick={() => controls.setPage(1)}
             title="Primera página"
@@ -75,7 +75,7 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
 
           <button
             type="button"
-            className="btn small"
+            className="btn small pagination-previous"
             disabled={busy || page <= 1}
             onClick={() => controls.setPage(page - 1)}
           >
@@ -100,10 +100,11 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
               );
             })}
           </div>
+          <span className="pagination-current" aria-current="page">Página {page} de {pages}</span>
 
           <button
             type="button"
-            className="btn small"
+            className="btn small pagination-next"
             disabled={busy || page >= pages}
             onClick={() => controls.setPage(page + 1)}
           >
@@ -112,7 +113,7 @@ export function Pagination({ info, controls, busy = false }: { info?: PageInfo; 
 
           <button
             type="button"
-            className="btn small"
+            className="btn small pagination-last"
             disabled={busy || page >= pages}
             onClick={() => controls.setPage(pages)}
             title="Última página"

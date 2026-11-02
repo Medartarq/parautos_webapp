@@ -3411,7 +3411,8 @@ a:visited {
   }
 }
 .audit-events article {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.4fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr);
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -3438,6 +3439,7 @@ a:visited {
 }
 @media (max-width: 700px) {
   .audit-events article {
+    grid-template-columns: 1fr;
     align-items: flex-start;
     flex-direction: column;
     gap: 7px;
@@ -5045,6 +5047,10 @@ a:visited {
   border-bottom: 1px solid #d8e0e8;
   background: #f8fafc;
 }
+.audit-events .audit-action { grid-template-columns: 28px 1fr; align-items: center; }
+.audit-events .audit-action i { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; background: #fdebec; color: #ef3340; font-style: normal; font-weight: 900; }
+.audit-events-head { display: grid; grid-template-columns: minmax(280px, 1.4fr) minmax(180px, 0.8fr) minmax(180px, 0.8fr); gap: 18px; padding: 9px 16px; border-bottom: 1px solid #d8e0e8; background: #f8fafc; color: #5f6b7a; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+@media (max-width: 700px) { .audit-events-head { display: none; } }
 @media (max-width: 768px) {
   .pagination {
     align-items: stretch;

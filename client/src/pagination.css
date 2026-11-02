@@ -31,11 +31,16 @@
 .pagination .btn.small:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 .pagination :is(select, button):focus-visible { outline: 2px solid var(--red, #ef3340); outline-offset: 2px; }
 .pagination-page { min-width: 86px; text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pagination-current { display: none; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
   .pagination { align-items: stretch; gap: 10px; padding: 12px; }
   .pagination-summary { width: 100%; }
   .pagination-size { justify-content: space-between; }
-  .pagination-navigation { width: 100%; margin-left: 0; overflow-x: auto; padding-bottom: 2px; }
+  .pagination-navigation { width: 100%; margin-left: 0; justify-content: center; overflow: visible; }
+  .pagination-navigation .pagination-first,
+  .pagination-navigation .pagination-last,
+  .pagination-navigation .pagination-numbers { display: none; }
+  .pagination-current { display: inline; }
 }
 @media (max-width: 420px) {
   .pagination .btn.small, .pagination select { min-height: 40px; }

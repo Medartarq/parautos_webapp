@@ -5,17 +5,19 @@ export type AuditActionRow = { action: string };
 export type AuditUserRow = { id: number; names: string };
 
 export interface AuditRepository {
-  listEvents(where: string, values: unknown[]): Promise<AuditEventRow[]>;
+  listEvents(where: string, values: unknown[], pageSize: number, offset: number): Promise<AuditEventRow[]>;
+  countEvents(where: string, values: unknown[]): Promise<Array<{ total: number }>>;
   listActions(): Promise<AuditActionRow[]>;
   listUsers(): Promise<AuditUserRow[]>;
 }
 
 /** Resolves the current production/demo MariaDB pool at operation time. */
 export const mariaDbAuditRepository: AuditRepository = {
-  listEvents: (where, values) => getPool().query<AuditEventRow[]>(
-    `SELECT ae.id, ae.entity, ae.record_id AS recordId, ae.action, ae.previous_data AS previousData, ae.new_data AS newData, ae.request_id AS requestId, ae.ip_address AS ipAddress, ae.user_agent AS userAgent, ae.created_at AS createdAt, u.id AS actorUserId, u.names AS actorName, o.order_number AS orderNumber FROM audit_events ae LEFT JOIN users u ON u.id = ae.actor_user_id LEFT JOIN service_orders o ON ae.entity = 'service_order' AND ae.record_id = CAST(o.id AS CHAR) WHERE ${where} ORDER BY ae.created_at DESC, ae.id DESC LIMIT 200`,
-    values,
+  listEvents: (where, values, pageSize, offset) => getPool().query<AuditEventRow[]>(
+    `SELECT ae.id, ae.entity, ae.record_id AS recordId, ae.action, ae.previous_data AS previousData, ae.new_data AS newData, ae.request_id AS requestId, ae.ip_address AS ipAddress, ae.user_agent AS userAgent, ae.created_at AS createdAt, u.id AS actorUserId, u.names AS actorName, o.order_number AS orderNumber FROM audit_events ae LEFT JOIN users u ON u.id = ae.actor_user_id LEFT JOIN service_orders o ON ae.entity = 'service_order' AND ae.record_id = CAST(o.id AS CHAR) WHERE ${where} ORDER BY ae.created_at DESC, ae.id DESC LIMIT ? OFFSET ?`,
+    [...values, pageSize, offset],
   ),
+  countEvents: (where, values) => getPool().query<Array<{ total: number }>>(`SELECT COUNT(*) AS total FROM audit_events ae LEFT JOIN users u ON u.id = ae.actor_user_id WHERE ${where}`, values),
   listActions: () => getPool().query<AuditActionRow[]>("SELECT DISTINCT action FROM audit_events ORDER BY action"),
   listUsers: () => getPool().query<AuditUserRow[]>("SELECT id, names FROM users ORDER BY names"),
 };
