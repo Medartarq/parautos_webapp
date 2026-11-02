@@ -637,6 +637,9 @@ a:visited { text-decoration: none; }
     pointer-events: none;
     transform: translateY(100%);
   }
+  .mobile-nav.has-demo-toggle {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
   .mobile-nav button {
     display: flex;
     min-width: 0;
@@ -671,6 +674,13 @@ a:visited { text-decoration: none; }
   }
   .mobile-nav button.active:hover {
     background: #fdebec;
+  }
+  .mobile-nav .mobile-demo-toggle {
+    color: #8a5a00;
+  }
+  .mobile-nav .mobile-demo-toggle.active {
+    background: #fff1f1;
+    color: #b42318;
   }
   .mobile-nav button:focus-visible {
     outline: 3px solid #2563eb;

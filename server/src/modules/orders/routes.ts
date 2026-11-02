@@ -36,6 +36,8 @@ import {
   reopenFinalControl,
   publishReadyForPickup,
   deliverOrder,
+  cancelOrderAsSuperadmin,
+  revertOrderToPendingAsSuperadmin,
 } from "./service.js";
 
 export const ordersRouter = Router();
@@ -50,6 +52,8 @@ ordersRouter.get("/pending-notifications", async (_request, response) =>
   response.json(await getOperationalPendingNotifications()),
 );
 const receptionDraftSchema = z.object({ revision: z.number().int().positive().optional(), currentStep: z.number().int().min(0).max(6), payload: z.record(z.string(), z.unknown()) });
+const adminCorrectionSchema = z.object({ reason: z.string().trim().min(8).max(1000) });
+const adminContext = (request: import("express").Request) => ({ actorUserId: request.currentUser!.id, requestId: request.requestId, ipAddress: request.ip, userAgent: request.get("user-agent") });
 ordersRouter.get("/reception-draft", async (request, response) => response.json({ draft: await getReceptionDraft(request.currentUser!.id) }));
 ordersRouter.put("/reception-draft", async (request, response) => response.json({ draft: await saveReceptionDraft(request.currentUser!.id, receptionDraftSchema.parse(request.body)) }));
 ordersRouter.delete("/reception-draft", async (request, response) => { await deleteReceptionDraft(request.currentUser!.id); response.status(204).end(); });
@@ -81,6 +85,8 @@ ordersRouter.patch("/:orderId/operational-data", async (request, response) => {
   await correctOperationalData(orderId, operationalDataSchema.parse(request.body), request.currentUser!.id, request.requestId, request.ip, request.get("user-agent"));
   response.status(204).end();
 });
+ordersRouter.post("/:orderId/admin/revert-to-pending", requireRoles("SUPERADMINISTRADOR"), async (request, response) => { const orderId = Number(request.params.orderId); if (!Number.isSafeInteger(orderId) || orderId < 1) throw new AppError(400, "INVALID_ORDER", "La orden no es válida."); await revertOrderToPendingAsSuperadmin(orderId, adminCorrectionSchema.parse(request.body).reason, adminContext(request)); response.status(204).end(); });
+ordersRouter.post("/:orderId/admin/archive", requireRoles("SUPERADMINISTRADOR"), async (request, response) => { const orderId = Number(request.params.orderId); if (!Number.isSafeInteger(orderId) || orderId < 1) throw new AppError(400, "INVALID_ORDER", "La orden no es válida."); await cancelOrderAsSuperadmin(orderId, adminCorrectionSchema.parse(request.body).reason, adminContext(request)); response.status(204).end(); });
 const quoteLineSchema = z.object({ type: z.enum(["MANO_OBRA", "REPUESTO"]), category: z.enum(["PLANCHADO", "PINTURA", "MECANICA"]).optional(), description: z.string().trim().min(1).max(500), quantity: z.number().positive(), unitPrice: z.number().min(0) }).superRefine((line, context) => { if ((line.type === "MANO_OBRA") !== Boolean(line.category)) context.addIssue({ code: z.ZodIssueCode.custom, message: "La categoría solo corresponde a mano de obra." }); });
 const quoteSchema = z.object({ currency: z.enum(["PEN", "USD"]), noParts: z.boolean(), adjustmentReason: z.string().trim().max(500).optional(), lines: z.array(quoteLineSchema).min(1) }).superRefine((quote, context) => { if (quote.noParts && quote.lines.some((line) => line.type === "REPUESTO")) context.addIssue({ code: z.ZodIssueCode.custom, message: "No puede incluir repuestos si marcó sin repuestos." }); });
 const quoteDraftSchema = z.object({ currency: z.enum(["PEN", "USD"]), noParts: z.boolean(), lines: z.array(quoteLineSchema).min(1) }).superRefine((quote, context) => { if (quote.noParts && quote.lines.some((line) => line.type === "REPUESTO")) context.addIssue({ code: z.ZodIssueCode.custom, message: "No puede incluir repuestos si marcó sin repuestos." }); });

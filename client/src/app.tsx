@@ -510,12 +510,17 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
         </section>
       </main>
       {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
-      <nav aria-label="Navegación principal móvil" className={`mobile-nav${mobileNavHidden ? " hidden" : ""}`}>
+      <nav aria-label="Navegación principal móvil" className={`mobile-nav${mobileNavHidden ? " hidden" : ""}${user.role === "SUPERADMINISTRADOR" && demoAvailable ? " has-demo-toggle" : ""}`}>
         {allowed.slice(0, 4).map((item) => (
           <button type="button" key={item.route} aria-label={item.label} aria-current={route === item.route ? "page" : undefined} className={route === item.route ? "active" : ""} onClick={() => changeRoute(item.route)}>
             <b aria-hidden="true">{item.icon}</b><span>{mobileLabels[item.route] ?? item.label}</span>
           </button>
         ))}
+        {user.role === "SUPERADMINISTRADOR" && demoAvailable && (
+          <button type="button" className={`mobile-demo-toggle${demoMode ? " active" : ""}`} aria-pressed={demoMode} onClick={() => void toggleDemoMode()}>
+            <b aria-hidden="true">◈</b><span>{demoMode ? "Salir demo" : "Activar demo"}</span>
+          </button>
+        )}
       </nav>
       {reminderOpen && <OperationalReminder notifications={operationalPending} onClose={() => setReminderOpen(false)} onView={() => { setReminderOpen(false); changeRoute("dashboard"); }} />}
       {showPasswordModal && (
@@ -660,7 +665,7 @@ function DashboardRoute({ route, user, demoMode, dashboardFilter, selectedOrderI
     case "orderDetail":
       if (!selectedOrderId) return <ModulePlaceholder route={route} />;
       return (
-        <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} /></Suspense>
+        <Suspense fallback={<div className="empty">Cargando detalle de orden...</div>}><OrderDetail orderId={selectedOrderId} initialTab={selectedOrderTab} onBack={() => changeRoute("orders")} isSuperadmin={user.role === "SUPERADMINISTRADOR"} /></Suspense>
       );
     case "parts": return (
       <PartsGlobalWorkbench onOpenOrder={(orderId) => onOpenOrder(orderId, "parts")} />

@@ -20,7 +20,7 @@ const detailStatuses: Record<string, { label: string; tone: string; progress: nu
   ENTREGADA: { label: "Entregada", tone: "ready", progress: 100 },
   CANCELADA: { label: "Cancelada", tone: "neutral", progress: 0 },
 };
-export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; initialTab?: DetailTab; onBack: () => void }) {
+export function OrderDetail({ orderId, initialTab, onBack, isSuperadmin = false }: { orderId: number; initialTab?: DetailTab; onBack: () => void; isSuperadmin?: boolean }) {
   const [tab, setTab] = useState<DetailTab>(initialTab || "summary");
   const [order, setOrder] = useState<OrderDetailData>();
   const [message, setMessage] = useState<string>();
@@ -57,6 +57,7 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
       <div className="detail-statuses"><span className={`status ${status.tone}`}>Interno · {status.label}</span><span className="status neutral">Público · {order.publicStatus.replaceAll("_", " ")}</span><label>Estado actual<select value={order.internalStatus} disabled aria-describedby="status-readonly"><option>{status.label}</option></select><small id="status-readonly">Solo lectura: no hay API de cambio manual de estado.</small></label></div>
     </section>
     <section className="detail-progress card"><div><small>Avance del caso</small><strong>{status.progress}%</strong><span>Etapa alcanzada; no representa avance físico exacto.</span></div><div className="progress-bar" aria-label={`Avance ${status.progress}%`}><i style={{ width: `${status.progress}%` }} /></div></section>
+    {isSuperadmin && <AdminCorrections orderId={orderId} orderNumber={order.orderNumber} onChanged={refreshOrder} onMessage={setMessage} />}
     <div className="tabs detail-tabs" role="tablist" aria-label="Detalle de orden">{tabs.map(([key, label]) => <button type="button" key={key} role="tab" aria-selected={tab === key} className={tab === key ? "active" : ""} onClick={() => setTab(key)}>{label}</button>)}</div>
     {tab === "summary" && <><div className="detail-grid"><section className="card"><header><h2>Información del caso</h2></header><div className="card-body detail-fields"><DetailField label="Cliente" value={order.client} note={`${order.documentType} ${order.documentNumber}`} /><DetailField label="Vehículo" value={`${order.brand} ${order.model}`} note={`${order.plate} · ${order.color}`} /><DetailField label="Modalidad" value={order.modality.replaceAll("_", " ")} note={order.claimNumber ? `Siniestro: ${order.claimNumber}` : order.claimPending ? "Siniestro pendiente" : "Sin siniestro registrado"} /><DetailField label="Carrocería" value={order.bodyName} note={order.year ? `Año ${order.year}` : "Año no registrado"} /><DetailField label="Código público" value={order.publicCode || "No disponible"} note="Compártalo con el cliente junto con la placa para el seguimiento." /><DetailField label="Estados" value={`Interno: ${status.label}`} note={`Público: ${order.publicStatus.replaceAll("_", " ")}`} /></div></section><section className="card"><header><h2>Resumen de recepción</h2></header><div className="card-body detail-fields"><DetailField label="Kilometraje" value={order.reception?.mileage == null ? "No registrado" : `${order.reception.mileage} km`} /><DetailField label="Combustible" value={order.reception?.fuelLevel == null ? "No registrado" : `${order.reception.fuelLevel}%`} /><DetailField label="Checklist" value={`${order.checklist.length} ítems registrados`} /><DetailField label="Daños" value={`${order.damages.length} marcas registradas`} /><DetailField label="Evidencias" value={`${order.attachments.length} archivos adjuntos`} /><DetailField label="Diagnóstico" value={order.reception?.diagnosis ? "Registrado" : "No registrado"} /></div></section></div><OperationalDataEditor order={order} orderId={orderId} onChanged={refreshOrder} onMessage={setMessage} />{!order.claimNumber && order.modality !== "PARTICULAR" && <form className="claim-completion card" onSubmit={completeClaim}><strong>Completar siniestro pendiente</strong><input value={claimNumber} onChange={(event) => setClaimNumber(event.target.value)} placeholder="Número de siniestro" required /><button type="submit" className="btn primary">Registrar siniestro</button></form>}</>}
     {tab === "reception" && <Suspense fallback={<div className="empty">Cargando recepción...</div>}><ReceptionDetail order={order} onRefresh={refreshOrder} /></Suspense>}
@@ -68,6 +69,19 @@ export function OrderDetail({ orderId, initialTab, onBack }: { orderId: number; 
   </>;
 }
 function DetailField({ label, value, note }: { label: string; value: string; note?: string }) { return <div><small>{label}</small><strong>{value}</strong>{note && <span>{note}</span>}</div>; }
+
+function AdminCorrections({ orderId, orderNumber, onChanged, onMessage }: { orderId: number; orderNumber: string; onChanged: () => Promise<void>; onMessage: (message: string | undefined) => void }) {
+  const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState<string>();
+  const run = async (action: "revert-to-pending" | "archive") => {
+    if (reason.trim().length < 8) { const message = "Indique un motivo de al menos 8 caracteres."; setFeedback(message); onMessage(message); return; }
+    if (!window.confirm(`${action === "archive" ? "Cancelar y archivar" : "Revertir a cotización pendiente"} ${orderNumber}? Esta acción quedará auditada.`)) return;
+    setBusy(true); setFeedback(undefined); onMessage(undefined);
+    try { await api(`/orders/${orderId}/admin/${action}`, { method: "POST", body: JSON.stringify({ reason }) }); setReason(""); await onChanged(); const message = "Corrección administrativa registrada."; setFeedback(message); onMessage(message); }
+    catch (error) { const message = error instanceof Error ? error.message : "No fue posible aplicar la corrección."; setFeedback(message); onMessage(message); }
+    finally { setBusy(false); }
+  };
+  return <section className="card operational-data-editor"><header><div><h2>Correcciones de superadministrador</h2><small>Las acciones se registran en auditoría y se bloquean si existen movimientos irreversibles.</small></div></header><div className="card-body operational-data-form"><label className="operational-reason">Motivo obligatorio<textarea value={reason} onChange={(event) => setReason(event.target.value)} minLength={8} maxLength={1000} required /></label>{feedback && <p className="form-error" role="alert">{feedback}</p>}<div className="operational-actions"><button type="button" className="btn" disabled={busy} onClick={() => void run("revert-to-pending")}>{busy ? "Procesando..." : "Revertir a cotización pendiente"}</button><button type="button" className="btn danger" disabled={busy} onClick={() => void run("archive")}>Cancelar y archivar caso</button></div></div></section>;
+}
 
 function OperationalDataEditor({ order, orderId, onChanged, onMessage }: { order: OrderDetailData; orderId: number; onChanged: () => Promise<void>; onMessage: (message: string | undefined) => void }) {
   const [editing, setEditing] = useState(false);
