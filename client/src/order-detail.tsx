@@ -6,10 +6,10 @@ import { QuoteEditor } from "./quote-editor";
 import { PartsOrderWorkbench } from "./parts-order-workbench";
 import { FinalControl } from "./final-control";
 import type { ReceptionSnapshot } from "@parautos/shared";
+import { auditActionLabel } from "./audit-labels";
 
 type DetailTab = "summary" | "reception" | "quotes" | "parts" | "control" | "history";
 type OrderDetailData = { receptionSnapshot?: ReceptionSnapshot | null; id: number; orderNumber: string; modality: string; client: string; plate: string; brand: string; model: string; color: string; claimPending: boolean | 0 | 1; publicCode?: string; internalStatus: string; publicStatus: string; claimNumber?: string; advisorName?: string; documentType: string; documentNumber: string; phone?: string; email?: string; operationalPhone?: string; operationalEmail?: string; year?: number; vin?: string; bodyCode?: string; bodyName: string; diagnosisPending: boolean; reception: null | { mileage?: number; fuelLevel?: number; considerations?: string[] | string; diagnosis?: string; diagnosisLegibility?: string; diagnosisReviewState?: string; acceptedTerms: boolean }; checklist: Array<{ category: string; name: string; answer: string; observation?: string }>; damages: Array<{ body: string; view: string; path: unknown[] }>; attachments: Array<{ id: number; category: string; originalName: string; mimeType: string; byteSize: number }>; history: Array<{ action: string; createdAt: string; actor?: string }> };
-const auditActionLabel = (action: string) => action.replaceAll("_", " ");
 
 const detailStatuses: Record<string, { label: string; tone: string; progress: number }> = {
   COTIZACION_PENDIENTE: { label: "Cotización pendiente", tone: "red", progress: 25 },
@@ -72,15 +72,16 @@ function DetailField({ label, value, note }: { label: string; value: string; not
 
 function AdminCorrections({ orderId, orderNumber, onChanged, onMessage }: { orderId: number; orderNumber: string; onChanged: () => Promise<void>; onMessage: (message: string | undefined) => void }) {
   const [reason, setReason] = useState(""); const [busy, setBusy] = useState(false); const [feedback, setFeedback] = useState<string>();
-  const run = async (action: "revert-to-pending" | "archive") => {
+  const run = async (action: "revert-to-pending" | "archive" | "reset") => {
     if (reason.trim().length < 8) { const message = "Indique un motivo de al menos 8 caracteres."; setFeedback(message); onMessage(message); return; }
-    if (!window.confirm(`${action === "archive" ? "Cancelar y archivar" : "Revertir a cotización pendiente"} ${orderNumber}? Esta acción quedará auditada.`)) return;
+    const label = action === "archive" ? "Cancelar y archivar" : action === "reset" ? "Restablecer a recepción inicial" : "Revertir a cotización pendiente";
+    if (!window.confirm(`${label} ${orderNumber}? Esta acción quedará auditada.`)) return;
     setBusy(true); setFeedback(undefined); onMessage(undefined);
     try { await api(`/orders/${orderId}/admin/${action}`, { method: "POST", body: JSON.stringify({ reason }) }); setReason(""); await onChanged(); const message = "Corrección administrativa registrada."; setFeedback(message); onMessage(message); }
     catch (error) { const message = error instanceof Error ? error.message : "No fue posible aplicar la corrección."; setFeedback(message); onMessage(message); }
     finally { setBusy(false); }
   };
-  return <section className="card operational-data-editor"><header><div><h2>Correcciones de superadministrador</h2><small>Las acciones se registran en auditoría y se bloquean si existen movimientos irreversibles.</small></div></header><div className="card-body operational-data-form"><label className="operational-reason">Motivo obligatorio<textarea value={reason} onChange={(event) => setReason(event.target.value)} minLength={8} maxLength={1000} required /></label>{feedback && <p className="form-error" role="alert">{feedback}</p>}<div className="operational-actions"><button type="button" className="btn" disabled={busy} onClick={() => void run("revert-to-pending")}>{busy ? "Procesando..." : "Revertir a cotización pendiente"}</button><button type="button" className="btn danger" disabled={busy} onClick={() => void run("archive")}>Cancelar y archivar caso</button></div></div></section>;
+  return <section className="card operational-data-editor"><header><div><h2>Correcciones de superadministrador</h2><small>Las acciones se registran en auditoría y se bloquean si existen movimientos irreversibles.</small></div></header><div className="card-body operational-data-form"><label className="operational-reason">Motivo obligatorio<textarea value={reason} onChange={(event) => setReason(event.target.value)} minLength={8} maxLength={1000} required /></label>{feedback && <p className="form-error" role="alert">{feedback}</p>}<div className="operational-actions"><button type="button" className="btn" disabled={busy} onClick={() => void run("revert-to-pending")}>{busy ? "Procesando..." : "Revertir a cotización pendiente"}</button><button type="button" className="btn danger" disabled={busy} onClick={() => void run("reset")}>Restablecer a recepción inicial</button><button type="button" className="btn danger" disabled={busy} onClick={() => void run("archive")}>Cancelar y archivar caso</button></div></div></section>;
 }
 
 function OperationalDataEditor({ order, orderId, onChanged, onMessage }: { order: OrderDetailData; orderId: number; onChanged: () => Promise<void>; onMessage: (message: string | undefined) => void }) {

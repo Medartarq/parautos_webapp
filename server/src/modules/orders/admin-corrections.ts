@@ -42,3 +42,30 @@ export async function revertOrderToPendingAsSuperadmin(orderId: number, reason: 
     await connection.commit(); failed = false;
   } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
 }
+
+export async function resetOrderAsSuperadmin(orderId: number, reason: string, context: Context) {
+  const connection = await getPool().getConnection(); let failed = true;
+  try {
+    await connection.beginTransaction();
+    const order = (await connection.query<any[]>("SELECT internal_status AS internalStatus, public_status AS publicStatus FROM service_orders WHERE id = ? FOR UPDATE", [orderId]))[0];
+    if (!order) throw new AppError(404, "ORDER_NOT_FOUND", "La orden no existe.");
+    if (["ENTREGADA", "CANCELADA"].includes(order.internalStatus)) throw new AppError(409, "ORDER_CANNOT_BE_RESET", "La orden entregada o cancelada no puede restablecerse.");
+    const delivered = await connection.query<any[]>("SELECT order_id AS orderId FROM order_final_controls WHERE order_id = ? AND delivered_at IS NOT NULL FOR UPDATE", [orderId]);
+    if (delivered[0]) throw new AppError(409, "ORDER_ALREADY_DELIVERED", "No puede restablecer una orden entregada.");
+    const versions = await connection.query<any[]>("SELECT id, version_number AS versionNumber, status FROM quote_versions WHERE order_id = ? FOR UPDATE", [orderId]);
+    const drafts = await connection.query<any[]>("SELECT id FROM quote_drafts WHERE order_id = ? FOR UPDATE", [orderId]);
+    await connection.query("DELETE FROM order_labor_verifications WHERE order_id = ?", [orderId]);
+    await connection.query("DELETE FROM order_final_controls WHERE order_id = ?", [orderId]);
+    await connection.query("DELETE FROM order_parts_logistics WHERE order_id = ?", [orderId]);
+    await connection.query("DELETE FROM order_parts WHERE order_id = ?", [orderId]);
+    if (drafts.length) await connection.query("DELETE FROM quote_draft_lines WHERE quote_draft_id IN (?)", [drafts.map((draft) => draft.id)]);
+    await connection.query("DELETE FROM quote_drafts WHERE order_id = ?", [orderId]);
+    if (versions.length) await connection.query("DELETE FROM quote_lines WHERE quote_version_id IN (?)", [versions.map((quote) => quote.id)]);
+    await connection.query("DELETE FROM quote_versions WHERE order_id = ?", [orderId]);
+    await connection.query("INSERT IGNORE INTO order_status_transitions (from_status, to_status) VALUES ('EN_REPARACION', 'COTIZACION_PENDIENTE'), ('ESPERA_REPUESTOS', 'COTIZACION_PENDIENTE'), ('ESPERA_APROBACION', 'COTIZACION_PENDIENTE'), ('LISTA_PARA_ENTREGA', 'COTIZACION_PENDIENTE')");
+    await connection.query("UPDATE service_orders SET internal_status = 'COTIZACION_PENDIENTE', public_status = 'COTIZACION_PENDIENTE' WHERE id = ?", [orderId]);
+    await connection.query("DELETE FROM order_status_transitions WHERE to_status = 'COTIZACION_PENDIENTE' AND from_status IN ('EN_REPARACION','ESPERA_REPUESTOS','ESPERA_APROBACION','LISTA_PARA_ENTREGA')");
+    await audit(connection, orderId, "SUPERADMIN_ORDER_RESET", { ...order, quotes: versions.length, drafts: drafts.length }, { internalStatus: "COTIZACION_PENDIENTE", quotesDeleted: versions.length }, reason, context);
+    await connection.commit(); failed = false;
+  } finally { try { if (failed) await connection.rollback(); } finally { await releaseConnection(connection); } }
+}
