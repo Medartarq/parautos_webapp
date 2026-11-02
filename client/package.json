@@ -12,7 +12,7 @@
   "dependencies": {
     "@parautos/shared": "file:../shared",
     "@tanstack/react-query": "^5.66.8",
-    "exceljs": "^4.4.0",
+    "@zip.js/zip.js": "^2.24.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
     "react": "^19.0.0",
