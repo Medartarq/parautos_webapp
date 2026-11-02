@@ -510,10 +510,10 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
         </section>
       </main>
       {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
-      <nav className={`mobile-nav${mobileNavHidden ? " hidden" : ""}`}>
+      <nav aria-label="Navegación principal móvil" className={`mobile-nav${mobileNavHidden ? " hidden" : ""}`}>
         {allowed.slice(0, 4).map((item) => (
-          <button key={item.route} className={route === item.route ? "active" : ""} onClick={() => changeRoute(item.route)}>
-            <b>{item.icon}</b><span>{mobileLabels[item.route] ?? item.label}</span>
+          <button type="button" key={item.route} aria-label={item.label} aria-current={route === item.route ? "page" : undefined} className={route === item.route ? "active" : ""} onClick={() => changeRoute(item.route)}>
+            <b aria-hidden="true">{item.icon}</b><span>{mobileLabels[item.route] ?? item.label}</span>
           </button>
         ))}
       </nav>
