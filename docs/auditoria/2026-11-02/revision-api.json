@@ -1,0 +1,728 @@
+{
+  "date": "2026-11-02",
+  "target": "http://localhost:5173/api/v1",
+  "scope": "Escrituras exclusivamente demo; sin eliminación de registros",
+  "records": {
+    "prefix": "REV0211-265811",
+    "orderA": {
+      "id": 4012,
+      "plate": "QA6142",
+      "orderNumber": "OS-2026-04012"
+    },
+    "orderB": {
+      "id": 4013,
+      "orderNumber": "OS-2026-04013"
+    },
+    "attachment": 4017,
+    "quote": 4010,
+    "provider": 139,
+    "request": 2,
+    "requestLine": 1,
+    "technician": 1,
+    "orderRequest": 3,
+    "orderRequestLine": 2,
+    "returnTestLine": 3,
+    "technicianB": 2,
+    "technicianTestLine": 4
+  },
+  "checks": [
+    {
+      "label": "Acceso válido",
+      "path": "/auth/login",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Activar demo",
+      "path": "/demo/enter",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Confirmar entorno demo",
+      "path": "/demo/status",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Órdenes sin sesión",
+      "path": "/orders",
+      "method": "GET",
+      "status": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "label": "Catálogos de recepción",
+      "path": "/orders/reception-catalog",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Alta vacía rechazada",
+      "path": "/orders",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Alta sin firma rechazada",
+      "path": "/orders",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Crear recepción con datos válidos",
+      "path": "/orders",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Detalle persistido",
+      "path": "/orders/4012",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Segundo ingreso mismo cliente/vehículo",
+      "path": "/orders",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Original después de nuevo ingreso",
+      "path": "/orders/4012",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Instantánea original no cambia",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Corrección operativa con motivo",
+      "path": "/orders/4012/operational-data",
+      "method": "PATCH",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Original después de corrección",
+      "path": "/orders/4012",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Corrección conserva original",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Adjuntar PNG válido",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Descargar adjunto sin alteración",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Adjunto privado sin sesión",
+      "path": "/attachments/4017/content",
+      "method": "GET",
+      "status": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "label": "Guardar borrador de cotización",
+      "path": "/orders/4012/quote-draft",
+      "method": "PUT",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Crear versión desde borrador",
+      "path": "/orders/4012/quotes/from-draft",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "No permite aprobar sin enviar",
+      "path": "/orders/4012/quotes/4010/approve",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Registrar envío",
+      "path": "/orders/4012/quotes/4010/send",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Registrar aprobación",
+      "path": "/orders/4012/quotes/4010/approve",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Repuestos generados al aprobar",
+      "path": "/orders/4012/parts",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Flujo actual no genera repuesto histórico automáticamente",
+      "pass": true,
+      "kind": "assertion",
+      "note": "La expectativa inicial del comprobador correspondía al flujo anterior. La versión actual exige generar una solicitud; se comprobó a continuación."
+    },
+    {
+      "label": "Reparación bloqueada sin recibir",
+      "path": "/orders/4012/start-repair",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Consultar reportes",
+      "path": "/reports/operational",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Consultar auditoría",
+      "path": "/audit/events",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Consultar usuarios",
+      "path": "/users",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Crear proveedor",
+      "path": "/parts/providers",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Crear solicitud independiente",
+      "path": "/parts/requests",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Agregar repuesto a solicitud",
+      "path": "/parts/requests/2/lines",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Crear técnico sintético",
+      "path": "/parts/technicians",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "No entregar stock inexistente",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Recepción de repuestos independiente",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "No exceder cantidad solicitada",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Entrega al técnico",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Registrar instalación",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Bloquear instalación sin unidades en técnico",
+      "path": "/parts/lines/1/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Consultar movimientos persistidos",
+      "path": "/parts/requests/2",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Lista de proveedores",
+      "path": "/parts/providers?page=1&pageSize=10",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Página inválida rechazada",
+      "path": "/parts/providers?page=0",
+      "method": "GET",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Salir de demo",
+      "path": "/demo/exit",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Aislamiento: buscar orden demo en principal",
+      "path": "/orders?search=REV0211-265811",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Orden demo ausente en principal",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Cerrar sesión API",
+      "path": "/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Sesión revocada",
+      "path": "/auth/me",
+      "method": "GET",
+      "status": 401,
+      "expected": 401,
+      "pass": true
+    },
+    {
+      "label": "Acceso continuación",
+      "path": "/auth/login",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Entrar demo continuación",
+      "path": "/demo/enter",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Reparación bloqueada antes de generar solicitud",
+      "path": "/orders/4012/start-repair",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Generar solicitud desde cotización aprobada",
+      "path": "/parts/orders/4012/quotes/4010/request",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Impedir duplicar solicitud de cotización",
+      "path": "/parts/orders/4012/quotes/4010/request",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Detalle solicitud generada",
+      "path": "/parts/requests/3",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Solicitud conserva partida y cantidad",
+      "kind": "assertion",
+      "pass": true
+    },
+    {
+      "label": "Reparación bloqueada antes de recibir",
+      "path": "/orders/4012/start-repair",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Recibir parte de la cantidad",
+      "path": "/parts/lines/2/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Recepción parcial bloquea reparación",
+      "path": "/orders/4012/start-repair",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Completar recepción de cantidad",
+      "path": "/parts/lines/2/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Iniciar reparación tras recibir",
+      "path": "/orders/4012/start-repair",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Control bloqueado sin verificar labores",
+      "path": "/orders/4012/final-control/complete",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Verificar labores aprobadas",
+      "path": "/orders/4012/final-control/labor",
+      "method": "PUT",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Completar control final",
+      "path": "/orders/4012/final-control/complete",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Entrega bloqueada sin publicación",
+      "path": "/orders/4012/final-control/deliver",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Publicar disponibilidad para entrega",
+      "path": "/orders/4012/final-control/publish",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Entrega bloqueada sin conformidad",
+      "path": "/orders/4012/final-control/deliver",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Registrar entrega correcta",
+      "path": "/orders/4012/final-control/deliver",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Detalle final de orden",
+      "path": "/orders/4012",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Orden final ENTREGADA",
+      "kind": "assertion",
+      "pass": true
+    },
+    {
+      "label": "Corrección bloqueada tras entrega",
+      "path": "/orders/4012/operational-data",
+      "method": "PATCH",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Seguimiento demo no consulta la base demo",
+      "path": "/tracking?plate=QA6142&code=[omitido]",
+      "method": "GET",
+      "status": 404,
+      "expected": 404,
+      "pass": true
+    },
+    {
+      "label": "Crear cotización sin repuestos",
+      "path": "/orders/4013/quotes",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Enviar cotización sin repuestos",
+      "path": "/orders/4013/quotes/4011/send",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Aprobar sin repuestos",
+      "path": "/orders/4013/quotes/4011/approve",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Detalle rama sin repuestos",
+      "path": "/orders/4013",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Sin repuestos pasa a reparación",
+      "kind": "assertion",
+      "pass": true
+    },
+    {
+      "label": "Cerrar sesión continuación",
+      "path": "/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Acceso prueba de stock",
+      "path": "/auth/login",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Demo prueba de stock",
+      "path": "/demo/enter",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Crear línea para devolución de técnico",
+      "path": "/parts/requests/2/lines",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Recibir unidad de prueba",
+      "path": "/parts/lines/3/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Entregar unidad al técnico",
+      "path": "/parts/lines/3/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Devolver unidad del técnico",
+      "path": "/parts/lines/3/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Unidad devuelta debe poder entregarse nuevamente",
+      "path": "/parts/lines/3/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 201,
+      "pass": false,
+      "error": "WORKSHOP_QUANTITY_EXCEEDED",
+      "message": "La cantidad excede las unidades disponibles en taller."
+    },
+    {
+      "label": "Crear segundo técnico de prueba",
+      "path": "/parts/technicians",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Crear línea para control por responsable",
+      "path": "/parts/requests/2/lines",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Recibir unidad de control responsable",
+      "path": "/parts/lines/4/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Entregar unidad únicamente al técnico A",
+      "path": "/parts/lines/4/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Técnico B sin stock no debe registrar instalación",
+      "path": "/parts/lines/4/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 400,
+      "pass": false
+    },
+    {
+      "label": "Leer historial de movimientos comprobados",
+      "path": "/parts/requests/2",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Cerrar sesión prueba stock",
+      "path": "/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    }
+  ],
+  "passed": 88,
+  "failed": 2
+}

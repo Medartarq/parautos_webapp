@@ -32,6 +32,7 @@ const input = {
 function configureSuccessfulCreation() {
   database.pool.query.mockResolvedValue([{ id: 1 }]);
   database.connection.query.mockImplementation(async (sql: string) => {
+    if (sql.startsWith("SELECT id, plate, vin FROM vehicles")) return [];
     if (sql.startsWith("INSERT INTO clients")) return { insertId: 11 };
     if (sql.startsWith("INSERT INTO vehicles")) return { insertId: 12 };
     if (sql.startsWith("INSERT INTO client_vehicles")) return { insertId: 13 };
@@ -97,21 +98,45 @@ describe("order creation signature persistence", () => {
     expect(storage.deleteStoredFile).not.toHaveBeenCalled();
   });
 
-  it("preserves the enum value for color_type when the vehicle plate already exists", async () => {
+  it("updates a vehicle only when plate and VIN identify the same record", async () => {
     configureSuccessfulCreation();
+    const query = database.connection.query.getMockImplementation()!;
+    database.connection.query.mockImplementation(async (sql, ...args) => sql.startsWith("SELECT id, plate, vin FROM vehicles")
+      ? [{ id: 12, plate: "ABC123", vin: input.vehicle.vin }] : query(sql, ...args));
+    await createOrder(structuredClone(input), 3, "same-identity");
+    expect(database.connection.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE vehicles SET"),
+      ["TOYOTA", "COROLLA", 2024, input.vehicle.vin, "Blanco", "CATALOGO", 1, 12]);
+  });
 
-    await createOrder(structuredClone(input), 3, "request-existing-vehicle");
+  it.each([
+    [{ id: 12, plate: "XYZ789", vin: input.vehicle.vin }],
+    [{ id: 12, plate: "ABC123", vin: "8AJHA8CD0R1234567" }],
+    [{ id: 12, plate: "ABC123", vin: null }, { id: 13, plate: "XYZ789", vin: input.vehicle.vin }],
+  ])("rejects conflicting vehicle identities and rolls back", async (...identities) => {
+    configureSuccessfulCreation();
+    const query = database.connection.query.getMockImplementation()!;
+    database.connection.query.mockImplementation(async (sql, ...args) => sql.startsWith("SELECT id, plate, vin FROM vehicles") ? identities : query(sql, ...args));
+    await expect(createOrder(structuredClone(input), 3, "conflict")).rejects.toMatchObject({ code: "VEHICLE_IDENTITY_CONFLICT" });
+    expect(database.connection.rollback).toHaveBeenCalledOnce();
+    expect(database.connection.commit).not.toHaveBeenCalled();
+    expect(storage.storeSignature).not.toHaveBeenCalled();
+  });
 
-    const vehicleUpsert = database.connection.query.mock.calls.find(
-      ([sql]) => typeof sql === "string" && sql.startsWith("INSERT INTO vehicles"),
-    )?.[0];
-    expect(vehicleUpsert).toContain("color_type = VALUES(color_type)");
-    expect(vehicleUpsert).not.toContain("color_type = VALUES(color),");
+  it("reports a concurrent unique-key conflict without completing a reception", async () => {
+    configureSuccessfulCreation();
+    const query = database.connection.query.getMockImplementation()!;
+    database.connection.query.mockImplementation(async (sql, ...args) => {
+      if (sql.startsWith("INSERT INTO vehicles")) throw Object.assign(new Error("duplicate"), { code: "ER_DUP_ENTRY" });
+      return query(sql, ...args);
+    });
+    await expect(createOrder(structuredClone(input), 3, "race")).rejects.toMatchObject({ code: "VEHICLE_IDENTITY_CONFLICT" });
+    expect(database.connection.rollback).toHaveBeenCalledOnce();
   });
 
   it("rolls back and removes the signature file when attachment persistence fails", async () => {
     configureSuccessfulCreation();
     database.connection.query.mockImplementation(async (sql: string) => {
+      if (sql.startsWith("SELECT id, plate, vin FROM vehicles")) return [];
       if (sql.startsWith("INSERT INTO clients")) return { insertId: 11 };
       if (sql.startsWith("INSERT INTO vehicles")) return { insertId: 12 };
       if (sql.startsWith("INSERT INTO client_vehicles")) return { insertId: 13 };

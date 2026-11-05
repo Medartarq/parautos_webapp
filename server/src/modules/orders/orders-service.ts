@@ -138,21 +138,39 @@ export async function createOrder(
     );
     const clientId = insertedId(client, "cliente");
     const plate = normalizePlate(input.vehicle.plate);
-    const vehicle = await connection.query<{ insertId: number }>(
-      `INSERT INTO vehicles (plate, brand, model, manufacture_year, vin, color, color_type, body_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id), brand = VALUES(brand), model = VALUES(model), manufacture_year = VALUES(manufacture_year), vin = VALUES(vin), color = VALUES(color), color_type = VALUES(color_type), body_type_id = VALUES(body_type_id)`,
-      [
-        plate,
-        input.vehicle.brand.toUpperCase(),
-        input.vehicle.model.toUpperCase(),
-        input.vehicle.year || null,
-        input.vehicle.vin?.toUpperCase() || null,
-        input.vehicle.color,
-        input.vehicle.colorType,
-        input.vehicle.bodyTypeId,
-      ],
+    const vin = input.vehicle.vin?.toUpperCase() || null;
+    const identities = await connection.query<{ id: number; plate: string; vin: string | null }[]>(
+      "SELECT id, plate, vin FROM vehicles WHERE plate = ? OR vin = ? ORDER BY id FOR UPDATE",
+      [plate, vin],
     );
-    const vehicleId = insertedId(vehicle, "vehículo");
+    const existing = identities.find((vehicle) => vehicle.plate === plate);
+    if (identities.some((vehicle) => vehicle.plate !== plate) ||
+        (existing?.vin && vin && existing.vin !== vin)) {
+      throw new AppError(409, "VEHICLE_IDENTITY_CONFLICT", "La placa y el VIN no corresponden al mismo vehículo registrado. Revise ambos datos.");
+    }
+    const vehicleValues = [input.vehicle.brand.toUpperCase(), input.vehicle.model.toUpperCase(),
+      input.vehicle.year || null, vin || existing?.vin || null, input.vehicle.color,
+      input.vehicle.colorType, input.vehicle.bodyTypeId];
+    let vehicleId: number;
+    try {
+      if (existing) {
+        vehicleId = Number(existing.id);
+        await connection.query(
+          "UPDATE vehicles SET brand=?, model=?, manufacture_year=?, vin=?, color=?, color_type=?, body_type_id=? WHERE id=?",
+          [...vehicleValues, vehicleId],
+        );
+      } else {
+        const vehicle = await connection.query<{ insertId: number }>(
+          "INSERT INTO vehicles (plate, brand, model, manufacture_year, vin, color, color_type, body_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [plate, ...vehicleValues],
+        );
+        vehicleId = insertedId(vehicle, "vehículo");
+      }
+    } catch (error) {
+      if ((error as { code?: string }).code === "ER_DUP_ENTRY")
+        throw new AppError(409, "VEHICLE_IDENTITY_CONFLICT", "La placa o el VIN se registró en otra recepción. Revise los datos e inténtelo nuevamente.");
+      throw error;
+    }
     const clientVehicle = await connection.query<{ insertId: number }>(
       "INSERT INTO client_vehicles (client_id, vehicle_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
       [clientId, vehicleId],

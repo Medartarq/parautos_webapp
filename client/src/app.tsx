@@ -508,6 +508,7 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
             <ProfileDropdown user={user} onLogout={() => onLogout().catch(() => setSessionError("No fue posible cerrar la sesión. Verifique la conexión e inténtelo nuevamente."))} onChangePassword={() => setShowPasswordModal(true)} />
           </div>
         </header>
+        {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
         <section className="app-content">
           {sessionError && <p className="form-error" role="alert">{sessionError}</p>}
           <DashboardRoute route={route} user={user} demoMode={demoMode} dashboardFilter={dashboardFilter}
@@ -517,7 +518,6 @@ function DashboardContent({ user, onLogout, demoMode, demoAvailable }: Readonly<
             onOpenOrder={(id, tab) => { setSelectedOrderId(id); setSelectedOrderTab(tab); changeRoute("orderDetail"); }} onOpenPartsRequest={(id) => { setSelectedPartsRequestId(id); changeRoute("partsDetail"); }} />
         </section>
       </main>
-      {demoMode && <output className="demo-mode-banner">Modo demostración · datos ficticios aislados</output>}
       <nav aria-label="Navegación principal móvil" className={`mobile-nav${mobileNavHidden ? " hidden" : ""}${user.role === "SUPERADMINISTRADOR" && demoAvailable ? " has-demo-toggle" : ""}`}>
         {allowed.slice(0, 4).map((item) => (
           <button type="button" key={item.route} aria-label={item.label} aria-current={route === item.route ? "page" : undefined} className={route === item.route ? "active" : ""} onClick={() => changeRoute(item.route)}>

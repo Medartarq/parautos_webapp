@@ -579,27 +579,17 @@ a:visited {
 }
 
 .demo-mode-banner {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 40;
-  padding: 10px 13px;
-  border: 1px solid #d99b12;
-  border-radius: 9px;
+  display: block;
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  border-bottom: 1px solid #d99b12;
   background: #fff8e8;
   color: #704d00;
-  box-shadow: 0 8px 24px #17212b24;
   font-size: 12px;
   font-weight: 800;
+  text-align: center;
 }
-@media (max-width: 700px) {
-  .demo-mode-banner {
-    right: 12px;
-    bottom: calc(84px + env(safe-area-inset-bottom));
-    left: 12px;
-    text-align: center;
-  }
-}
+
 .bell {
   position: relative;
   display: grid;

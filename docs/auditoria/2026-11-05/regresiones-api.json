@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-05",
+  "records": {
+    "line": 5,
+    "order": 4015,
+    "secondOrder": 4016
+  },
+  "checks": [
+    {
+      "label": "Acceso",
+      "path": "/auth/login",
+      "method": "POST",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Entrar demo",
+      "path": "/demo/enter",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "label": "Aislamiento",
+      "path": "/demo/status",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Línea de regresión",
+      "path": "/parts/requests/2/lines",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Recibir",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Entregar A",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "B no instala stock de A",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "B no devuelve stock de A",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Devolución requiere responsable",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Devolver A",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Reentregar unidad devuelta a B",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "No entregar más de lo disponible",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "B instala su unidad",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "No instalar dos veces",
+      "path": "/parts/lines/5/movements",
+      "method": "POST",
+      "status": 400,
+      "expected": 400,
+      "pass": true
+    },
+    {
+      "label": "Catálogo",
+      "path": "/orders/reception-catalog",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "VIN previo con placa distinta se rechaza",
+      "path": "/orders",
+      "method": "POST",
+      "status": 409,
+      "expected": 409,
+      "pass": true
+    },
+    {
+      "label": "Mensaje de identidad claro",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Crear identidad nueva",
+      "path": "/orders",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Detalle nuevo",
+      "path": "/orders/4015",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Conserva placa ingresada",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Reutilizar misma placa y VIN",
+      "path": "/orders",
+      "method": "POST",
+      "status": 201,
+      "expected": 201,
+      "pass": true
+    },
+    {
+      "label": "Original posterior",
+      "path": "/orders/4015",
+      "method": "GET",
+      "status": 200,
+      "expected": 200,
+      "pass": true
+    },
+    {
+      "label": "Instantánea original conservada",
+      "pass": true,
+      "kind": "assertion"
+    },
+    {
+      "label": "Salir",
+      "path": "/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "expected": 204,
+      "pass": true
+    }
+  ],
+  "passed": 24,
+  "failed": 0
+}

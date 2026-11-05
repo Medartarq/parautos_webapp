@@ -29,6 +29,9 @@ database/schema-inicial-mariadb.sql
 /docs/auditoria/**/tmp/
 /docs/auditoria/**/reconciliacion/
 
+# Control manual de repuestos (no forma parte del código).
+/docs/CONTROL DE REPUESTOS.xlsx
+
 # Logs de herramientas locales.
 npm-debug.log*
 yarn-debug.log*
